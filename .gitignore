@@ -17,6 +17,9 @@ nbproject/
 # Build directory
 build/
 
+# Build XML file
+build.xml
+
 # Generated sources
 generated-sources/
 
