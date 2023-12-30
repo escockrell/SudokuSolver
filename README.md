@@ -33,7 +33,7 @@ Follow these steps to install and use the SudokuSolver program:
    - To solve a specific Sudoku puzzle, use the input options provided in the GUI to enter the initial puzzle configuration
      - To enter digits into the grid, click on a cell and use either the number keys on the keyboard or the number buttons at the bottom of the page
      - To move around the grid, you can click each cell or use WASD, the arrow keys, or tab
-     - To delete digits, select the cell and press either backspace or delete. You can also press the "Reset" button to delete all digits
+     - To delete digits, select the cell and press either backspace or delete. You can also press the "Clear All" button to delete all digits
 
 5. **View Results:**
    - Click the "Solve Puzzle" button to let the program solve the Sudoku puzzle
