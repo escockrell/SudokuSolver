@@ -1213,7 +1213,7 @@ public class Solver {
                             }
                         }
                         if (tempCount == 2) {
-                            twoOptionCell[i] = true;
+                            twoOptionCell[j] = true;
                         }
                     }
                 }
@@ -5029,15 +5029,17 @@ public class Solver {
                     if (isTwoOption[i][j] == true) {
                         A = numbers[i][j][0];
                         B = numbers[i][j][1];
+                        centerWingGroup = determineGroup(i, j);
                         
                         // go down the row to see if there is another two option cell
                         // that can be a wing cell
                         for (int q = 0; q < 9 && !yWingChangesMade && !solved; q++) { // column number
                             rowWingColumn = -1;
+                            int tempGroup = determineGroup(i, q);
                             isRowWing_AC = false;
                             isRowWing_BC = false;
                                                         
-                            if (isTwoOption[i][q] == true && q != j) {
+                            if (isTwoOption[i][q] == true && q != j && tempGroup != centerWingGroup) {
                                 if (numbers[i][q][0] == A && numbers[i][q][1] != B) {
                                     rowWingColumn = q;
                                     C = numbers[i][q][1];
@@ -5061,7 +5063,9 @@ public class Solver {
                                     columnWingRow = -1;
                                     
                                     for (int r = 0; r < 9 && !yWingChangesMade && !solved; r++) { // row number
-                                        if (isTwoOption[r][j] == true && r != i) {
+                                        tempGroup = determineGroup(r, j);
+
+                                        if (isTwoOption[r][j] == true && r != i && tempGroup != centerWingGroup) {
                                             // check to see if the column wing is equal to the opposite config of the row wing
                                             // case 1) Row Wing = AC, is Column Wing = BC?
                                             // case 2) Row Wing = BC, is Column Wing = AC?
@@ -5166,10 +5170,11 @@ public class Solver {
                         for (int q = 0; q < 9 && !yWingChangesMade && !solved; q++) { // column number
                             rowWingColumn = -1;
                             rowWingGroup = -1;
+                            int tempGroup = determineGroup(i, q);
                             isRowWing_AC = false;
                             isRowWing_BC = false;
                                                         
-                            if (isTwoOption[i][q] == true && q != j) {
+                            if (isTwoOption[i][q] == true && q != j && tempGroup != centerWingGroup) {
                                 if (numbers[i][q][0] == A && numbers[i][q][1] != B) {
                                     rowWingColumn = q;
                                     rowWingGroup = determineGroup(i, q);
@@ -5332,10 +5337,11 @@ public class Solver {
                         for (int q = 0; q < 9 && !yWingChangesMade && !solved; q++) { // row number
                             columnWingRow = -1;
                             columnWingGroup = -1;
+                            int tempGroup = determineGroup(q, j);
                             isColumnWing_AC = false;
                             isColumnWing_BC = false;
                                                         
-                            if (isTwoOption[q][j] == true && q != i) {
+                            if (isTwoOption[q][j] == true && q != i && tempGroup != centerWingGroup) {
                                 if (numbers[q][j][0] == A && numbers[q][j][1] != B) {
                                     columnWingRow = q;
                                     columnWingGroup = determineGroup(q, j);
@@ -5739,9 +5745,9 @@ public class Solver {
             }
             // Run previous methods to see if the puzzle can be solved
             tempChanges += levelZeroMethods(game, possible, Rows, Columns, Groups, false, isBruteForce);
-            if (!tempSolved) {
+            if (!isSolved(game)) {
                 tempChanges += levelOneMethods(game, possible, Rows, Columns, Groups, false, isBruteForce);
-                if (!tempSolved) {
+                if (!isSolved(game)) {
                     tempChanges += levelTwoMethods(game, possible, Rows, Columns, Groups, false, isBruteForce);
                 }
             }
