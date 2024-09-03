@@ -5012,6 +5012,7 @@ public class Solver {
         boolean isRowWing_AC;
         boolean isRowWing_BC;
         int columnWingRow;
+        int centerWingGroup;
         boolean yWingChangesMade;
         String description;
         
