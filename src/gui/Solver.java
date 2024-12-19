@@ -5619,7 +5619,14 @@ public class Solver {
                                     updateShadowPossible(tempOptions[currentOption], i, j, clonePossible, cloneRows, cloneColumns, cloneGroups, true, isBruteForce);
                                     
                                     // solve the puzzle as much as possible using all previous methods
-                                    levelTwoMethods(cloneGames[currentOption], clonePossible, cloneRows, cloneColumns, cloneGroups, true, isBruteForce);
+                                    levelZeroMethods(cloneGames[currentOption], clonePossible, cloneRows, cloneColumns, cloneGroups, true, isBruteForce);
+                                    if (!isSolved(cloneGames[currentOption])) {
+                                        levelOneMethods(cloneGames[currentOption], clonePossible, cloneRows, cloneColumns, cloneGroups, true, isBruteForce);
+                                        if (!isSolved(cloneGames[currentOption])) {
+                                            levelTwoMethods(cloneGames[currentOption], clonePossible, cloneRows, cloneColumns, cloneGroups, true, isBruteForce);
+                                        }
+                                    }
+                                    
                                     
                                     // check to see if this guess solved the puzzle
                                     if (isSolved(cloneGames[currentOption])) {
