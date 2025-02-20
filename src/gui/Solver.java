@@ -6,9 +6,9 @@
 package gui;
 
 import java.util.*;
-import com.opencsv.CSVWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+// import com.opencsv.CSVWriter;
+// import java.io.FileWriter;
+// import java.io.IOException;
 
 public class Solver {
     private static int[][] solveGame;
@@ -57,29 +57,29 @@ public class Solver {
     public static int bruteForceChanges = 0;
     
     public static int totalChangeCount = 0;
-    public static ArrayList totalChangeType = new ArrayList(200);
+    public static ArrayList<String> totalChangeType = new ArrayList<>(200);
     public static int mainChangeCount = 0;
     public static int possibleChangeCount = 0;
     public static int mainChangePossibleCount = 0;
     public static int possibleChangePossibleCount = 0;
     
-    public static ArrayList mainChangeMethod = new ArrayList(81);
-    public static ArrayList mainChangeDescription = new ArrayList(81);
-    public static ArrayList mainChangeNumber = new ArrayList(81);
-    public static ArrayList mainChangeRow = new ArrayList(81);
-    public static ArrayList mainChangeColumn = new ArrayList(81);
+    public static ArrayList<String> mainChangeMethod = new ArrayList<>(81);
+    public static ArrayList<String> mainChangeDescription = new ArrayList<>(81);
+    public static ArrayList<String> mainChangeNumber = new ArrayList<>(81);
+    public static ArrayList<Integer> mainChangeRow = new ArrayList<>(81);
+    public static ArrayList<Integer> mainChangeColumn = new ArrayList<>(81);
     
-    public static ArrayList mainChangePossibleOrder = new ArrayList(729);
-    public static ArrayList mainChangePossibleNumber = new ArrayList(729);
-    public static ArrayList mainChangePossibleRow = new ArrayList(729);
-    public static ArrayList mainChangePossibleColumn = new ArrayList(729);
+    public static ArrayList<Integer> mainChangePossibleOrder = new ArrayList<>(729);
+    public static ArrayList<Integer> mainChangePossibleNumber = new ArrayList<>(729);
+    public static ArrayList<Integer> mainChangePossibleRow = new ArrayList<>(729);
+    public static ArrayList<Integer> mainChangePossibleColumn = new ArrayList<>(729);
     
-    public static ArrayList possibleChangeMethod = new ArrayList(200);
-    public static ArrayList possibleChangeDescription = new ArrayList(200);
-    public static ArrayList possibleChangeOrder = new ArrayList(200);
-    public static ArrayList possibleChangeNumber = new ArrayList(200);
-    public static ArrayList possibleChangeRow = new ArrayList(200);
-    public static ArrayList possibleChangeColumn = new ArrayList(200);
+    public static ArrayList<String> possibleChangeMethod = new ArrayList<>(200);
+    public static ArrayList<String> possibleChangeDescription = new ArrayList<>(200);
+    public static ArrayList<Integer> possibleChangeOrder = new ArrayList<>(200);
+    public static ArrayList<Integer> possibleChangeNumber = new ArrayList<>(200);
+    public static ArrayList<Integer> possibleChangeRow = new ArrayList<>(200);
+    public static ArrayList<Integer> possibleChangeColumn = new ArrayList<>(200);
     
     
     private static final int[] ROW_START = {0,0,0,3,3,3,6,6,6};
@@ -2127,8 +2127,7 @@ public class Solver {
                                         if (number1Changes > 0) {
                                             description = description + "\nNumber " + (number1+1) + ": ";
                                             for (int s = 0; s < number1Changes; s++) {
-                                                description = description + "\nRow " + (rowsChanged1[s]+1) + ", Column "
-                                                        + (columnsChanged1[s]+1);
+                                                description = description + "\nRow " + (rowsChanged1[s]+1) + ", Column " + (columnsChanged1[s]+1);
                                                 possibleChangeOrder.add(possibleChangeCount);
                                                 possibleChangeNumber.add(number1+1);
                                                 possibleChangeRow.add(rowsChanged1[s]);
@@ -2138,10 +2137,9 @@ public class Solver {
                                         }
 
                                         if (number2Changes > 0) {
-                                            description = description + "\nNumber " + (number2+1) + ": ";
+                                            description = description + "\nNumber " + (number2+1) + ":";
                                             for (int s = 0; s < number2Changes; s++) {
-                                                description = description + "\nRow " + (rowsChanged2[s]+1) + ", Column "
-                                                        + (columnsChanged2[s]+1);
+                                                description = description + "\nRow " + (rowsChanged2[s]+1) + ", Column " + (columnsChanged2[s]+1);
                                                 possibleChangeOrder.add(possibleChangeCount);
                                                 possibleChangeNumber.add(number2+1);
                                                 possibleChangeRow.add(rowsChanged2[s]);
@@ -5918,31 +5916,33 @@ public class Solver {
         bruteForceChanges = 0;
 
         totalChangeCount = 0;
-        totalChangeType = new ArrayList(200);
+        totalChangeType = new ArrayList<>(200);
         mainChangeCount = 0;
         possibleChangeCount = 0;
         mainChangePossibleCount = 0;
         possibleChangePossibleCount = 0;
 
-        mainChangeMethod = new ArrayList(81);
-        mainChangeDescription = new ArrayList(81);
-        mainChangeNumber = new ArrayList(81);
-        mainChangeRow = new ArrayList(81);
-        mainChangeColumn = new ArrayList(81);
+        mainChangeMethod = new ArrayList<>(81);
+        mainChangeDescription = new ArrayList<>(81);
+        mainChangeNumber = new ArrayList<>(81);
+        mainChangeRow = new ArrayList<>(81);
+        mainChangeColumn = new ArrayList<>(81);
 
-        mainChangePossibleOrder = new ArrayList(729);
-        mainChangePossibleNumber = new ArrayList(729);
-        mainChangePossibleRow = new ArrayList(729);
-        mainChangePossibleColumn = new ArrayList(729);
+        mainChangePossibleOrder = new ArrayList<>(729);
+        mainChangePossibleNumber = new ArrayList<>(729);
+        mainChangePossibleRow = new ArrayList<>(729);
+        mainChangePossibleColumn = new ArrayList<>(729);
 
-        possibleChangeMethod = new ArrayList(200);
-        possibleChangeDescription = new ArrayList(200);
-        possibleChangeOrder = new ArrayList(200);
-        possibleChangeNumber = new ArrayList(200);
-        possibleChangeRow = new ArrayList(200);
-        possibleChangeColumn = new ArrayList(200);
+        possibleChangeMethod = new ArrayList<>(200);
+        possibleChangeDescription = new ArrayList<>(200);
+        possibleChangeOrder = new ArrayList<>(200);
+        possibleChangeNumber = new ArrayList<>(200);
+        possibleChangeRow = new ArrayList<>(200);
+        possibleChangeColumn = new ArrayList<>(200);
     }
     
+    // Save change log data to CSV files
+    /*
     public static void saveTotalChangeTypeToCSV() {
         String filePath = "Puzzle_3_Results/totalChangeType.csv";
         
@@ -6348,6 +6348,6 @@ public class Solver {
             e.printStackTrace();
         }
     }
-    
+    */
 }
 

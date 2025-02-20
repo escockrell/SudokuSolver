@@ -9,8 +9,6 @@ import java.awt.*;
 import javax.swing.*;
 
 public class ResultCell extends JPanel {
-    private int row;
-    private int column;
     private boolean isNumber;
     private JLabel[] possible = new JLabel[9];
     private JLabel number = new JLabel();
@@ -19,8 +17,6 @@ public class ResultCell extends JPanel {
     private Font numberFontStart = new Font("Arial", Font.BOLD, 35);
     
     public ResultCell(int r, int c) {
-        row = r;
-        column = c;
         isNumber = false;
         
         setLayout(new GridLayout(3, 3, 1, 1));
