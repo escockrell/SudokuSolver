@@ -1,0 +1,65 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+}
+
+.input-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.input-page h1 {
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sudoku-grid {
+  margin: 0 auto;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sudoku-cell {
+  width: 45px;
+  height: 45px;
+  border: 1px solid #ddd;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.sudoku-cell:focus {
+  background-color: #f0f8ff;
+  border-color: #4a90e2;
+}
+
+.sudoku-cell.starting-number {
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.grid-row:nth-child(3n) {
+  border-bottom: 2px solid #2c3e50;
+}
+
+.sudoku-cell:nth-child(3n) {
+  border-right: 2px solid #2c3e50;
+}
+
+/* Remove the double border on the bottom of the grid */
+.grid-row:last-child {
+  border-bottom: none;
+}
+
+/* Remove the double border on the right of the grid */
+.sudoku-cell:last-child {
+  border-right: 1px solid #ddd;
+} 

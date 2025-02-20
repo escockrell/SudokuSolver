@@ -1,0 +1,25 @@
+.sudoku-grid {
+  display: inline-block;
+  border: 2px solid #000;
+  padding: 2px;
+}
+
+.grid-row {
+  display: flex;
+}
+
+.grid-row:nth-child(3n) {
+  border-bottom: 2px solid #000;
+}
+
+.grid-row:last-child {
+  border-bottom: none;
+}
+
+.sudoku-cell:nth-child(3n) {
+  border-right: 2px solid #000;
+}
+
+.sudoku-cell:last-child {
+  border-right: 1px solid #ccc;
+} 
