@@ -89,7 +89,7 @@ public class Frame extends JFrame {
         game = new Cell[9][9];
         intGame = new int[9][9];
         pane = new Background();
-        resultPane.setDefaultLabel();
+        Results.setDefaultLabel();
         topLabel.setText("Enter all of the numbers provided by the unsolved puzzle");
         currentStage = "puzzleInput";
         
@@ -112,7 +112,7 @@ public class Frame extends JFrame {
     
     public static void main(String[] arguments) {
         Frame.setLookAndFeel();
-        Frame frame = new Frame();
+        new Frame();
     }
    
 }

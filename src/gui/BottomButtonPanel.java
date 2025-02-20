@@ -26,7 +26,7 @@ public class BottomButtonPanel extends JPanel implements ActionListener, FocusLi
     @Override
     public void actionPerformed(ActionEvent event) {
         JButton source = (JButton) event.getSource();
-        boolean flag = false;
+        
         if (source != buttonPanel[9]) {
             Frame.game[Frame.currentXIndex][Frame.currentYIndex].setValue(source.getText());
             Frame.game[Frame.currentXIndex][Frame.currentYIndex].setText(source.getText());
