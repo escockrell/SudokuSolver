@@ -33,11 +33,18 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transition: all 0.2s ease;
   outline: none;
+  cursor: pointer;
+  caret-color: transparent; /* Hides the text cursor */
+  background-color: white;  /* Explicit default background */
 }
 
 .sudoku-cell:focus {
-  background-color: #f0f8ff;
+  background-color: #fff7b2 !important; /* Use !important to ensure focus always shows yellow */
   border-color: #4a90e2;
+}
+
+.sudoku-cell:hover:not(:focus) {
+  background-color: #f5f5f5;
 }
 
 .sudoku-cell.starting-number {

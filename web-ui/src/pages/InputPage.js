@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SudokuGrid from '../components/SudokuGrid';
-//import ControlPanel from '../components/ControlPanel';
+import ControlPanel from '../components/ControlPanel';
+import { solvePuzzle } from '../services/SolverService';
 
 const InputPage = () => {
   const navigate = useNavigate();
@@ -18,10 +19,35 @@ const InputPage = () => {
     setStartingNumbers(newStartingNumbers);
   };
 
-  const handleSolve = () => {
-    // TODO: Call Java solver service
-    // For now, just navigate to results page with current grid
-    navigate('/results', { state: { grid, startingNumbers } });
+  const handleReset = () => {
+    setGrid(Array(9).fill().map(() => Array(9).fill('')));
+    setStartingNumbers(Array(9).fill().map(() => Array(9).fill(false)));
+  };
+
+  const handleSolve = async () => {
+    try {
+      // Convert grid to format expected by solver
+      const puzzleInput = grid.map(row => 
+        row.map(cell => cell === '' ? '0' : cell).join('')
+      ).join('');
+
+      console.log("Puzzle Input: ", puzzleInput);
+
+      const response = await solvePuzzle(puzzleInput);
+      
+      // Navigate to results page with the solution
+      navigate('/results', { 
+        state: { 
+          originalGrid: grid,
+          startingNumbers,
+          solution: response.solution,
+          steps: response.steps 
+        } 
+      });
+    } catch (error) {
+      console.error('Error solving puzzle:', error);
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
@@ -32,7 +58,10 @@ const InputPage = () => {
         onCellChange={handleCellChange}
         startingNumbers={startingNumbers}
       />
-      {/*<ControlPanel onSolve={handleSolve} />*/}
+      <ControlPanel 
+        onReset={handleReset}
+        onSolve={handleSolve}
+      />
     </div>
   );
 };

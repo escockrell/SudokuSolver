@@ -1,0 +1,38 @@
+.control-panel {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.control-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.reset-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.reset-button:hover {
+  background-color: #c0392b;
+}
+
+.solve-button {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.solve-button:hover {
+  background-color: #27ae60;
+}
+
+.control-button:active {
+  transform: scale(0.95);
+} 
