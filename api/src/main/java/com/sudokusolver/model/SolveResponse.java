@@ -4,18 +4,18 @@ import java.util.List;
 
 public class SolveResponse {
     private String solution;
-    private List<String> steps;
+    private SolveMetrics metrics;
 
-    public SolveResponse(String solution, List<String> steps) {
+    public SolveResponse(String solution, SolveMetrics metrics) {
         this.solution = solution;
-        this.steps = steps;
+        this.metrics = metrics;
     }
 
     public String getSolution() {
         return solution;
     }
 
-    public List<String> getSteps() {
-        return steps;
+    public SolveMetrics getMetrics() {
+        return metrics;
     }
 } 

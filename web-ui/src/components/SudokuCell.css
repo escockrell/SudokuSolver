@@ -2,11 +2,28 @@
   width: 40px;
   height: 40px;
   text-align: center;
-  font-size: 24px;
+  font-size: 20px;
   border: 1px solid #ccc;
+  margin: 0;
+  padding: 0;
+}
+
+.sudoku-cell:focus {
+  outline: none;
+  background-color: #e8f0fe;
 }
 
 .sudoku-cell.starting-number {
   font-weight: bold;
+}
+
+.sudoku-cell.read-only {
   background-color: #f0f0f0;
+  color: #2ecc71;
+  cursor: not-allowed;
+}
+
+.sudoku-cell.read-only.starting-number {
+  background-color: #e8e8e8;
+  color: #333;
 } 

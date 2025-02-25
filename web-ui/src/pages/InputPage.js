@@ -8,6 +8,7 @@ const InputPage = () => {
   const navigate = useNavigate();
   const [grid, setGrid] = useState(Array(9).fill().map(() => Array(9).fill('')));
   const [startingNumbers, setStartingNumbers] = useState(Array(9).fill().map(() => Array(9).fill(false)));
+  const [isSolved, setIsSolved] = useState(false);
 
   const handleCellChange = (row, col, value) => {
     const newGrid = grid.map(r => [...r]);
@@ -26,27 +27,30 @@ const InputPage = () => {
 
   const handleSolve = async () => {
     try {
-      // Convert grid to format expected by solver
       const puzzleInput = grid.map(row => 
         row.map(cell => cell === '' ? '0' : cell).join('')
       ).join('');
 
-      console.log("Puzzle Input: ", puzzleInput);
-
+      console.log("Sending puzzle:", puzzleInput);
       const response = await solvePuzzle(puzzleInput);
+      console.log("Received solution:", response);
       
-      // Navigate to results page with the solution
-      navigate('/results', { 
-        state: { 
-          originalGrid: grid,
-          startingNumbers,
-          solution: response.solution,
-          steps: response.steps 
-        } 
-      });
+      // Convert solution string back to 2D array and update grid
+      const solutionGrid = [];
+      for (let i = 0; i < 9; i++) {
+        const row = [];
+        for (let j = 0; j < 9; j++) {
+          row.push(response.solution[i * 9 + j]);
+        }
+        solutionGrid.push(row);
+      }
+      setGrid(solutionGrid);
+      setIsSolved(true);
+      
+      // Store metrics for later use
+      // You can either navigate to results page or show metrics in a different way
     } catch (error) {
       console.error('Error solving puzzle:', error);
-      // You might want to show an error message to the user here
     }
   };
 
@@ -57,10 +61,12 @@ const InputPage = () => {
         grid={grid}
         onCellChange={handleCellChange}
         startingNumbers={startingNumbers}
+        isReadOnly={isSolved}
       />
       <ControlPanel 
         onReset={handleReset}
         onSolve={handleSolve}
+        isSolved={isSolved}
       />
     </div>
   );

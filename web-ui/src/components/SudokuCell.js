@@ -1,12 +1,22 @@
 import React, { forwardRef } from 'react';
 import './SudokuCell.css';
 
-const SudokuCell = forwardRef(({ value, onChange, isStartingNumber, row, col, onNavigate }, ref) => {
+const SudokuCell = forwardRef(({ 
+  value, 
+  isStartingNumber, 
+  isReadOnly,
+  onChange, 
+  row, 
+  col, 
+  onNavigate 
+}, ref) => {
   const handleKeyDown = (e) => {
+    if (isReadOnly) return; // Prevent navigation if read-only
+
     e.preventDefault(); // Prevent default for all keys
-    
+
     // Navigation keys
-    switch (e.key) {
+    switch(e.key) {
       case 'ArrowUp':
       case 'w':
       case 'W':
@@ -36,6 +46,16 @@ const SudokuCell = forwardRef(({ value, onChange, isStartingNumber, row, col, on
         if (/^[1-9]$/.test(e.key)) {
           onChange(e.key);
         }
+        break;
+    }
+  };
+
+  const handleChange = (e) => {
+    if (isReadOnly) return; // Prevent changes if read-only
+    
+    const value = e.target.value;
+    if (value === '' || (value.length === 1 && /[1-9]/.test(value))) {
+      onChange(value);
     }
   };
 
@@ -43,17 +63,12 @@ const SudokuCell = forwardRef(({ value, onChange, isStartingNumber, row, col, on
     <input
       ref={ref}
       type="text"
-      className={`sudoku-cell ${isStartingNumber ? 'starting-number' : ''}`}
-      value={value || ''}
-      onChange={(e) => {
-        const val = e.target.value;
-        // Only update if empty or single digit 1-9
-        if (val === '' || /^[1-9]$/.test(val)) {
-          onChange(val);
-        }
-      }}
+      className={`sudoku-cell ${isStartingNumber ? 'starting-number' : ''} ${isReadOnly ? 'read-only' : ''}`}
+      value={value}
+      onChange={handleChange}
       onKeyDown={handleKeyDown}
-      maxLength={1}
+      maxLength="1"
+      readOnly={isReadOnly}
     />
   );
 });

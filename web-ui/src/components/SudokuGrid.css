@@ -22,4 +22,16 @@
 
 .sudoku-cell:last-child {
   border-right: 1px solid #ccc;
+}
+
+.grid-cell.read-only {
+  background-color: #f0f0f0;
+  color: #2ecc71; /* Green color for solved numbers */
+  cursor: not-allowed;
+}
+
+.grid-cell.read-only.starting-number {
+  background-color: #e8e8e8;
+  color: #333; /* Keep original numbers in dark color */
+  font-weight: bold;
 } 
