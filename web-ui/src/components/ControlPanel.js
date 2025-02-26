@@ -1,7 +1,7 @@
 import React from 'react';
 import './ControlPanel.css';
 
-const ControlPanel = ({ onReset, onSolve, isSolved }) => {
+const ControlPanel = ({ onReset, onSolve, onViewResults, onViewChanges, isSolved }) => {
   return (
     <div className="control-panel">
       <button 
@@ -19,12 +19,20 @@ const ControlPanel = ({ onReset, onSolve, isSolved }) => {
         </button>
       )}
       {isSolved && (
-        <button 
-          className="control-button details-button" 
-          onClick={() => window.location.href = '/results'}
-        >
-          View Details
-        </button>
+        <>
+          <button 
+            className="control-button details-button" 
+            onClick={onViewResults}
+          >
+            View Results
+          </button>
+          <button 
+            className="control-button changes-button" 
+            onClick={onViewChanges}
+          >
+            View Changes
+          </button>
+        </>
       )}
     </div>
   );

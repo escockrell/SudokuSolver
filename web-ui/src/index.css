@@ -1,16 +1,16 @@
-html, body, #root {
-  height: 100vh;
+html, body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 body {
-  display: flex;
-  flex-direction: column;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  overflow-y: auto;
 }
 
 #root {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -19,7 +19,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
   padding: 20px;
   box-sizing: border-box;
 } 

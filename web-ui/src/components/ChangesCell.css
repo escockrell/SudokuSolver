@@ -1,0 +1,57 @@
+.changes-cell {
+  aspect-ratio: 1;
+  width: 45px;
+  height: 45px;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+}
+
+.changes-cell.highlighted {
+  background-color: #fff7b2;
+}
+
+.changes-cell.starting-number {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.cell-value {
+  font-size: 24px;
+}
+
+.possible-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  font-size: 11px;
+  padding: 2px;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.possible-number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #666;
+  font-size: 10px;
+  line-height: 1;
+  padding: 1px;
+}
+
+.possible-number.hidden {
+  display: none;
+}
+
+.possible-number.highlighted {
+  color: #e74c3c;
+  font-weight: bold;
+} 

@@ -3,6 +3,7 @@ package com.sudokusolver.model;
 import java.util.List;
 
 public class SolveMetrics {
+    private boolean isSolved;
     private int levelZeroChanges;
     private int oneInARowChanges;
     private int oneInAColumnChanges;
@@ -59,6 +60,7 @@ public class SolveMetrics {
     private List<Integer> possibleChangeColumn;
 
     public SolveMetrics(
+            boolean isSolved,
             int levelZeroChanges,
             int oneInARowChanges,
             int oneInAColumnChanges,
@@ -113,6 +115,7 @@ public class SolveMetrics {
             List<Integer> possibleChangeNumber,
             List<Integer> possibleChangeRow,
             List<Integer> possibleChangeColumn) {
+        this.isSolved = isSolved;
         this.levelZeroChanges = levelZeroChanges;
         this.oneInARowChanges = oneInARowChanges;
         this.oneInAColumnChanges = oneInAColumnChanges;
@@ -170,6 +173,7 @@ public class SolveMetrics {
     }
 
     // Getters
+    public boolean isSolved() { return isSolved; }
     public int getLevelZeroChanges() { return levelZeroChanges; }
     public int getOneInARowChanges() { return oneInARowChanges; }
     public int getOneInAColumnChanges() { return oneInAColumnChanges; }

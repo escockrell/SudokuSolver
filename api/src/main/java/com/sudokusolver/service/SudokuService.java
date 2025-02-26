@@ -103,6 +103,7 @@ public class SudokuService {
 
         // Collect metrics from Solver's static fields
         SolveMetrics metrics = new SolveMetrics(
+            Solver.solved,
             Solver.levelZeroChanges,
             Solver.oneInARowChanges,
             Solver.oneInAColumnChanges,

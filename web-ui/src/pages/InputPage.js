@@ -1,16 +1,31 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import SudokuGrid from '../components/SudokuGrid';
 import ControlPanel from '../components/ControlPanel';
 import { solvePuzzle } from '../services/SolverService';
 import './InputPage.css';
 
 const InputPage = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [grid, setGrid] = useState(Array(9).fill().map(() => Array(9).fill('')));
-  const [startingNumbers, setStartingNumbers] = useState(Array(9).fill().map(() => Array(9).fill(false)));
-  const [isSolved, setIsSolved] = useState(false);
+  
+  // Initialize state with location state if available
+  const [grid, setGrid] = useState(() => {
+    return location.state?.grid || Array(9).fill().map(() => Array(9).fill(''));
+  });
+  
+  const [startingNumbers, setStartingNumbers] = useState(() => {
+    return location.state?.startingNumbers || Array(9).fill().map(() => Array(9).fill(false));
+  });
+  
+  const [isSolved, setIsSolved] = useState(() => {
+    return location.state?.isSolved || false;
+  });
+  
   const [error, setError] = useState(null);
+  const [solutionData, setSolutionData] = useState(() => {
+    return location.state?.solutionData || null;
+  });
 
   // Helper function to check if array has duplicates (ignoring empty cells)
   const hasDuplicates = (arr) => {
@@ -107,9 +122,8 @@ const InputPage = () => {
   };
 
   const handleSolve = async () => {
-    // Validate puzzle before sending to API
     if (!validatePuzzle()) {
-      return; // Stop if validation fails
+      return;
     }
 
     try {
@@ -120,20 +134,45 @@ const InputPage = () => {
       console.log("Sending puzzle:", puzzleInput);
       const response = await solvePuzzle(puzzleInput);
       console.log("Received solution:", response);
+      console.log("Solution string:", response.solution);
       
+      // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];
       for (let i = 0; i < 9; i++) {
-        const row = [];
-        for (let j = 0; j < 9; j++) {
-          row.push(response.solution[i * 9 + j]);
-        }
+        const row = response.solution.slice(i * 9, (i + 1) * 9).split('');
         solutionGrid.push(row);
       }
+      console.log("Solution grid:", solutionGrid);
+      
+      // Create deep copy of original grid before setting solution
+      const originalGridCopy = grid.map(row => [...row]);
+      
       setGrid(solutionGrid);
       setIsSolved(true);
+      
+      // Store solution data for later use
+      setSolutionData({
+        originalGrid: originalGridCopy,
+        startingNumbers: startingNumbers.map(row => [...row]),
+        solution: solutionGrid,
+        metrics: response.metrics,
+        changes: response.changes
+      });
     } catch (error) {
       console.error('Error solving puzzle:', error);
       setError('Error solving puzzle. Please try again.');
+    }
+  };
+
+  const handleViewResults = () => {
+    if (solutionData) {
+      navigate('/results', { state: solutionData });
+    }
+  };
+
+  const handleViewChanges = () => {
+    if (solutionData) {
+      navigate('/changes', { state: solutionData });
     }
   };
 
@@ -150,6 +189,8 @@ const InputPage = () => {
       <ControlPanel 
         onReset={handleReset}
         onSolve={handleSolve}
+        onViewResults={handleViewResults}
+        onViewChanges={handleViewChanges}
         isSolved={isSolved}
       />
     </div>
