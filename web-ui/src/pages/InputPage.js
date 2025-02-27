@@ -91,7 +91,7 @@ const InputPage = () => {
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
         if (hasGroupDuplicates(i, j)) {
-          setError(`Invalid puzzle: Group at position ${i + 1},${j + 1} has duplicate numbers`);
+          setError(`Invalid puzzle: Group ${3*i + j + 1} has duplicate numbers`);
           return false;
         }
       }

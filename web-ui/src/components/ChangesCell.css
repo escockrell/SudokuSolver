@@ -1,14 +1,13 @@
 .changes-cell {
-  aspect-ratio: 1;
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   background: white;
   display: flex;
   justify-content: center;
   align-items: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   box-sizing: border-box;
 }
 
@@ -22,7 +21,7 @@
 }
 
 .cell-value {
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .possible-numbers {
@@ -34,7 +33,6 @@
   font-size: 11px;
   padding: 2px;
   box-sizing: border-box;
-  background-color: white;
 }
 
 .possible-number {
@@ -48,10 +46,10 @@
 }
 
 .possible-number.hidden {
-  display: none;
+  visibility: hidden;
 }
 
 .possible-number.highlighted {
-  color: #e74c3c;
+  background-color: #fff7b2;
   font-weight: bold;
 } 

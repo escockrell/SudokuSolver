@@ -1,12 +1,7 @@
 import React from 'react';
 import './ChangesCell.css';
 
-const ChangesCell = ({ value, possibleNumbers, isHighlighted, isStartingNumber }) => {
-  // Convert possibleNumbers array to array of actual numbers that are possible
-  const actualPossibleNumbers = possibleNumbers
-    .map((isPossible, index) => isPossible ? index + 1 : null)
-    .filter(num => num !== null);
-
+const ChangesCell = ({ value, possibleNumbers, highlightedPossibles, isHighlighted, isStartingNumber }) => {
   return (
     <div className={`changes-cell ${isHighlighted ? 'highlighted' : ''} ${isStartingNumber ? 'starting-number' : ''}`}>
       {value ? (
@@ -16,7 +11,7 @@ const ChangesCell = ({ value, possibleNumbers, isHighlighted, isStartingNumber }
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
             <div 
               key={num} 
-              className={`possible-number ${actualPossibleNumbers.includes(num) ? '' : 'hidden'}`}
+              className={`possible-number ${!possibleNumbers[num - 1] ? 'hidden' : ''} ${highlightedPossibles[num - 1] ? 'highlighted' : ''}`}
             >
               {num}
             </div>
