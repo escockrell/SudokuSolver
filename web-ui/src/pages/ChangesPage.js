@@ -57,8 +57,7 @@ const ChangesPage = () => {
     currentMainChange: 0,
     currentPossibleChange: 0,
     currentPossibleChangeOrder: 0,
-    currentMainPossibleChange: 0,
-    currentMainPossibleOrder: 0
+    currentMainPossibleChange: 0
   });
 
   const [grid, setGrid] = useState(
@@ -88,6 +87,7 @@ const ChangesPage = () => {
   );
 
   const handleReset = useCallback(() => {
+    console.log("Resetting to initial state");
     setCurrentState({
       currentTotalChange: 0,
       currentChangeType: null,
@@ -134,23 +134,35 @@ const ChangesPage = () => {
       newGrid[row][col] = number;
       setGrid(newGrid);
 
-      // Remove affected possible options
-      const newPossibleNumbers = possibleNumbers.map(r => r.map(c => [...c]));
-      
-      // Remove from row, column, and box
-      for (let j = 0; j < 9; j++) {
-        newPossibleNumbers[row][j][number - 1] = false;
-        newPossibleNumbers[j][col][number - 1] = false;
+      // Count how many possible changes this main change eliminated
+      let possibleCount = 0;
+      let j = currentState.currentMainPossibleChange;
+      console.log("Setting j to:", currentState.currentMainPossibleChange);
+      while (j < metrics.mainChangePossibleOrder.length && 
+             metrics.mainChangePossibleOrder[j] === currentState.currentMainChange) {
+        possibleCount++;
+        j++;
       }
-      
-      const boxRow = Math.floor(row / 3) * 3;
-      const boxCol = Math.floor(col / 3) * 3;
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          newPossibleNumbers[boxRow + i][boxCol + j][number - 1] = false;
-        }
+      console.log("Found", possibleCount, "possible changes eliminated by main change", currentState.currentMainChange);
+
+      // Remove possible options that this main change eliminated
+      const newPossibleNumbers = possibleNumbers.map(r => r.map(c => [...c]));
+      let i = currentState.currentMainPossibleChange;  // Start from the first possible change for this main change
+      console.log("Starting removal of main change possible options from index, i:", i);
+      while (i < currentState.currentMainPossibleChange + possibleCount) {
+        const possibleRow = metrics.mainChangePossibleRow[i];
+        const possibleCol = metrics.mainChangePossibleColumn[i];
+        const possibleNum = metrics.mainChangePossibleNumber[i] - 1;
+        newPossibleNumbers[possibleRow][possibleCol][possibleNum] = false;
+        console.log("Removed possible option at index, i:", i, "for row ", possibleRow, ", column ", possibleCol, ", number ", possibleNum);
+        i++;
       }
       setPossibleNumbers(newPossibleNumbers);
+
+      setCurrentState(prev => ({
+        ...prev,
+        currentMainPossibleChange: prev.currentMainPossibleChange + possibleCount
+      }));
     }
     else if (currentState.currentChangeType === 'possible') {
       // Remove currently highlighted possible numbers
@@ -178,6 +190,7 @@ const ChangesPage = () => {
     if (currentState.currentTotalChange < metrics.totalChangeCount) {
       // Preview next change
       const nextChangeType = metrics.totalChangeType[currentState.currentTotalChange];
+      console.log("Next change type:", nextChangeType);
       
       if (nextChangeType === 'main') {
         // Highlight next main change
@@ -313,8 +326,8 @@ const ChangesPage = () => {
     console.log("\n=== PREVIOUS BUTTON PRESSED ===");
     console.log("Current state:", currentState);
 
-    // If at first change or before, just reset
-    if (currentState.currentTotalChange < 1) {
+    // If at first change, reset to initial state
+    if (currentState.currentTotalChange <= 1) {
       handleReset();
       return;
     }
@@ -366,8 +379,7 @@ const ChangesPage = () => {
       return;
     }
 
-    // Regular case handling
-    // 1. Clear current highlights
+    // Clear current highlights
     if (currentState.currentChangeType === 'main') {
       setHighlightedCells(Array(9).fill().map(() => Array(9).fill(false)));
     } else if (currentState.currentChangeType === 'possible') {
@@ -376,27 +388,25 @@ const ChangesPage = () => {
       ));
     }
 
-    // 2. Handle the previous change
-    const prevChangeType = metrics.totalChangeType[currentState.currentTotalChange - 2];
+    // Get the previous change type (use currentTotalChange - 1 since we want the current change)
+    const prevChangeType = metrics.totalChangeType[currentState.currentTotalChange - 1];
 
     if (prevChangeType === 'main') {
-      // Get the previous main change details
-      const row = metrics.mainChangeRow[currentState.currentMainChange - 2];
-      const col = metrics.mainChangeColumn[currentState.currentMainChange - 2];
-      const number = metrics.mainChangeNumber[currentState.currentMainChange - 2];
+      // Get the current main change details
+      const row = metrics.mainChangeRow[currentState.currentMainChange - 1];
+      const col = metrics.mainChangeColumn[currentState.currentMainChange - 1];
+      const number = metrics.mainChangeNumber[currentState.currentMainChange - 1];
 
       // Remove the number
       const newGrid = grid.map(r => [...r]);
       newGrid[row][col] = '';
       setGrid(newGrid);
 
-      // Restore possible numbers that were removed by this main change
+      // Restore possible options that this main change eliminated
       const newPossibleNumbers = possibleNumbers.map(r => r.map(c => [...c]));
-      
-      // Find all possible numbers that were removed by this main change
       let i = 0;
       while (i < metrics.mainChangePossibleOrder.length && 
-             metrics.mainChangePossibleOrder[i] === currentState.currentMainChange - 1) {
+             metrics.mainChangePossibleOrder[i] === currentState.currentMainChange) {
         const possibleRow = metrics.mainChangePossibleRow[i];
         const possibleCol = metrics.mainChangePossibleColumn[i];
         const possibleNum = metrics.mainChangePossibleNumber[i] - 1;
@@ -409,16 +419,25 @@ const ChangesPage = () => {
       const newHighlightedCells = Array(9).fill().map(() => Array(9).fill(false));
       newHighlightedCells[row][col] = true;
       setHighlightedCells(newHighlightedCells);
-      setChangeDescription(metrics.mainChangeDescription[currentState.currentMainChange - 2]);
+      setChangeDescription(metrics.mainChangeDescription[currentState.currentMainChange - 1]);
+
+      // Update state for main change
+      setCurrentState(prev => ({
+        ...prev,
+        currentTotalChange: prev.currentTotalChange - 1,
+        currentChangeType: metrics.totalChangeType[prev.currentTotalChange - 2], // Get the previous change type
+        previousChangeType: prev.currentTotalChange > 2 ? metrics.totalChangeType[prev.currentTotalChange - 3] : null,
+        currentMainChange: prev.currentMainChange - 1
+      }));
     }
     else if (prevChangeType === 'possible') {
-      // Get all changes for this order
-      const prevOrder = metrics.possibleChangeOrder[currentState.currentPossibleChange - 2];
+      // Get all changes for the current order
+      const currentOrder = metrics.possibleChangeOrder[currentState.currentPossibleChange - 1];
+      let i = currentState.currentPossibleChange - 1;
       const changes = [];
-      let i = currentState.currentPossibleChange - 2;
       
-      // Collect all changes with the same order
-      while (i >= 0 && metrics.possibleChangeOrder[i] === prevOrder) {
+      // Find all changes with the same order
+      while (i >= 0 && metrics.possibleChangeOrder[i] === currentOrder) {
         changes.push({
           row: metrics.possibleChangeRow[i],
           col: metrics.possibleChangeColumn[i],
@@ -426,6 +445,9 @@ const ChangesPage = () => {
         });
         i--;
       }
+
+      // Store the index where the previous group starts
+      const prevGroupStartIndex = i + 1;
 
       // Restore and highlight all changes at once
       const newPossibleNumbers = possibleNumbers.map(r => r.map(c => [...c]));
@@ -440,16 +462,15 @@ const ChangesPage = () => {
 
       setPossibleNumbers(newPossibleNumbers);
       setHighlightedPossibles(newHighlightedPossibles);
-      setChangeDescription(metrics.possibleChangeDescription[currentState.currentPossibleChangeOrder - 2]);
+      setChangeDescription(metrics.possibleChangeDescription[currentState.currentPossibleChangeOrder - 1]);
 
-      // Update state to move back by the correct number of changes
+      // Update state for possible change
       setCurrentState(prev => ({
         ...prev,
         currentTotalChange: prev.currentTotalChange - 1,
-        currentChangeType: prevChangeType,
+        currentChangeType: metrics.totalChangeType[prev.currentTotalChange - 2], // Get the previous change type
         previousChangeType: prev.currentTotalChange > 2 ? metrics.totalChangeType[prev.currentTotalChange - 3] : null,
-        currentMainChange: prev.currentMainChange,
-        currentPossibleChange: i + 1,  // Set to the first change of the previous order
+        currentPossibleChange: prevGroupStartIndex,
         currentPossibleChangeOrder: prev.currentPossibleChangeOrder - 1
       }));
     }
@@ -470,16 +491,40 @@ const ChangesPage = () => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Add all necessary checks
+      if (!location.state?.metrics || 
+          !grid || 
+          !possibleNumbers || 
+          !currentState) {
+        return;
+      }
+      
       if (e.key === 'ArrowRight') {
-        handleNext();
+        e.preventDefault();
+        if (currentState.currentTotalChange <= location.state.metrics.totalChangeCount) {
+          handleNext();
+        }
       } else if (e.key === 'ArrowLeft') {
-        handlePrevious();
+        e.preventDefault();
+        if (currentState.currentTotalChange > 0) {
+          handlePrevious();
+        }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrevious]);
+    // Only add the listener if we have all required data
+    if (location.state?.metrics && grid && possibleNumbers && currentState) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [
+    location.state, 
+    handleNext, 
+    handlePrevious, 
+    grid, 
+    possibleNumbers, 
+    currentState
+  ]);
 
   // Early return after hooks
   if (!location.state) {
