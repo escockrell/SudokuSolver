@@ -95,8 +95,7 @@ const ChangesPage = () => {
       currentMainChange: 0,
       currentPossibleChange: 0,
       currentPossibleChangeOrder: 0,
-      currentMainPossibleChange: 0,
-      currentMainPossibleOrder: 0
+      currentMainPossibleChange: 0
     });
     setGrid(location.state.originalGrid.map(row => [...row]));
     setPossibleNumbers(initializePossibleNumbers(location.state.originalGrid));
@@ -114,6 +113,18 @@ const ChangesPage = () => {
     
     console.log("\n=== NEXT BUTTON PRESSED ===");
     console.log("Current state:", currentState);
+
+    // Create a deep copy of the current state instead of a reference
+    let newState = {
+      ...currentState,  // Spread operator to create a new object
+      currentTotalChange: currentState.currentTotalChange,
+      currentChangeType: currentState.currentChangeType,
+      previousChangeType: currentState.previousChangeType,
+      currentMainChange: currentState.currentMainChange,
+      currentPossibleChange: currentState.currentPossibleChange,
+      currentPossibleChangeOrder: currentState.currentPossibleChangeOrder,
+      currentMainPossibleChange: currentState.currentMainPossibleChange
+    };
 
     // Don't proceed if we're already at the end
     if (currentState.currentTotalChange > metrics.totalChangeCount) {
@@ -159,10 +170,7 @@ const ChangesPage = () => {
       }
       setPossibleNumbers(newPossibleNumbers);
 
-      setCurrentState(prev => ({
-        ...prev,
-        currentMainPossibleChange: prev.currentMainPossibleChange + possibleCount
-      }));
+      newState.currentMainPossibleChange = currentState.currentMainPossibleChange + possibleCount;
     }
     else if (currentState.currentChangeType === 'possible') {
       // Remove currently highlighted possible numbers
@@ -204,13 +212,13 @@ const ChangesPage = () => {
         setHighlightedCells(newHighlightedCells);
         setChangeDescription(metrics.mainChangeDescription[currentState.currentMainChange]);
 
-        setCurrentState(prev => ({
-          ...prev,
+        newState = {
+          ...newState,
+          currentTotalChange: currentState.currentTotalChange + 1,
+          currentMainChange: currentState.currentMainChange + 1,
           currentChangeType: nextChangeType,
-          previousChangeType: prev.currentChangeType,
-          currentTotalChange: prev.currentTotalChange + 1,
-          currentMainChange: prev.currentMainChange + 1
-        }));
+          previousChangeType: currentState.currentChangeType  // This will be null on first click
+        };
       } 
       else if (nextChangeType === 'possible') {
         // Highlight next possible changes
@@ -240,14 +248,14 @@ const ChangesPage = () => {
         setHighlightedPossibles(newHighlightedPossibles);
         setChangeDescription(metrics.possibleChangeDescription[currentState.currentPossibleChangeOrder]);
 
-        setCurrentState(prev => ({
-          ...prev,
-          currentChangeType: nextChangeType,
-          previousChangeType: prev.currentChangeType,
-          currentTotalChange: prev.currentTotalChange + 1,
+        newState = {
+          ...newState,
+          currentTotalChange: currentState.currentTotalChange + 1,
           currentPossibleChange: i,
-          currentPossibleChangeOrder: prev.currentPossibleChangeOrder + 1
-        }));
+          currentPossibleChangeOrder: currentState.currentPossibleChangeOrder + 1,
+          currentChangeType: nextChangeType,
+          previousChangeType: currentState.currentChangeType  // This will be null on first click
+        };
       }
     } else if (currentState.currentTotalChange === metrics.totalChangeCount) {
       // This is the last change - apply it but don't preview anything
@@ -309,14 +317,17 @@ const ChangesPage = () => {
       }
 
       // Update state for the last change
-      setCurrentState(prev => ({
-        ...prev,
-        currentTotalChange: prev.currentTotalChange + 1,
-        currentChangeType: lastChangeType,  // Set the current type to the last change type
-        previousChangeType: prev.currentChangeType
-      }));
+      newState = {
+        ...newState,
+        currentTotalChange: currentState.currentTotalChange + 1,
+        currentChangeType: lastChangeType,
+        previousChangeType: currentState.currentChangeType
+      };
       setEndMainChangePossibleFlag(true);
     }
+
+    setCurrentState(newState);
+    console.log("New state:", newState);
   }, [location.state, currentState, grid, possibleNumbers, highlightedPossibles, endMainChangePossibleFlag]);
 
   const handlePrevious = useCallback(() => {
@@ -324,7 +335,19 @@ const ChangesPage = () => {
     const metrics = location.state.metrics;
 
     console.log("\n=== PREVIOUS BUTTON PRESSED ===");
-    console.log("Current state:", currentState);
+    console.log("Current state at beginning of handlePrevious:", currentState);
+
+    // Create a deep copy of the current state
+    let newState = {
+      ...currentState,
+      currentTotalChange: currentState.currentTotalChange,
+      currentChangeType: currentState.currentChangeType,
+      previousChangeType: currentState.previousChangeType,
+      currentMainChange: currentState.currentMainChange,
+      currentPossibleChange: currentState.currentPossibleChange,
+      currentPossibleChangeOrder: currentState.currentPossibleChangeOrder,
+      currentMainPossibleChange: currentState.currentMainPossibleChange
+    };
 
     // If at first change, reset to initial state
     if (currentState.currentTotalChange <= 1) {
@@ -354,28 +377,31 @@ const ChangesPage = () => {
 
         // Restore possible numbers that were removed by this main change
         const newPossibleNumbers = possibleNumbers.map(r => r.map(c => [...c]));
+        let possibleCount = 0;
         let i = metrics.mainChangePossibleOrder.length - 1;
         while (i >= 0 && metrics.mainChangePossibleOrder[i] === metrics.mainChangeCount) {
           const possibleRow = metrics.mainChangePossibleRow[i];
           const possibleCol = metrics.mainChangePossibleColumn[i];
           const possibleNum = metrics.mainChangePossibleNumber[i] - 1;
           newPossibleNumbers[possibleRow][possibleCol][possibleNum] = true;
+          possibleCount++;
           i--;
         }
         setPossibleNumbers(newPossibleNumbers);
         setChangeDescription(metrics.mainChangeDescription[metrics.mainChangeCount - 1]);
+
+        newState = {
+          ...newState,
+          currentTotalChange: metrics.totalChangeCount - 1,
+          currentChangeType: lastChangeType,
+          previousChangeType: metrics.totalChangeType[metrics.totalChangeCount - 2],
+          currentMainChange: metrics.mainChangeCount - 1,
+          currentMainPossibleChange: currentState.currentMainPossibleChange - possibleCount
+        };
       }
 
-      setCurrentState(prev => ({
-        ...prev,
-        currentTotalChange: metrics.totalChangeCount,
-        currentChangeType: lastChangeType,
-        previousChangeType: metrics.totalChangeType[metrics.totalChangeCount - 2],
-        currentMainChange: metrics.mainChangeCount,
-        currentPossibleChange: metrics.possibleChangeCount,
-        currentPossibleChangeOrder: metrics.possibleChangeDescription.length
-      }));
       setEndMainChangePossibleFlag(false);
+      setCurrentState(newState);
       return;
     }
 
@@ -388,7 +414,7 @@ const ChangesPage = () => {
       ));
     }
 
-    // Get the previous change type (use currentTotalChange - 1 since we want the current change)
+    // Get the previous change type
     const prevChangeType = metrics.totalChangeType[currentState.currentTotalChange - 1];
 
     if (prevChangeType === 'main') {
@@ -421,14 +447,14 @@ const ChangesPage = () => {
       setHighlightedCells(newHighlightedCells);
       setChangeDescription(metrics.mainChangeDescription[currentState.currentMainChange - 1]);
 
-      // Update state for main change
-      setCurrentState(prev => ({
-        ...prev,
-        currentTotalChange: prev.currentTotalChange - 1,
-        currentChangeType: metrics.totalChangeType[prev.currentTotalChange - 2], // Get the previous change type
-        previousChangeType: prev.currentTotalChange > 2 ? metrics.totalChangeType[prev.currentTotalChange - 3] : null,
-        currentMainChange: prev.currentMainChange - 1
-      }));
+      newState = {
+        ...newState,
+        currentTotalChange: currentState.currentTotalChange - 1,
+        currentChangeType: metrics.totalChangeType[currentState.currentTotalChange - 2],
+        previousChangeType: currentState.currentTotalChange > 2 ? 
+          metrics.totalChangeType[currentState.currentTotalChange - 3] : null,
+        currentMainChange: currentState.currentMainChange - 1
+      };
     }
     else if (prevChangeType === 'possible') {
       // Get all changes for the current order
@@ -464,18 +490,19 @@ const ChangesPage = () => {
       setHighlightedPossibles(newHighlightedPossibles);
       setChangeDescription(metrics.possibleChangeDescription[currentState.currentPossibleChangeOrder - 1]);
 
-      // Update state for possible change
-      setCurrentState(prev => ({
-        ...prev,
-        currentTotalChange: prev.currentTotalChange - 1,
-        currentChangeType: metrics.totalChangeType[prev.currentTotalChange - 2], // Get the previous change type
-        previousChangeType: prev.currentTotalChange > 2 ? metrics.totalChangeType[prev.currentTotalChange - 3] : null,
+      newState = {
+        ...newState,
+        currentTotalChange: currentState.currentTotalChange - 1,
+        currentChangeType: metrics.totalChangeType[currentState.currentTotalChange - 2],
+        previousChangeType: currentState.currentTotalChange > 2 ? 
+          metrics.totalChangeType[currentState.currentTotalChange - 3] : null,
         currentPossibleChange: prevGroupStartIndex,
-        currentPossibleChangeOrder: prev.currentPossibleChangeOrder - 1
-      }));
+        currentPossibleChangeOrder: currentState.currentPossibleChangeOrder - 1
+      };
     }
 
     setEndMainChangePossibleFlag(false);
+    setCurrentState(newState);
   }, [location.state, currentState, grid, possibleNumbers, handleReset]);
 
   useEffect(() => {
