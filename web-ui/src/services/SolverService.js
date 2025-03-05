@@ -1,13 +1,13 @@
-const API_BASE_URL = 'http://localhost:8080';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
-export const solvePuzzle = async (puzzleInput) => {
+export const solvePuzzle = async (puzzle) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/solve`, {
+    const response = await fetch(`${API_URL}/api/solve`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ puzzle: puzzleInput }),
+      body: JSON.stringify({ puzzle }),
     });
     
     if (!response.ok) {
