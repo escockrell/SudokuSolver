@@ -2,6 +2,7 @@ package com.sudokusolver.service;
 
 import com.sudokusolver.model.SolveResponse;
 import com.sudokusolver.model.SolveMetrics;
+import com.sudokusolver.gui.Frame;
 import com.sudokusolver.gui.Solver;
 import com.sudokusolver.gui.Cell;
 import org.springframework.stereotype.Service;
