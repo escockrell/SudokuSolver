@@ -5931,5 +5931,415 @@ public class Solver {
         possibleChangeNumber = new ArrayList<>(200);
         possibleChangeRow = new ArrayList<>(200);
         possibleChangeColumn = new ArrayList<>(200);
-    }   
+    }
+    
+    // Save change log data to CSV files
+    /*
+    public static void saveTotalChangeTypeToCSV() {
+        String filePath = "Puzzle_3_Results/totalChangeType.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < totalChangeType.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(totalChangeType.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void saveMainChangeNumberToCSV() {
+        String filePath = "Puzzle_3_Results/mainChangeNumber.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < mainChangeNumber.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(mainChangeNumber.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void saveMainChangeRowToCSV() {
+        String filePath = "Puzzle_3_Results/mainChangeRow.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < mainChangeRow.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(mainChangeRow.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void saveMainChangeColumnToCSV() {
+        String filePath = "Puzzle_3_Results/mainChangeColumn.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < mainChangeColumn.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(mainChangeColumn.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void saveMainChangePossibleOrderToCSV() {
+        String filePath = "Puzzle_3_Results/mainChangePossibleOrder.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < mainChangePossibleOrder.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(mainChangePossibleOrder.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void saveMainChangePossibleNumberToCSV() {
+        String filePath = "Puzzle_3_Results/mainChangePossibleNumber.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < mainChangePossibleNumber.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(mainChangePossibleNumber.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void saveMainChangePossibleRowToCSV() {
+        String filePath = "Puzzle_3_Results/mainChangePossibleRow.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < mainChangePossibleRow.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(mainChangePossibleRow.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void saveMainChangePossibleColumnToCSV() {
+        String filePath = "Puzzle_3_Results/mainChangePossibleColumn.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < mainChangePossibleColumn.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(mainChangePossibleColumn.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void savePossibleChangeOrderToCSV() {
+        String filePath = "Puzzle_3_Results/possibleChangeOrder.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < possibleChangeOrder.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(possibleChangeOrder.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void savePossibleChangeNumberToCSV() {
+        String filePath = "Puzzle_3_Results/possibleChangeNumber.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < possibleChangeNumber.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(possibleChangeNumber.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void savePossibleChangeRowToCSV() {
+        String filePath = "Puzzle_3_Results/possibleChangeRow.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < possibleChangeRow.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(possibleChangeRow.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void savePossibleChangeColumnToCSV() {
+        String filePath = "Puzzle_3_Results/possibleChangeColumn.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < possibleChangeNumber.size(); i++) {
+                String[] rowData = {String.valueOf(i), String.valueOf(possibleChangeColumn.get(i))};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void saveMainChangeLogToCSV() {
+        String filePath = "Puzzle_3_Results/mainChangeLog.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < mainChangeMethod.size(); i++) {
+                String[] rowData = {String.valueOf(i), (String) mainChangeMethod.get(i), (String) mainChangeDescription.get(i)};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void savePossibleChangeLogToCSV() {
+        String filePath = "Puzzle_3_Results/possibleChangeLog.csv";
+        
+        try {
+            // Create a FileWriter and a CSVWriter
+            FileWriter fileWriter = new FileWriter(filePath);
+            CSVWriter csvWriter = new CSVWriter(fileWriter);
+            
+            // Create a list to hold the data
+            List<String[]> data = new ArrayList<>();
+            
+            // Iterate through the ArrayList and add index and value to the data list
+            for (int i = 0; i < possibleChangeMethod.size(); i++) {
+                String[] rowData = {String.valueOf(i), (String) possibleChangeMethod.get(i), (String) possibleChangeDescription.get(i)};
+                data.add(rowData);
+            }
+            
+            // Write the data to the CSV file
+            csvWriter.writeAll(data);
+            
+            // Close the CSVWriter
+            csvWriter.close();
+            
+            System.out.println("Data written to " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    */
 }
+
