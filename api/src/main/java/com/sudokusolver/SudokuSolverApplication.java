@@ -22,7 +22,8 @@ public class SudokuSolverApplication {
                         .allowedOrigins(
                             "http://localhost:3000",
                             "https://sudoku-solver-api-upte.onrender.com",
-                            "https://sudoku-solver-web.onrender.com"
+                            "https://sudoku-solver-web.onrender.com",
+                            "https://www.ethancockrell.me"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
             }
