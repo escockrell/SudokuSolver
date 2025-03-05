@@ -1,7 +1,5 @@
 package com.sudokusolver.gui;
 
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 
 public class Cell extends JButton {

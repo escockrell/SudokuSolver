@@ -1,7 +1,5 @@
 package com.sudokusolver.model;
 
-import java.util.List;
-
 public class SolveResponse {
     private String solution;
     private SolveMetrics metrics;
