@@ -81,7 +81,6 @@ public class SudokuService {
                 int value = Character.getNumericValue(puzzleInput.charAt(i * 9 + j));
                 cellGrid[i][j] = new Cell(i, j);
                 if (value != 0) {
-                    cellGrid[i][j].setText(String.valueOf(value));
                     cellGrid[i][j].setValue(value);
                 }
             }

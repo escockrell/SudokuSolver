@@ -1,6 +1,11 @@
 package com.sudokusolver.gui;
 
-public class Cell {
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+public class Cell extends JButton {
+    
     private int xIndex;
     private int yIndex;
     private int value = 0;

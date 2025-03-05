@@ -104,15 +104,6 @@ public class Solver {
         return solveGame;
     }
     
-    public static void updateFrame(int game[][]) {
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                if (game[i][j] != 0)
-                    Frame.game[i][j].setText(Integer.toString(game[i][j]));
-            }
-        }
-    }
-    
     public static void updateSolved(int game[][]) {
         int count = 0;
         for (int i = 0; i < 9; i++) {
