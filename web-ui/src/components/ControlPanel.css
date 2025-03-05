@@ -7,12 +7,16 @@
 
 .control-button {
   padding: 10px 20px;
-  font-size: 16px;
+  font-size: 1em;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.control-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .reset-button {
@@ -20,7 +24,7 @@
   color: white;
 }
 
-.reset-button:hover {
+.reset-button:hover:not(:disabled) {
   background-color: #c0392b;
 }
 
@@ -29,8 +33,26 @@
   color: white;
 }
 
-.solve-button:hover {
+.solve-button:hover:not(:disabled) {
   background-color: #27ae60;
+}
+
+.details-button {
+  background-color: #3498db;
+  color: white;
+}
+
+.details-button:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.changes-button {
+  background-color: #9b59b6;
+  color: white;
+}
+
+.changes-button:hover:not(:disabled) {
+  background-color: #8e44ad;
 }
 
 .control-button:active {

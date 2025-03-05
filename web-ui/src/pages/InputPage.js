@@ -5,6 +5,13 @@ import ControlPanel from '../components/ControlPanel';
 import { solvePuzzle } from '../services/SolverService';
 import './InputPage.css';
 
+const LoadingOverlay = () => (
+  <div className="loading-overlay">
+    <div className="loading-spinner"></div>
+    <div className="loading-text">Solving puzzle...</div>
+  </div>
+);
+
 const InputPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,6 +30,7 @@ const InputPage = () => {
   });
   
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [solutionData, setSolutionData] = useState(() => {
     return location.state?.solutionData || null;
   });
@@ -126,15 +134,15 @@ const InputPage = () => {
       return;
     }
 
+    setIsLoading(true);
+    setError(null);
+
     try {
       const puzzleInput = grid.map(row => 
         row.map(cell => cell === '' ? '0' : cell).join('')
       ).join('');
 
-      // console.log("Sending puzzle:", puzzleInput);
       const response = await solvePuzzle(puzzleInput);
-      // console.log("Received solution:", response);
-      // console.log("Solution string:", response.solution);
       
       // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];
@@ -142,7 +150,6 @@ const InputPage = () => {
         const row = response.solution.slice(i * 9, (i + 1) * 9).split('');
         solutionGrid.push(row);
       }
-      // console.log("Solution grid:", solutionGrid);
       
       // Create deep copy of original grid before setting solution
       const originalGridCopy = grid.map(row => [...row]);
@@ -160,7 +167,9 @@ const InputPage = () => {
       });
     } catch (error) {
       console.error('Error solving puzzle:', error);
-      setError('Error solving puzzle. Please try again.');
+      setError('Unable to solve this puzzle. Please check if it is valid.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -180,19 +189,23 @@ const InputPage = () => {
     <div className="input-page">
       <h1>Sudoku Solver</h1>
       {error && <div className="error-message">{error}</div>}
-      <SudokuGrid 
-        grid={grid}
-        onCellChange={handleCellChange}
-        startingNumbers={startingNumbers}
-        isReadOnly={isSolved}
-      />
-      <ControlPanel 
-        onReset={handleReset}
-        onSolve={handleSolve}
-        onViewResults={handleViewResults}
-        onViewChanges={handleViewChanges}
-        isSolved={isSolved}
-      />
+      <div className={`content ${isLoading ? 'disabled' : ''}`}>
+        <SudokuGrid 
+          grid={grid}
+          onCellChange={handleCellChange}
+          startingNumbers={startingNumbers}
+          isReadOnly={isSolved || isLoading}
+        />
+        <ControlPanel 
+          onReset={handleReset}
+          onSolve={handleSolve}
+          onViewResults={handleViewResults}
+          onViewChanges={handleViewChanges}
+          isSolved={isSolved}
+          disabled={isLoading}
+        />
+      </div>
+      {isLoading && <LoadingOverlay />}
     </div>
   );
 };
