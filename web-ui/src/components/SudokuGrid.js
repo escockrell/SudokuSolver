@@ -12,14 +12,14 @@ const SudokuGrid = ({ grid, onCellChange, startingNumbers, isReadOnly }) => {
     }
   };
 
-  const handleCellChange = (row, col, value) => {
+  /*const handleCellChange = (row, col, value) => {
     if (isReadOnly) return; // Prevent changes if grid is read-only
     
     // Only allow numbers 1-9 and empty string
     if (value === '' || (value.length === 1 && /[1-9]/.test(value))) {
       onCellChange(row, col, value);
     }
-  };
+  };*/
 
   return (
     <div className="sudoku-grid">

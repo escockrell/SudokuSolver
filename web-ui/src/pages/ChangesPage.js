@@ -87,7 +87,7 @@ const ChangesPage = () => {
   );
 
   const handleReset = useCallback(() => {
-    console.log("Resetting to initial state");
+    // console.log("Resetting to initial state");
     setCurrentState({
       currentTotalChange: 0,
       currentChangeType: null,
@@ -111,8 +111,8 @@ const ChangesPage = () => {
     if (!location.state?.metrics) return;
     const metrics = location.state.metrics;
     
-    console.log("\n=== NEXT BUTTON PRESSED ===");
-    console.log("Current state:", currentState);
+    // console.log("\n=== NEXT BUTTON PRESSED ===");
+    // console.log("Current state:", currentState);
 
     // Create a deep copy of the current state instead of a reference
     let newState = {
@@ -128,7 +128,7 @@ const ChangesPage = () => {
 
     // Don't proceed if we're already at the end
     if (endMainChangePossibleFlag) {
-      console.log("Already at the end, so don't proceed");
+      // console.log("Already at the end, so don't proceed");
       return;
     }
 
@@ -139,7 +139,7 @@ const ChangesPage = () => {
       const col = metrics.mainChangeColumn[currentState.currentMainChange - 1];
       const number = metrics.mainChangeNumber[currentState.currentMainChange - 1];
 
-      console.log("Applying main change:", { row, col, number });
+      // console.log("Applying main change:", { row, col, number });
 
       // Place the number
       const newGrid = grid.map(r => [...r]);
@@ -149,24 +149,24 @@ const ChangesPage = () => {
       // Count how many possible changes this main change eliminated
       let possibleCount = 0;
       let j = currentState.currentMainPossibleChange;
-      console.log("Setting j to:", currentState.currentMainPossibleChange);
+      // console.log("Setting j to:", currentState.currentMainPossibleChange);
       while (j < metrics.mainChangePossibleOrder.length && 
              metrics.mainChangePossibleOrder[j] === currentState.currentMainChange) {
         possibleCount++;
         j++;
       }
-      console.log("Found", possibleCount, "possible changes eliminated by main change", currentState.currentMainChange);
+      // console.log("Found", possibleCount, "possible changes eliminated by main change", currentState.currentMainChange);
 
       // Remove possible options that this main change eliminated
       const newPossibleNumbers = possibleNumbers.map(r => r.map(c => [...c]));
       let i = currentState.currentMainPossibleChange;  // Start from the first possible change for this main change
-      console.log("Starting removal of main change possible options from index, i:", i);
+      // console.log("Starting removal of main change possible options from index, i:", i);
       while (i < currentState.currentMainPossibleChange + possibleCount) {
         const possibleRow = metrics.mainChangePossibleRow[i];
         const possibleCol = metrics.mainChangePossibleColumn[i];
         const possibleNum = metrics.mainChangePossibleNumber[i] - 1;
         newPossibleNumbers[possibleRow][possibleCol][possibleNum] = false;
-        console.log("Removed possible option at index, i:", i, "for row ", possibleRow, ", column ", possibleCol, ", number ", possibleNum);
+        // console.log("Removed possible option at index, i:", i, "for row ", possibleRow, ", column ", possibleCol, ", number ", possibleNum);
         i++;
       }
       setPossibleNumbers(newPossibleNumbers);
@@ -199,14 +199,14 @@ const ChangesPage = () => {
     if (currentState.currentTotalChange < metrics.totalChangeCount) {
       // Preview next change
       const nextChangeType = metrics.totalChangeType[currentState.currentTotalChange];
-      console.log("Next change type:", nextChangeType);
+      // console.log("Next change type:", nextChangeType);
       
       if (nextChangeType === 'main') {
         // Highlight next main change
         const row = metrics.mainChangeRow[currentState.currentMainChange];
         const col = metrics.mainChangeColumn[currentState.currentMainChange];
         
-        console.log("Highlighting next main change:", { row, col });
+        // console.log("Highlighting next main change:", { row, col });
 
         const newHighlightedCells = Array(9).fill().map(() => Array(9).fill(false));
         newHighlightedCells[row][col] = true;
@@ -237,7 +237,7 @@ const ChangesPage = () => {
           i++;
         }
 
-        console.log("Highlighting next possible changes:", changes);
+        // console.log("Highlighting next possible changes:", changes);
 
         const newHighlightedPossibles = Array(9).fill().map(() => 
           Array(9).fill().map(() => Array(9).fill(false))
@@ -267,7 +267,7 @@ const ChangesPage = () => {
         const col = metrics.mainChangeColumn[metrics.mainChangeCount - 1];
         const number = metrics.mainChangeNumber[metrics.mainChangeCount - 1];
 
-        console.log("Applying final main change:", { row, col, number });
+        // console.log("Applying final main change:", { row, col, number });
 
         // Place the number
         const newGrid = grid.map(r => [...r]);
@@ -328,15 +328,15 @@ const ChangesPage = () => {
     }
 
     setCurrentState(newState);
-    console.log("New state:", newState);
+    // console.log("New state:", newState);
   }, [location.state, currentState, grid, possibleNumbers, highlightedPossibles, endMainChangePossibleFlag]);
 
   const handlePrevious = useCallback(() => {
     if (!location.state?.metrics) return;
     const metrics = location.state.metrics;
 
-    console.log("\n=== PREVIOUS BUTTON PRESSED ===");
-    console.log("Current state:", currentState);
+    // console.log("\n=== PREVIOUS BUTTON PRESSED ===");
+    // console.log("Current state:", currentState);
 
     // Create a deep copy of the current state
     let newState = {
@@ -352,7 +352,7 @@ const ChangesPage = () => {
 
     // If at first change, reset to initial state
     if (currentState.currentTotalChange <= 1) {
-      console.log("At first change, so reset to initial state");
+      // console.log("At first change, so reset to initial state");
       handleReset();
       return;
     }
@@ -385,7 +385,7 @@ const ChangesPage = () => {
           const possibleCol = metrics.mainChangePossibleColumn[i];
           const possibleNum = metrics.mainChangePossibleNumber[i] - 1;
           newPossibleNumbers[possibleRow][possibleCol][possibleNum] = true;
-          console.log("Restored possible number at index, i:", i, "for row ", possibleRow + 1, ", column ", possibleCol + 1, ", number ", possibleNum + 1);
+          // console.log("Restored possible number at index, i:", i, "for row ", possibleRow + 1, ", column ", possibleCol + 1, ", number ", possibleNum + 1);
           possibleCount++;
           i--;
         }
@@ -401,7 +401,7 @@ const ChangesPage = () => {
 
       setEndMainChangePossibleFlag(false);
       setCurrentState(newState);
-      console.log("New state:", newState);
+      // console.log("New state:", newState);
       return;
     }
 
@@ -428,8 +428,8 @@ const ChangesPage = () => {
         i--;
       }
 
-      console.log(`Removing ${possibleCount} from currentPossibleChange`);
-      console.log("Decrementing currentPossibleChangeOrder by 1");
+      // console.log(`Removing ${possibleCount} from currentPossibleChange`);
+      // console.log("Decrementing currentPossibleChangeOrder by 1");
 
       // Update newState with the correct counts
       newState = {
@@ -455,7 +455,7 @@ const ChangesPage = () => {
       const newGrid = grid.map(r => [...r]);
       newGrid[row][col] = '';
       setGrid(newGrid);
-      console.log(`Removed main number at row ${row + 1}, column ${col + 1}`);
+      // console.log(`Removed main number at row ${row + 1}, column ${col + 1}`);
 
       // Restore possible options that this main change eliminated
       const newPossibleNumbers = possibleNumbers.map(r => r.map(c => [...c]));
@@ -468,11 +468,11 @@ const ChangesPage = () => {
         const possibleCol = metrics.mainChangePossibleColumn[i];
         const possibleNum = metrics.mainChangePossibleNumber[i] - 1;
         newPossibleNumbers[possibleRow][possibleCol][possibleNum] = true;
-        console.log("Restored possible number at index, i:", i, "for row ", possibleRow + 1, ", column ", possibleCol + 1, ", number ", possibleNum + 1);
+        // console.log("Restored possible number at index, i:", i, "for row ", possibleRow + 1, ", column ", possibleCol + 1, ", number ", possibleNum + 1);
         possibleCount++;
         i--;
       }
-      console.log(`Restored ${possibleCount} possible numbers`);
+      // console.log(`Restored ${possibleCount} possible numbers`);
       setPossibleNumbers(newPossibleNumbers);
 
       // Highlight the cell we just removed
@@ -518,7 +518,7 @@ const ChangesPage = () => {
       changes.forEach(change => {
         newPossibleNumbers[change.row][change.col][change.number] = true;
         newHighlightedPossibles[change.row][change.col][change.number] = true;
-        console.log("Restored possible number at row ", change.row + 1, ", column ", change.col + 1, ", number ", change.number + 1);
+        // console.log("Restored possible number at row ", change.row + 1, ", column ", change.col + 1, ", number ", change.number + 1);
       });
 
       setPossibleNumbers(newPossibleNumbers);
@@ -535,7 +535,7 @@ const ChangesPage = () => {
     }
 
     setCurrentState(newState);
-    console.log("New state:", newState);
+    // console.log("New state:", newState);
   }, [location.state, currentState, grid, possibleNumbers, handleReset]);
 
   useEffect(() => {
@@ -547,7 +547,7 @@ const ChangesPage = () => {
       const initialPossibles = initializePossibleNumbers(location.state.originalGrid);
       setPossibleNumbers(initialPossibles);
     }
-  }, [location.state, initializePossibleNumbers]);
+  }, [location.state]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {

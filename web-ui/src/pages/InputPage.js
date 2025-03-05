@@ -131,10 +131,10 @@ const InputPage = () => {
         row.map(cell => cell === '' ? '0' : cell).join('')
       ).join('');
 
-      console.log("Sending puzzle:", puzzleInput);
+      // console.log("Sending puzzle:", puzzleInput);
       const response = await solvePuzzle(puzzleInput);
-      console.log("Received solution:", response);
-      console.log("Solution string:", response.solution);
+      // console.log("Received solution:", response);
+      // console.log("Solution string:", response.solution);
       
       // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];
@@ -142,7 +142,7 @@ const InputPage = () => {
         const row = response.solution.slice(i * 9, (i + 1) * 9).split('');
         solutionGrid.push(row);
       }
-      console.log("Solution grid:", solutionGrid);
+      // console.log("Solution grid:", solutionGrid);
       
       // Create deep copy of original grid before setting solution
       const originalGridCopy = grid.map(row => [...row]);
