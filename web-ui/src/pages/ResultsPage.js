@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, Navigate, useNavigate } from 'react-router-dom';
 import MetricCard from '../components/MetricCard';
+import BackButton from '../components/BackButton';
 import './ResultsPage.css';
 
 const ResultsPage = () => {
@@ -37,6 +38,7 @@ const ResultsPage = () => {
 
   return (
     <div className="results-page">
+      <BackButton />
       <h1>Solving Statistics</h1>
       
       <div className="metrics-container">

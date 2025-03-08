@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, Navigate, useNavigate } from 'react-router-dom';
 import ChangesCell from '../components/ChangesCell';
+import BackButton from '../components/BackButton';
 import './ChangesPage.css';
 
 const initializePossibleNumbers = (grid) => {
@@ -591,6 +592,8 @@ const ChangesPage = () => {
 
   return (
     <div className="changes-page">
+      <BackButton />
+      <h1>Change Walkthrough</h1>
       <div className="changes-grid-container">
         <div className="changes-grid">
           {grid.map((row, rowIndex) => (

@@ -3,7 +3,6 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   box-sizing: border-box;
 }
 
@@ -12,14 +11,11 @@
   width: 100%;
   margin: 0 auto;
   padding: 20px;
-  background-color: white;
-  border-radius: 15px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
 }
 
 .input-page h1 {
-  color: #2c3e50;
+  color: white;
   margin-bottom: 30px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
