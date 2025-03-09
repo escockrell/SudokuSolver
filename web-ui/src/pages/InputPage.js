@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SudokuGrid from '../components/SudokuGrid';
 import ControlPanel from '../components/ControlPanel';
+import PortfolioButton from '../components/PortfolioButton';
 import { solvePuzzle } from '../services/SolverService';
 import './InputPage.css';
 
@@ -187,6 +188,7 @@ const InputPage = () => {
 
   return (
     <div className="input-page">
+      <PortfolioButton />
       <h1>Sudoku Solver</h1>
       {error && <div className="error-message">{error}</div>}
       <div className={`content ${isLoading ? 'disabled' : ''}`}>

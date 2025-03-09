@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, Navigate, useNavigate } from 'react-router-dom';
 import MetricCard from '../components/MetricCard';
 import BackButton from '../components/BackButton';
+import PortfolioButton from '../components/PortfolioButton';
 import './ResultsPage.css';
 
 const ResultsPage = () => {
@@ -38,8 +39,9 @@ const ResultsPage = () => {
 
   return (
     <div className="results-page">
-      <BackButton />
-      <h1>Solving Statistics</h1>
+      <PortfolioButton />
+      <BackButton onClick={handleBack} text="Back to Home Page" />
+      <h1>Solving Results</h1>
       
       <div className="metrics-container">
         <MetricCard 
@@ -177,15 +179,6 @@ const ResultsPage = () => {
             }
           ]}
         />
-      </div>
-
-      <div className="results-controls">
-        <button 
-          className="control-button back-button"
-          onClick={handleBack}
-        >
-          ← Back
-        </button>
       </div>
     </div>
   );

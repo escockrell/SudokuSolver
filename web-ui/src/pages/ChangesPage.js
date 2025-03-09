@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, Navigate, useNavigate } from 'react-router-dom';
 import ChangesCell from '../components/ChangesCell';
 import BackButton from '../components/BackButton';
+import PortfolioButton from '../components/PortfolioButton';
 import './ChangesPage.css';
 
 const initializePossibleNumbers = (grid) => {
@@ -592,30 +593,33 @@ const ChangesPage = () => {
 
   return (
     <div className="changes-page">
-      <BackButton />
-      <h1>Change Walkthrough</h1>
+      <PortfolioButton />
+      <BackButton onClick={() => navigate('/')} text="Back to Home Page" />
+      <h1>Solution Steps</h1>
       <div className="changes-grid-container">
-        <div className="changes-grid">
-          {grid.map((row, rowIndex) => (
-            <div key={rowIndex} className="grid-row">
-              {row.map((cell, colIndex) => (
-                <ChangesCell
-                  key={`${rowIndex}-${colIndex}`}
-                  value={cell}
-                  possibleNumbers={possibleNumbers[rowIndex][colIndex]}
-                  highlightedPossibles={highlightedPossibles[rowIndex][colIndex]}
-                  isHighlighted={highlightedCells[rowIndex][colIndex]}
-                  isStartingNumber={startingNumbers[rowIndex][colIndex]}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-        
-        <div className="changes-controls">
-          <button onClick={handleNext}>Next</button>
-          <button onClick={handlePrevious}>Previous</button>
-          <button onClick={handleReset}>Reset</button>
+        <div className="changes-content">
+          <div className="changes-grid">
+            {grid.map((row, rowIndex) => (
+              <div key={rowIndex} className="grid-row">
+                {row.map((cell, colIndex) => (
+                  <ChangesCell
+                    key={`${rowIndex}-${colIndex}`}
+                    value={cell}
+                    possibleNumbers={possibleNumbers[rowIndex][colIndex]}
+                    highlightedPossibles={highlightedPossibles[rowIndex][colIndex]}
+                    isHighlighted={highlightedCells[rowIndex][colIndex]}
+                    isStartingNumber={startingNumbers[rowIndex][colIndex]}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+          
+          <div className="changes-controls">
+            <button onClick={handleNext}>Next</button>
+            <button onClick={handlePrevious}>Previous</button>
+            <button onClick={handleReset}>Reset</button>
+          </div>
         </div>
       </div>
 
@@ -639,30 +643,6 @@ const ChangesPage = () => {
         <div className="change-description">
           {changeDescription}
         </div>
-      </div>
-
-      <div className="changes-controls-bottom">
-        <button 
-          className="control-button back-button"
-          onClick={() => {
-            navigate('/', {
-              state: {
-                grid: solution,
-                startingNumbers,
-                isSolved: true,
-                solutionData: {
-                  originalGrid,
-                  startingNumbers,
-                  solution,
-                  metrics,
-                  changes
-                }
-              }
-            });
-          }}
-        >
-          ← Back
-        </button>
       </div>
     </div>
   );
