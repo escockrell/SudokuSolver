@@ -8,7 +8,7 @@ const PortfolioButton = () => {
         href="/"
         className="control-button portfolio-button"
       >
-        Back to Ethan's Portfolio
+        ← Back to Ethan's Portfolio
       </a>
     </div>
   );

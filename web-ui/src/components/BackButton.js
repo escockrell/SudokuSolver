@@ -1,14 +1,14 @@
 import React from 'react';
 import './BackButton.css';
 
-const BackButton = () => {
+const BackButton = ({ onClick, text = "Back to Ethan's Portfolio" }) => {
   return (
-    <a 
-      href="https://www.ethancockrell.me/" 
+    <button 
       className="back-button"
+      onClick={onClick}
     >
-      ← Back to Ethan's Portfolio
-    </a>
+      ← {text}
+    </button>
   );
 };
 

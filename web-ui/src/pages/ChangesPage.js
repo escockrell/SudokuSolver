@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, Navigate, useNavigate } from 'react-router-dom';
 import ChangesCell from '../components/ChangesCell';
 import BackButton from '../components/BackButton';
-import PortfolioButton from '../components/PortfolioButton';
 import './ChangesPage.css';
 
 const initializePossibleNumbers = (grid) => {
@@ -51,6 +50,22 @@ const isNumberPossible = (row, col, num, grid) => {
 const ChangesPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate('/', {
+      state: {
+        grid: solution,
+        startingNumbers,
+        isSolved: true,
+        solutionData: {
+          originalGrid,
+          startingNumbers,
+          solution,
+          metrics
+        }
+      }
+    });
+  };
   
   const [currentState, setCurrentState] = useState({
     currentTotalChange: 0,
@@ -589,13 +604,14 @@ const ChangesPage = () => {
     return <Navigate to="/" />;
   }
 
-  const { originalGrid, startingNumbers, solution, metrics, changes } = location.state;
+  const { originalGrid, startingNumbers, solution, metrics } = location.state;
 
   return (
     <div className="changes-page">
-      <PortfolioButton />
-      <BackButton onClick={() => navigate('/')} text="Back to Home Page" />
-      <h1>Solution Steps</h1>
+      <div className="back-buttons">
+        <BackButton onClick={handleBack} text="Back to Home Page" />
+      </div>
+      <h1>Change Walkthrough</h1>
       <div className="changes-grid-container">
         <div className="changes-content">
           <div className="changes-grid">
