@@ -41,3 +41,4 @@ node_modules/
 
 # Ignore VS Code files
 .vscode/
+.vs/
