@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import SudokuGrid from '../components/SudokuGrid';
 import ControlPanel from '../components/ControlPanel';
 import PortfolioButton from '../components/PortfolioButton';
-import { solvePuzzle } from '../services/SolverService';
+// import { solvePuzzle } from '../services/SolverService';
+import { solvePuzzle} from '../components/Solver';
 import './InputPage.css';
 
 const LoadingOverlay = () => (
@@ -143,7 +144,9 @@ const InputPage = () => {
         row.map(cell => cell === '' ? '0' : cell).join('')
       ).join('');
 
-      const response = await solvePuzzle(puzzleInput);
+      // const response = await solvePuzzle(puzzleInput); // API call
+      const response = solvePuzzle(puzzleInput);
+      console.log("Solved puzzle: ", response);
       
       // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];
