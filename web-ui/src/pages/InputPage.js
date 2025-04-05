@@ -132,9 +132,9 @@ const InputPage = () => {
   };
 
   const handleSolve = async () => {
-    if (!validatePuzzle()) {
-      return;
-    }
+    // if (!validatePuzzle()) {
+    //   return;
+    // }
 
     setIsLoading(true);
     setError(null);
@@ -145,7 +145,8 @@ const InputPage = () => {
       ).join('');
 
       // const response = await solvePuzzle(puzzleInput); // API call
-      const response = solvePuzzle(puzzleInput);
+      const puzzleInputTemp = "000705030000040500057000240060300000080000000001009026005400070019070000708002019";
+      const response = solvePuzzle(puzzleInputTemp);
       console.log("Solved puzzle: ", response);
       
       // Convert solution string to grid by splitting into chunks of 9
