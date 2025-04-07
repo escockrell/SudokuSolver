@@ -1,7 +1,9 @@
-// Project: Sudoku Solver
-// Package: Graphical User Interface
-// Purpose: Hold the methods that solve the puzzle
-// Created by: Ethan Cockrell
+/**
+ * Project: Sudoku Solver
+ * Package: Graphical User Interface
+ * Purpose: Hold the methods that solve the puzzle
+ * Created by: Ethan Cockrell
+ */
 
 package gui;
 

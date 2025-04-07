@@ -145,15 +145,38 @@ const InputPage = () => {
       ).join('');
 
       // const response = await solvePuzzle(puzzleInput); // API call
+      // console.log("response: ", response);
+
       const puzzleInputTemp1 = "000705030000040500057000240060300000080000000001009026005400070019070000708002019";
       const puzzleInputTemp2 = "050361000070002300036000900003605407600004000000008000700120003000879600061540800";
       const puzzleInputTemp3 = "815002000600500090700830000200000050490300007007080904300070648970000000000008009";
-      const puzzles = [puzzleInputTemp1, puzzleInputTemp2, puzzleInputTemp3];
+      const puzzleInputTemp4 = "031005204004300010500010000050700038007002000008500600800050003105400090063009100";
+      const puzzleInputTemp5 = "350400780107390204090000100000207800000000940040981600900070510010529070000000000";
+      const puzzleInputTemp6 = "490035028002401500005090360000006000100049070054000081000700042000160030000020800";
+      const puzzleInputTemp7 = "308054000500930200906000500000000790005003000730100400070200006800000000000468000";
+      const puzzles = [puzzleInputTemp1, puzzleInputTemp2, puzzleInputTemp3, puzzleInputTemp4, puzzleInputTemp5, puzzleInputTemp6, puzzleInputTemp7];
       let response;
       puzzles.forEach(puzzle => {
         response = solvePuzzle(puzzle);
         console.log("response: ", response);
       });
+
+      // *** Delete after testing ***
+        // Set grid to starting values of last puzzle
+        const startingGrid = [];
+        const lastPuzzle = puzzles[puzzles.length - 1];
+        for (let i = 0; i < 9; i++) {
+          const row = lastPuzzle.slice(i * 9, (i + 1) * 9).split('').map(val => val === '0' ? '' : val);
+          startingGrid.push(row);
+        }
+        setGrid(startingGrid);
+
+        // Update starting numbers based on last puzzle
+        const newStartingNumbers = startingGrid.map(row => 
+          row.map(cell => cell !== '')
+        );
+        setStartingNumbers(newStartingNumbers);
+      // ***Break***
       
       // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];
@@ -170,7 +193,8 @@ const InputPage = () => {
       
       // Store solution data for later use
       setSolutionData({
-        originalGrid: originalGridCopy,
+        // originalGrid: originalGridCopy,
+        originalGrid: startingGrid, // delete and use above line after testing
         startingNumbers: startingNumbers.map(row => [...row]),
         solution: solutionGrid,
         metrics: response.metrics,
