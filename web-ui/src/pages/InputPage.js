@@ -147,8 +147,13 @@ const InputPage = () => {
       // const response = await solvePuzzle(puzzleInput); // API call
       const puzzleInputTemp1 = "000705030000040500057000240060300000080000000001009026005400070019070000708002019";
       const puzzleInputTemp2 = "050361000070002300036000900003605407600004000000008000700120003000879600061540800";
-      const response = solvePuzzle(puzzleInputTemp1);
-      console.log("response: ", response);
+      const puzzleInputTemp3 = "815002000600500090700830000200000050490300007007080904300070648970000000000008009";
+      const puzzles = [puzzleInputTemp1, puzzleInputTemp2, puzzleInputTemp3];
+      let response;
+      puzzles.forEach(puzzle => {
+        response = solvePuzzle(puzzle);
+        console.log("response: ", response);
+      });
       
       // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];

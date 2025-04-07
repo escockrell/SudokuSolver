@@ -11,6 +11,9 @@ let phantomGroupChanges = 0;
 let nakedPairRowChanges = 0;
 let nakedPairColumnChanges = 0;
 let nakedPairGroupChanges = 0;
+let hiddenPairRowChanges = 0;
+let hiddenPairColumnChanges = 0;
+let hiddenPairGroupChanges = 0;
 let mainChangeCount = 0;
 let possibleChangeCount = 0;
 let possibleChangePossibleCount = 0;
@@ -37,6 +40,7 @@ const COLUMN_END = [2,5,8,2,5,8,2,5,8];
 
 export function solvePuzzle(startPuzzleString) {
     console.log(`Solving puzzle: ${startPuzzleString}`);
+    resetMetrics();
     const startPuzzle = convertPuzzleToIntArray(startPuzzleString);
     let solvePuzzle = convertPuzzleToIntArray(startPuzzleString);
     let solveRows = initializeRows(solvePuzzle);
@@ -52,40 +56,43 @@ export function solvePuzzle(startPuzzleString) {
     }
     
 
-    console.log("Solved: ", solved);
-    console.log("Total Change Count: ", totalChangeCount);
-    console.log("Main Change Count: ", mainChangeCount);
-    console.log("Possible Change Count: ", possibleChangeCount);
+    // console.log("Solved: ", solved);
+    // console.log("Total Change Count: ", totalChangeCount);
+    // console.log("Main Change Count: ", mainChangeCount);
+    // console.log("Possible Change Count: ", possibleChangeCount);
 
-    console.log("Level Zero Changes: ", levelZeroChanges);
-    console.log("One In A Row Changes: ", oneInARowChanges);
-    console.log("One In A Column Changes: ", oneInAColumnChanges);
-    console.log("One In A Group Changes: ", oneInAGroupChanges);
-    console.log("One In A Cell Changes: ", oneInACellChanges);
+    // console.log("Level Zero Changes: ", levelZeroChanges);
+    // console.log("One In A Row Changes: ", oneInARowChanges);
+    // console.log("One In A Column Changes: ", oneInAColumnChanges);
+    // console.log("One In A Group Changes: ", oneInAGroupChanges);
+    // console.log("One In A Cell Changes: ", oneInACellChanges);
 
-    console.log("Level One Changes: ", levelOneChanges);
-    console.log("Phantom Row Changes: ", phantomRowChanges);
-    console.log("Phantom Column Changes: ", phantomColumnChanges);
-    console.log("Phantom Group Changes: ", phantomGroupChanges);
-    console.log("Naked Pair Row Changes: ", nakedPairRowChanges);
-    console.log("Naked Pair Column Changes: ", nakedPairColumnChanges);
-    console.log("Naked Pair Group Changes: ", nakedPairGroupChanges);
+    // console.log("Level One Changes: ", levelOneChanges);
+    // console.log("Phantom Row Changes: ", phantomRowChanges);
+    // console.log("Phantom Column Changes: ", phantomColumnChanges);
+    // console.log("Phantom Group Changes: ", phantomGroupChanges);
+    // console.log("Naked Pair Row Changes: ", nakedPairRowChanges);
+    // console.log("Naked Pair Column Changes: ", nakedPairColumnChanges);
+    // console.log("Naked Pair Group Changes: ", nakedPairGroupChanges);
+    // console.log("Hidden Pair Row Changes: ", hiddenPairRowChanges);
+    // console.log("Hidden Pair Column Changes: ", hiddenPairColumnChanges);
+    // console.log("Hidden Pair Group Changes: ", hiddenPairGroupChanges);
 
-    console.log("Main Change Number: ", mainChangeNumber);
-    console.log("Main Change Row: ", mainChangeRow);
-    console.log("Main Change Column: ", mainChangeColumn);
-    console.log("Main Change Method: ", mainChangeMethod);
-    console.log("Main Change Description: ", mainChangeDescription);
+    // console.log("Main Change Number: ", mainChangeNumber);
+    // console.log("Main Change Row: ", mainChangeRow);
+    // console.log("Main Change Column: ", mainChangeColumn);
+    // console.log("Main Change Method: ", mainChangeMethod);
+    // console.log("Main Change Description: ", mainChangeDescription);
 
-    console.log("Possible Change Number: ", possibleChangeNumber);
-    console.log("Possible Change Row: ", possibleChangeRow);
-    console.log("Possible Change Column: ", possibleChangeColumn);
-    console.log("Possible Change Method: ", possibleChangeMethod);
-    console.log("Possible Change Description: ", possibleChangeDescription);
-    console.log("Possible Change Order: ", possibleChangeOrder);
+    // console.log("Possible Change Number: ", possibleChangeNumber);
+    // console.log("Possible Change Row: ", possibleChangeRow);
+    // console.log("Possible Change Column: ", possibleChangeColumn);
+    // console.log("Possible Change Method: ", possibleChangeMethod);
+    // console.log("Possible Change Description: ", possibleChangeDescription);
+    // console.log("Possible Change Order: ", possibleChangeOrder);
     
-    console.log("Total Change Type: ", totalChangeType);
-    console.log("Total Change Method: ", totalChangeMethod);
+    // console.log("Total Change Type: ", totalChangeType);
+    // console.log("Total Change Method: ", totalChangeMethod);
 
     // Convert the solution array to a string
     const solutionString = solvePuzzle.map(row => 
@@ -104,6 +111,11 @@ export function solvePuzzle(startPuzzleString) {
         phantomColumnChanges,
         phantomGroupChanges,
         nakedPairRowChanges,
+        nakedPairColumnChanges,
+        nakedPairGroupChanges,
+        hiddenPairRowChanges,
+        hiddenPairColumnChanges,
+        hiddenPairGroupChanges,
         mainChangeCount,
         possibleChangeCount,
         possibleChangePossibleCount,
@@ -140,6 +152,45 @@ export function solvePuzzle(startPuzzleString) {
         metrics,
         changes
     };
+}
+
+function resetMetrics() {
+    solved = false;
+    levelZeroChanges = 0;
+    oneInARowChanges = 0;
+    oneInAColumnChanges = 0;
+    oneInAGroupChanges = 0;
+    oneInACellChanges = 0;
+    levelOneChanges = 0;
+    phantomRowChanges = 0;
+    phantomColumnChanges = 0;
+    phantomGroupChanges = 0;
+    nakedPairRowChanges = 0;
+    nakedPairColumnChanges = 0;
+    nakedPairGroupChanges = 0;
+    hiddenPairRowChanges = 0;
+    hiddenPairColumnChanges = 0;
+    hiddenPairGroupChanges = 0;
+
+    mainChangeNumber = [];
+    mainChangeMethod = [];
+    mainChangeDescription = [];
+    mainChangeRow = [];
+    mainChangeColumn = [];
+    possibleChangeMethod = [];
+    possibleChangeDescription = [];
+    possibleChangeOrder = [];
+    possibleChangeNumber = [];
+    possibleChangeRow = [];
+    possibleChangeColumn = [];
+    totalChangeType = [];
+    totalChangeMethod = [];
+
+    mainChangeCount = 0;
+    possibleChangeCount = 0;
+    possibleChangePossibleCount = 0;
+    totalChangeCount = 0;
+    
 }
 
 function convertPuzzleToIntArray(stringPuzzle) {
@@ -599,7 +650,7 @@ function levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndC
         changes = 0;
         changes += phantomChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
         changes += nakedPairChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
-        // changes += hiddenPairChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += hiddenPairChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
         tempLevelOneChanges += changes;
     } while (changes !== 0 && !solved);
     
@@ -831,7 +882,7 @@ function groupPhantomRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGues
                         description = "";
                         for (let row = ROW_START[groupWork]; row <= ROW_END[groupWork]; row++) {
                             for (let col = COLUMN_START[groupWork]; col <= COLUMN_END[groupWork]; col++) {
-                                if (intPuzzle[row][col] === 0 && possible[row][col][k] === k+1 && row != i) {
+                                if (intPuzzle[row][col] === 0 && possible[row][col][k] === k+1 && row !== i) {
                                     possible[row][col][k] = 0;
                                     rowsChanged[count] = row;
                                     colsChanged[count] = col;
@@ -915,7 +966,7 @@ function groupPhantomColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isG
                         description = "";
                         for (let col = COLUMN_START[groupWork]; col <= COLUMN_END[groupWork]; col++) {
                             for (let row = ROW_START[groupWork]; row <= ROW_END[groupWork]; row++) {
-                                if (intPuzzle[row][col] === 0 && possible[row][col][k] === k+1 && col != j) {
+                                if (intPuzzle[row][col] === 0 && possible[row][col][k] === k+1 && col !== j) {
                                     possible[row][col][k] = 0;
                                     rowsChanged[count] = row;
                                     colsChanged[count] = col;
@@ -1046,7 +1097,7 @@ function nakedPairRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAn
                             description = "";
 
                             for (let j = 0; j < 9; j++) {
-                                if (intPuzzle[i][j] === 0 && j != column1 && j != column2) {
+                                if (intPuzzle[i][j] === 0 && j !== column1 && j !== column2) {
                                     if (possible[i][j][number1] === number1+1) {
                                         possible[i][j][number1] = 0;
                                         columnsChanged1[number1Changes] = j;
@@ -1184,7 +1235,7 @@ function nakedPairColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGues
                             description = "";
 
                             for (let i = 0; i < 9; i++) {
-                                if (intPuzzle[i][j] === 0 && i != row1 && i != row2) {
+                                if (intPuzzle[i][j] === 0 && i !== row1 && i !== row2) {
                                     if (possible[i][j][number1] === number1+1) {
                                         possible[i][j][number1] = 0;
                                         rowsChanged1[number1Changes] = i;
@@ -1339,7 +1390,7 @@ function nakedPairGroupCheck(intPuzzle, possible, Rows, Columns, Groups, isGuess
 
                             for (let i = ROW_START[l]; i <= ROW_END[l]; i++) {
                                 for (let j = COLUMN_START[l]; j <= COLUMN_END[l]; j++) {
-                                    if (intPuzzle[i][j] === 0 && !(i == row1 && j == column1) && !(i == row2 && j == column2)) {
+                                    if (intPuzzle[i][j] === 0 && !(i === row1 && j === column1) && !(i === row2 && j === column2)) {
                                         if (possible[i][j][number1] === number1+1) {
                                             possible[i][j][number1] = 0;
                                             rowsChanged1[number1Changes] = i;
@@ -1411,3 +1462,366 @@ function nakedPairGroupCheck(intPuzzle, possible, Rows, Columns, Groups, isGuess
 
     return changes;
 }
+
+function hiddenPairChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempHiddenPairChanges = 0;
+
+    do {
+        changes = 0;
+        changes += hiddenPairRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += hiddenPairColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        // changes += hiddenPairGroupCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        tempHiddenPairChanges += changes;
+    } while (changes !== 0 && !solved);
+
+    return tempHiddenPairChanges;
+}
+
+function hiddenPairRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let columns = new Array(9).fill().map(() => Array(2).fill(0));
+    let columnsCount = new Array(9).fill(0);
+    let pairNumbers = new Array(9).fill(0);
+    let pairCount = 0;
+    let number1 = 0;
+    let number2 = 0;
+    let column1 = 0;
+    let column2 = 0;
+    let twoOptionCell = new Array(9).fill(false);
+    let tempCount = 0;
+    let totalCount = 0;
+    let description = "";
+    let countCell1 = 0;
+    let countCell2 = 0;
+    let cellNumbersChanged1 = new Array(9).fill(0);
+    let cellNumbersChanged2 = new Array(9).fill(0);
+
+    do {
+        tempChanges = 0;
+        for (let i = 0; i < 9 && !solved; i++) { // row number
+            for (let z = 0; z < 9; z++) {
+                columns[z].fill(0);
+            }
+            columnsCount.fill(0);
+            twoOptionCell.fill(false);
+            pairCount = 0;
+            column1 = 0;
+            column2 = 0;
+
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (!Rows[i][k]) {
+                    for (let j = 0; j < 9; j++) { // column number
+                        if (intPuzzle[i][j] === 0 && possible[i][j][k] === k+1) {
+                            if (columnsCount[k] === 0) {
+                                columns[k][0] = j;
+                            } else if (columnsCount[k] === 1) {
+                                columns[k][1] = j;
+                            }
+                            columnsCount[k]++;
+                        }
+                    }
+                }
+            }
+
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (columnsCount[k] === 2) {
+                    pairNumbers[pairCount] = k;
+                    pairCount++;
+                }
+            }
+
+            for (let j = 0; j < 9; j++) { // column number
+                if (intPuzzle[i][j] === 0) {
+                    tempCount = 0;
+                    for (let k = 0; k < 9; k++) { // number 1-9
+                        if (possible[i][j][k] === k+1) {
+                            tempCount++;
+                        }
+                    }
+                    if (tempCount === 2) {
+                        twoOptionCell[j] = true;
+                    }
+                }
+            }
+
+            if (pairCount > 1) {
+                for (let m = 0; m < pairCount; m++) {
+                    number1 = pairNumbers[m];
+                    column1 = columns[number1][0];
+                    column2 = columns[number1][1];
+
+                    for (let n = m+1; n < pairCount; n++) {
+                        number2 = pairNumbers[n];
+
+                        if (column1 === columns[number2][0] && column2 === columns[number2][1]) {
+                            if (!(twoOptionCell[column1] && twoOptionCell[column2])) {
+                                // number1 and number2 form a hidden pair in column1 and column2
+                                totalCount = 0;
+                                countCell1 = 0;
+                                countCell2 = 0;
+                                cellNumbersChanged1.fill(0);
+                                cellNumbersChanged2.fill(0);
+                                description = "";
+
+                                for (let k = 0; k < 9; k++) { // number 1-9
+                                    if (k !== number1 && k !== number2) {
+                                        if (possible[i][column1][k] === k+1) {
+                                            possible[i][column1][k] = 0;
+                                            cellNumbersChanged1[countCell1] = k;
+                                            countCell1++;
+                                            totalCount++;
+                                        }
+                                        if (possible[i][column2][k] === k+1) {
+                                            possible[i][column2][k] = 0;
+                                            cellNumbersChanged2[countCell2] = k;
+                                            countCell2++;
+                                            totalCount++;
+                                        }
+                                    }
+                                }
+
+                                // save data to change log
+                                if (totalCount > 0) {
+                                    if (!isGuessAndCheck && !isBruteForce) {
+                                        possibleChangeMethod.push("Hidden Pair - Row");
+                                        description = "Since the numbers " + (number1+1) + " and " + (number2+1) +
+                                            " form a hidden pair in the cells (" + (i+1) + "," + (column1+1) + ") and (" +
+                                            (i+1) + "," + (column2+1) + "), the below cells were removed as possible options:";
+
+                                        if (countCell1 > 0) {
+                                            description = description + "\nRow " + (i+1) + ", Column " + (column1+1) + ": ";
+                                            for (let s = 0; s < countCell1; s++) {
+                                                if (s < countCell1-1) {
+                                                    description = description + (cellNumbersChanged1[s]+1) + ", ";
+                                                } else if (s === countCell1-1 && s !== 0) {
+                                                    description = description + "and " + (cellNumbersChanged1[s]+1);
+                                                } else if (s === 0) {
+                                                    description = description + (cellNumbersChanged1[s]+1);
+                                                }
+                                                possibleChangeOrder.push(possibleChangeCount);
+                                                possibleChangeNumber.push(cellNumbersChanged1[s]+1);
+                                                possibleChangeRow.push(i);
+                                                possibleChangeColumn.push(column1);
+                                                possibleChangePossibleCount++;
+                                            }
+                                        }
+                                        
+                                        if (countCell2 > 0) {
+                                            description = description + "\nRow " + (i+1) + ", Column " + (column2+1) + ": ";
+                                            for (let s = 0; s < countCell2; s++) {
+                                                if (s < countCell2-1) {
+                                                    description = description + (cellNumbersChanged2[s]+1) + ", ";
+                                                } else if (s === countCell2-1 && s !== 0) {
+                                                    description = description + "and " + (cellNumbersChanged2[s]+1);
+                                                } else if (s === 0) {
+                                                    description = description + (cellNumbersChanged2[s]+1);
+                                                }
+                                                possibleChangeOrder.push(possibleChangeCount);
+                                                possibleChangeNumber.push(cellNumbersChanged2[s]+1);
+                                                possibleChangeRow.push(i);
+                                                possibleChangeColumn.push(column2);
+                                                possibleChangePossibleCount++;
+                                            }
+                                        }
+                                        
+                                        possibleChangeDescription.push(description);
+                                        totalChangeType.push("possible");
+                                        totalChangeMethod.push("Hidden Pair - Row");
+                                        levelOneChanges++;
+                                        hiddenPairRowChanges++;
+                                        possibleChangeCount++;
+                                        totalChangeCount++;
+                                    }
+                                    tempChanges++;
+
+                                    // Run previous methods to see if the puzzle can be solved
+                                    tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function hiddenPairColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let rows = new Array(9).fill().map(() => Array(2).fill(0));
+    let rowsCount = new Array(9).fill(0);
+    let pairNumbers = new Array(9).fill(0);
+    let pairCount = 0;
+    let number1 = 0;
+    let number2 = 0;
+    let row1 = 0;
+    let row2 = 0;
+    let twoOptionCell = new Array(9).fill(false);
+    let tempCount = 0;
+    let totalCount = 0;
+    let description = "";
+    let countCell1 = 0;
+    let countCell2 = 0;
+    let cellNumbersChanged1 = new Array(9).fill(0);
+    let cellNumbersChanged2 = new Array(9).fill(0);
+
+    do {
+        tempChanges = 0;
+        for (let j = 0; j < 9 && !solved; j++) { // column number
+            for (let z = 0; z < 9; z++) {
+                rows[z].fill(0);
+            }
+            rowsCount.fill(0);
+            twoOptionCell.fill(false);
+            pairCount = 0;
+            row1 = 0;
+            row2 = 0;
+
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (!Columns[j][k]) {
+                    for (let i = 0; i < 9; i++) { // row number
+                        if (intPuzzle[i][j] === 0 && possible[i][j][k] === k+1) {
+                            if (rowsCount[k] === 0) {
+                                rows[k][0] = i;
+                            } else if (rowsCount[k] === 1) {
+                                rows[k][1] = i;
+                            }
+                            rowsCount[k]++;
+                        }
+                    }
+                }
+            }
+
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (rowsCount[k] === 2) {
+                    pairNumbers[pairCount] = k;
+                    pairCount++;
+                }
+            }
+
+            for (let i = 0; i < 9; i++) { // row number
+                if (intPuzzle[i][j] === 0) {
+                    tempCount = 0;
+                    for (let k = 0; k < 9; k++) { // number 1-9
+                        if (possible[i][j][k] === k+1) {
+                            tempCount++;
+                        }
+                    }
+                    if (tempCount === 2) {
+                        twoOptionCell[i] = true;
+                    }
+                }
+            }
+
+            if (pairCount > 1) {
+                for (let m = 0; m < pairCount; m++) {
+                    number1 = pairNumbers[m];
+                    row1 = rows[number1][0];
+                    row2 = rows[number1][1];
+
+                    for (let n = m+1; n < pairCount; n++) {
+                        number2 = pairNumbers[n];
+
+                        if (row1 === rows[number2][0] && row2 === rows[number2][1]) {
+                            if (!(twoOptionCell[row1] && twoOptionCell[row2])) {
+                                // number1 and number2 form a hidden pair in row1 and row2
+                                totalCount = 0;
+                                countCell1 = 0;
+                                countCell2 = 0;
+                                cellNumbersChanged1.fill(0);
+                                cellNumbersChanged2.fill(0);
+                                description = "";
+
+                                for (let k = 0; k < 9; k++) { // number 1-9
+                                    if (k !== number1 && k !== number2) {
+                                        if (possible[row1][j][k] === k+1) {
+                                            possible[row1][j][k] = 0;
+                                            cellNumbersChanged1[countCell1] = k;
+                                            countCell1++;
+                                            totalCount++;
+                                        }
+                                        if (possible[row2][j][k] === k+1) {
+                                            possible[row2][j][k] = 0;
+                                            cellNumbersChanged2[countCell2] = k;
+                                            countCell2++;
+                                            totalCount++;
+                                        }
+                                    }
+                                }
+
+                                // save data to change log
+                                if (totalCount > 0) {
+                                    if (!isGuessAndCheck && !isBruteForce) {
+                                        possibleChangeMethod.push("Hidden Pair - Column");
+                                        description = "Since the numbers " + (number1+1) + " and " + (number2+1) +
+                                            " form a hidden pair in the cells (" + (row1+1) + "," + (j+1) + ") and (" +
+                                            (row2+1) + "," + (j+1) + "), the below cells were removed as possible options:";
+
+                                        if (countCell1 > 0) {
+                                            description = description + "\nRow " + (row1+1) + ", Column " + (j+1) + ": ";
+                                            for (let s = 0; s < countCell1; s++) {
+                                                if (s < countCell1-1) {
+                                                    description = description + (cellNumbersChanged1[s]+1) + ", ";
+                                                } else if (s === countCell1-1 && s !== 0) {
+                                                    description = description + "and " + (cellNumbersChanged1[s]+1);
+                                                } else if (s === 0) {
+                                                    description = description + (cellNumbersChanged1[s]+1);
+                                                }   
+                                                possibleChangeOrder.push(possibleChangeCount);
+                                                possibleChangeNumber.push(cellNumbersChanged1[s]+1);
+                                                possibleChangeRow.push(row1);
+                                                possibleChangeColumn.push(j);
+                                                possibleChangePossibleCount++;
+                                            }
+                                        }
+                                        
+                                        if (countCell2 > 0) {
+                                            description = description + "\nRow " + (row2+1) + ", Column " + (j+1) + ": ";
+                                            for (let s = 0; s < countCell2; s++) {
+                                                if (s < countCell2-1) {
+                                                    description = description + (cellNumbersChanged2[s]+1) + ", ";
+                                                } else if (s === countCell2-1 && s !== 0) {
+                                                    description = description + "and " + (cellNumbersChanged2[s]+1);
+                                                } else if (s === 0) {
+                                                    description = description + (cellNumbersChanged2[s]+1);
+                                                }
+                                                possibleChangeOrder.push(possibleChangeCount);
+                                                possibleChangeNumber.push(cellNumbersChanged2[s]+1);
+                                                possibleChangeRow.push(row2);
+                                                possibleChangeColumn.push(j);
+                                                possibleChangePossibleCount++;
+                                            }
+                                        }
+                                        
+                                        possibleChangeDescription.push(description);
+                                        totalChangeType.push("possible");
+                                        totalChangeMethod.push("Hidden Pair - Column");
+                                        levelOneChanges++;
+                                        hiddenPairColumnChanges++;
+                                        possibleChangeCount++;
+                                        totalChangeCount++;
+                                    }
+                                    tempChanges++;
+
+                                    // Run previous methods to see if the puzzle can be solved
+                                    tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                }   
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+
