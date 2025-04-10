@@ -18,6 +18,14 @@ let levelTwoChanges = 0;
 let nakedTripleRowChanges = 0;
 let nakedTripleColumnChanges = 0;
 let nakedTripleGroupChanges = 0;
+let hiddenTripleRowChanges = 0;
+let hiddenTripleColumnChanges = 0;
+let hiddenTripleGroupChanges = 0;
+let nakedQuadRowChanges = 0;
+let nakedQuadColumnChanges = 0;
+let nakedQuadGroupChanges = 0;
+let xWingRowChanges = 0;
+let xWingColumnChanges = 0;
 
 let mainChangeCount = 0;
 let possibleChangeCount = 0;
@@ -52,7 +60,7 @@ const COLUMN_START = [0,3,6,0,3,6,0,3,6];
 const COLUMN_END = [2,5,8,2,5,8,2,5,8];
 
 export function solvePuzzle(startPuzzleString) {
-    console.log(`Solving puzzle: ${startPuzzleString}`);
+    const startTime = performance.now();
     resetMetrics();
     const startPuzzle = convertPuzzleToIntArray(startPuzzleString);
     let solvePuzzle = convertPuzzleToIntArray(startPuzzleString);
@@ -73,7 +81,11 @@ export function solvePuzzle(startPuzzleString) {
             }
         }
     }
-    
+
+    // Calculate the time it took to solve the puzzle
+    const endTime = performance.now();
+    const solveTime = endTime - startTime;
+
     // Convert the solution array to a string
     const solutionString = solvePuzzle.map(row => 
         row.join('')
@@ -82,6 +94,7 @@ export function solvePuzzle(startPuzzleString) {
     // Create metrics object
     const metrics = {
         solved,
+        solveTime,
 
         levelZeroChanges,
         oneInARowChanges,
@@ -104,6 +117,15 @@ export function solvePuzzle(startPuzzleString) {
         nakedTripleRowChanges,
         nakedTripleColumnChanges,
         nakedTripleGroupChanges,
+        hiddenTripleRowChanges,
+        hiddenTripleColumnChanges,
+        hiddenTripleGroupChanges,
+        nakedQuadRowChanges,
+        nakedQuadColumnChanges,
+        nakedQuadGroupChanges,
+        xWingRowChanges,
+        xWingColumnChanges,
+
 
         mainChangeMethod,
         mainChangeDescription,
@@ -164,6 +186,15 @@ function resetMetrics() {
     nakedTripleRowChanges = 0;
     nakedTripleColumnChanges = 0;
     nakedTripleGroupChanges = 0;
+    hiddenTripleRowChanges = 0;
+    hiddenTripleColumnChanges = 0;
+    hiddenTripleGroupChanges = 0;
+    nakedQuadRowChanges = 0;
+    nakedQuadColumnChanges = 0;
+    nakedQuadGroupChanges = 0;
+    xWingRowChanges = 0;
+    xWingColumnChanges = 0;
+
 
     mainChangeNumber = [];
     mainChangeMethod = [];
@@ -1968,9 +1999,9 @@ function levelTwoMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndC
     do {
         changes = 0;
         changes += nakedTripleChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
-        // changes += hiddenTripleChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
-        // changes += nakedQuadChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
-        // changes += xWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += hiddenTripleChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += nakedQuadChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += xWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
         // changes += yWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
         tempLevelTwoChanges += changes;
     } while (changes !== 0 && !solved);
@@ -2694,6 +2725,1925 @@ function nakedTripleGroupCheck(intPuzzle, possible, Rows, Columns, Groups, isGue
                                             tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function hiddenTripleChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempHiddenTripleChanges = 0;
+    
+    do {
+        changes = 0;
+        changes += hiddenTripleRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += hiddenTripleColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += hiddenTripleGroupCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        tempHiddenTripleChanges += changes;
+    } while (changes !== 0 && !solved);
+
+    return tempHiddenTripleChanges;
+}
+
+function hiddenTripleRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let columns = new Array(9).fill().map(() => Array(3).fill(0));
+    let columnsCount = new Array(9).fill(0);
+    let tripleNumbers = new Array(9).fill(0);
+    let tripleCount = 0;
+    let number1 = 0;
+    let number2 = 0;
+    let number3 = 0;
+    let diffColumns = new Array(3).fill(0);
+    let countDiffColumns = new Array(3).fill(0);
+    let tempCount = 0;
+    let tempColumn = 0;
+    let sameFlag = false;
+    let totalCount = 0;
+    let column1Changes = 0;
+    let column2Changes = 0;
+    let column3Changes = 0;
+    let numbersChanged1 = new Array(9).fill(0);
+    let numbersChanged2 = new Array(9).fill(0);
+    let numbersChanged3 = new Array(9).fill(0);
+    let description = "";
+
+    do {
+        tempChanges = 0;
+        for (let i = 0; i < 9 && !solved; i++) { // row number
+            for (let z = 0; z < 9; z++) {
+                columns[z].fill(0);
+            }
+            columnsCount.fill(0);
+            tripleNumbers.fill(0);
+            tripleCount = 0;
+
+            // Goes down the row, counts how many columns each number appears in, then stores the first three
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (!Rows[i][k]) {
+                    for (let j = 0; j < 9; j++) { // column number
+                        if (intPuzzle[i][j] === 0 && possible[i][j][k] === k+1) {
+                            if (columnsCount[k] < 3) {
+                                columns[k][columnsCount[k]] = j;
+                            }
+                            columnsCount[k]++;
+                        }
+                    }
+                }
+            }
+
+            // Counts the number of numbers 1-9 that appear in only 2 or 3 columns
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (columnsCount[k] === 2 || columnsCount[k] === 3) {
+                    tripleNumbers[tripleCount] = k;
+                    tripleCount++;
+                }
+            }
+
+            // Checks to see if any of the numbers match any other numbers, forming a hidden triple
+            if (tripleCount > 2) {
+                // Stage 1
+                for (let a = 0; a <= tripleCount-3 && !solved; a++) {
+                    diffColumns.fill(0);
+                    countDiffColumns.fill(0);
+                    number1 = tripleNumbers[a];
+                    diffColumns[0] = columns[number1][0];
+                    diffColumns[1] = columns[number1][1];
+                    if (columnsCount[number1] === 2) {
+                        countDiffColumns[0] = 2;
+                    }
+                    if (columnsCount[number1] === 3) {
+                        diffColumns[2] = columns[number1][2];
+                        countDiffColumns[0] = 3;
+                    }
+
+                    // Stage 2
+                    for (let b = a+1; b <= tripleCount-2 && !solved; b++) {
+                        number2 = tripleNumbers[b];
+                        tempCount = countDiffColumns[0];
+
+                        for (let x = 0; x < columnsCount[number2]; x++) {
+                            sameFlag = false;
+                            tempColumn = columns[number2][x];
+                            for (let y = 0; y < countDiffColumns[0]; y++) {
+                                if (tempColumn === diffColumns[y]) {
+                                    sameFlag = true;
+                                }
+                            }
+                            if (sameFlag === false) {
+                                if (tempCount < 3) {
+                                    diffColumns[tempCount] = tempColumn;
+                                }
+                                tempCount++;
+                            }
+                        }
+                        countDiffColumns[1] = tempCount;
+
+                        // Stage 3
+                        if (countDiffColumns[1] <= 3) { // There still may be a hidden triple
+                            for (let c = b+1; c <= tripleCount-1 && !solved; c++) {
+                                number3 = tripleNumbers[c];
+                                tempCount = countDiffColumns[1];
+
+                                for (let x = 0; x < columnsCount[number3]; x++) {
+                                    sameFlag = false;
+                                    tempColumn = columns[number3][x];
+                                    for (let y = 0; y < countDiffColumns[1]; y++) {
+                                        if (tempColumn === diffColumns[y]) {
+                                            sameFlag = true;
+                                        }
+                                    }
+                                    if (sameFlag === false) {
+                                        if (tempCount < 3) {
+                                            diffColumns[tempCount] = tempColumn;
+                                        }
+                                        tempCount++;
+                                    }
+                                }
+                                countDiffColumns[2] = tempCount;
+
+                                if (countDiffColumns[2] === 3) { // number1, number2 and number3 form a hidden triple in column1, column2 and column3
+                                    totalCount = 0;
+                                    column1Changes = 0;
+                                    column2Changes = 0;
+                                    column3Changes = 0;
+                                    numbersChanged1.fill(0);
+                                    numbersChanged2.fill(0);
+                                    numbersChanged3.fill(0);
+                                    description = "";
+
+                                    // Remove all numbers except number1, number2, number3 from 
+                                    // all columns except column1, column2, and column3
+                                    for (let k = 0; k < 9; k++) {
+                                        if (k !== number1 && k !== number2 && k !== number3) {
+                                            if (possible[i][diffColumns[0]][k] === k+1) {
+                                                possible[i][diffColumns[0]][k] = 0;
+                                                numbersChanged1[column1Changes] = k;
+                                                column1Changes++;
+                                                totalCount++;
+                                            }
+                                            if (possible[i][diffColumns[1]][k] === k+1) {
+                                                possible[i][diffColumns[1]][k] = 0;
+                                                numbersChanged2[column2Changes] = k;
+                                                column2Changes++;
+                                                totalCount++;
+                                            }
+                                            if (possible[i][diffColumns[2]][k] === k+1) {
+                                                possible[i][diffColumns[2]][k] = 0;
+                                                numbersChanged3[column3Changes] = k;
+                                                column3Changes++;
+                                                totalCount++;
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Save data to change log
+                                    if (totalCount > 0) {
+                                        if (!isGuessAndCheck && !isBruteForce) {
+                                            possibleChangeMethod.push("Hidden Triple - Row");
+                                            
+                                            // Sort the numbers in ascending order
+                                            const sortedNumbers = [number1, number2, number3].sort((a, b) => a - b);
+                                            
+                                            description = "Since the numbers " + (sortedNumbers[0]+1) + ", " + (sortedNumbers[1]+1) + " and " +
+                                                (sortedNumbers[2]+1) + " form a hidden triple in the cells (" + (i+1) + "," + (diffColumns[0]+1) + "), (" +
+                                                (i+1) + "," + (diffColumns[1]+1) + ") and (" + (i+1) + "," + (diffColumns[2]+1) + 
+                                                "), the below numbers were removed as possible options:";
+
+                                            if (column1Changes > 0) {
+                                                // Sort numbers in ascending order
+                                                const sortedNumbers1 = numbersChanged1.slice(0, column1Changes).sort((a, b) => a - b);
+                                                for (let s = 0; s < column1Changes; s++) {
+                                                    description = description + "\nRow " + (i+1) + ", Column " + (diffColumns[0]+1) + ": " + (sortedNumbers1[s]+1);
+                                                    possibleChangeOrder.push(possibleChangeCount);
+                                                    possibleChangeNumber.push(sortedNumbers1[s]+1);
+                                                    possibleChangeRow.push(i);
+                                                    possibleChangeColumn.push(diffColumns[0]);
+                                                    possibleChangePossibleCount++;
+                                                }
+                                            }
+
+                                            if (column2Changes > 0) {
+                                                // Sort numbers in ascending order
+                                                const sortedNumbers2 = numbersChanged2.slice(0, column2Changes).sort((a, b) => a - b);
+                                                for (let s = 0; s < column2Changes; s++) {
+                                                    description = description + "\nRow " + (i+1) + ", Column " + (diffColumns[1]+1) + ": " + (sortedNumbers2[s]+1);
+                                                    possibleChangeOrder.push(possibleChangeCount);
+                                                    possibleChangeNumber.push(sortedNumbers2[s]+1);
+                                                    possibleChangeRow.push(i);
+                                                    possibleChangeColumn.push(diffColumns[1]);
+                                                    possibleChangePossibleCount++;
+                                                }
+                                            }
+
+                                            if (column3Changes > 0) {
+                                                // Sort numbers in ascending order
+                                                const sortedNumbers3 = numbersChanged3.slice(0, column3Changes).sort((a, b) => a - b);
+                                                for (let s = 0; s < column3Changes; s++) {
+                                                    description = description + "\nRow " + (i+1) + ", Column " + (diffColumns[2]+1) + ": " + (sortedNumbers3[s]+1);
+                                                    possibleChangeOrder.push(possibleChangeCount);
+                                                    possibleChangeNumber.push(sortedNumbers3[s]+1);
+                                                    possibleChangeRow.push(i);
+                                                    possibleChangeColumn.push(diffColumns[2]);
+                                                    possibleChangePossibleCount++;
+                                                }
+                                            }
+
+                                            possibleChangeDescription.push(description);
+                                            totalChangeType.push("possible");
+                                            totalChangeMethod.push("Hidden Triple - Row");
+                                            levelTwoChanges++;
+                                            hiddenTripleRowChanges++;
+                                            possibleChangeCount++;
+                                            totalChangeCount++;
+                                        }
+                                        tempChanges++;
+
+                                        // Run previous methods to see if the puzzle can be solved
+                                        tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                        if (!solved) {
+                                            tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function hiddenTripleColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let rows = new Array(9).fill().map(() => Array(3).fill(0));
+    let rowsCount = new Array(9).fill(0);
+    let tripleNumbers = new Array(9).fill(0);
+    let tripleCount = 0;
+    let number1 = 0;
+    let number2 = 0;
+    let number3 = 0;
+    let diffRows = new Array(3).fill(0);
+    let countDiffRows = new Array(3).fill(0);
+    let tempCount = 0;
+    let tempRow = 0;
+    let sameFlag = false;
+    let totalCount = 0;
+    let row1Changes = 0;
+    let row2Changes = 0;
+    let row3Changes = 0;
+    let numbersChanged1 = new Array(9).fill(0);
+    let numbersChanged2 = new Array(9).fill(0);
+    let numbersChanged3 = new Array(9).fill(0);
+    let description = "";
+
+    do {
+        tempChanges = 0;
+        for (let j = 0; j < 9 && !solved; j++) { // column number
+            for (let z = 0; z < 9; z++) {
+                rows[z].fill(0);
+            }
+            rowsCount.fill(0);
+            tripleNumbers.fill(0);
+            tripleCount = 0;
+
+            // Goes down the column, counts how many rows each number appears in, then stores the first three
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (!Columns[j][k]) {
+                    for (let i = 0; i < 9; i++) { // row number
+                        if (intPuzzle[i][j] === 0 && possible[i][j][k] === k+1) {
+                            if (rowsCount[k] < 3) {
+                                rows[k][rowsCount[k]] = i;
+                            }
+                            rowsCount[k]++;
+                        }
+                    }
+                }
+            }
+
+            // Counts the number of numbers 1-9 that appear in only 2 or 3 rows
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (rowsCount[k] === 2 || rowsCount[k] === 3) {
+                    tripleNumbers[tripleCount] = k;
+                    tripleCount++;
+                }
+            }
+
+            // Checks to see if any of the numbers match any other numbers, forming a hidden triple
+            if (tripleCount > 2) {
+                // Stage 1
+                for (let a = 0; a <= tripleCount-3 && !solved; a++) {
+                    diffRows.fill(0);
+                    countDiffRows.fill(0);
+                    number1 = tripleNumbers[a];
+                    diffRows[0] = rows[number1][0];
+                    diffRows[1] = rows[number1][1];
+                    if (rowsCount[number1] === 2) {
+                        countDiffRows[0] = 2;
+                    }
+                    if (rowsCount[number1] === 3) {
+                        diffRows[2] = rows[number1][2];
+                        countDiffRows[0] = 3;
+                    }
+
+                    // Stage 2
+                    for (let b = a+1; b <= tripleCount-2 && !solved; b++) {
+                        number2 = tripleNumbers[b];
+                        tempCount = countDiffRows[0];
+
+                        for (let x = 0; x < rowsCount[number2]; x++) {
+                            sameFlag = false;
+                            tempRow = rows[number2][x];
+                            for (let y = 0; y < countDiffRows[0]; y++) {
+                                if (tempRow === diffRows[y]) {
+                                    sameFlag = true;
+                                }
+                            }
+                            if (sameFlag === false) {
+                                if (tempCount < 3) {
+                                    diffRows[tempCount] = tempRow;
+                                }
+                                tempCount++;
+                            }
+                        }
+                        countDiffRows[1] = tempCount;
+
+                        // Stage 3
+                        if (countDiffRows[1] <= 3) { // There still may be a hidden triple
+                            for (let c = b+1; c <= tripleCount-1 && !solved; c++) {
+                                number3 = tripleNumbers[c];
+                                tempCount = countDiffRows[1];
+
+                                for (let x = 0; x < rowsCount[number3]; x++) {
+                                    sameFlag = false;
+                                    tempRow = rows[number3][x];
+                                    for (let y = 0; y < countDiffRows[1]; y++) {
+                                        if (tempRow === diffRows[y]) {
+                                            sameFlag = true;
+                                        }
+                                    }
+                                    if (sameFlag === false) {
+                                        if (tempCount < 3) {
+                                            diffRows[tempCount] = tempRow;
+                                        }
+                                        tempCount++;
+                                    }
+                                }
+                                countDiffRows[2] = tempCount;
+
+                                if (countDiffRows[2] === 3) { // number1, number2 and number3 form a hidden triple in row1, row2 and row3
+                                    totalCount = 0;
+                                    row1Changes = 0;
+                                    row2Changes = 0;
+                                    row3Changes = 0;
+                                    numbersChanged1.fill(0);
+                                    numbersChanged2.fill(0);
+                                    numbersChanged3.fill(0);
+                                    description = "";
+
+                                    // Remove all numbers except number1, number2, number3 from 
+                                    // all rows except row1, row2, and row3
+                                    for (let k = 0; k < 9; k++) {
+                                        if (k !== number1 && k !== number2 && k !== number3) {
+                                            if (possible[diffRows[0]][j][k] === k+1) {
+                                                possible[diffRows[0]][j][k] = 0;
+                                                numbersChanged1[row1Changes] = k;
+                                                row1Changes++;
+                                                totalCount++;
+                                            }
+                                            if (possible[diffRows[1]][j][k] === k+1) {
+                                                possible[diffRows[1]][j][k] = 0;
+                                                numbersChanged2[row2Changes] = k;
+                                                row2Changes++;
+                                                totalCount++;
+                                            }
+                                            if (possible[diffRows[2]][j][k] === k+1) {
+                                                possible[diffRows[2]][j][k] = 0;
+                                                numbersChanged3[row3Changes] = k;
+                                                row3Changes++;
+                                                totalCount++;
+                                            }
+                                        }
+                                    }
+
+                                    // Save data to change log
+                                    if (totalCount > 0) {
+                                        if (!isGuessAndCheck && !isBruteForce) {
+                                            possibleChangeMethod.push("Hidden Triple - Column");
+
+                                            // Sort the numbers in ascending order
+                                            const sortedNumbers = [number1, number2, number3].sort((a, b) => a - b);
+                                            
+                                            description = "Since the numbers " + (sortedNumbers[0]+1) + ", " + (sortedNumbers[1]+1) + " and " +
+                                                (sortedNumbers[2]+1) + " form a hidden triple in the cells (" + (diffRows[0]+1) + "," + (j+1) + "), (" +
+                                                (diffRows[1]+1) + "," + (j+1) + ") and (" + (diffRows[2]+1) + "," + (j+1) + 
+                                                "), the below numbers were removed as possible options:";
+
+                                            if (row1Changes > 0) {
+                                                // Sort numbers in ascending order
+                                                const sortedNumbers1 = numbersChanged1.slice(0, row1Changes).sort((a, b) => a - b);
+                                                for (let s = 0; s < row1Changes; s++) {
+                                                    description = description + "\nRow " + (diffRows[0]+1) + ", Column " + (j+1) + ": " + (sortedNumbers1[s]+1);
+                                                    possibleChangeOrder.push(possibleChangeCount);
+                                                    possibleChangeNumber.push(sortedNumbers1[s]+1);
+                                                    possibleChangeRow.push(diffRows[0]);
+                                                    possibleChangeColumn.push(j);
+                                                    possibleChangePossibleCount++;
+                                                }
+                                            }
+
+                                            if (row2Changes > 0) {
+                                                // Sort numbers in ascending order
+                                                const sortedNumbers2 = numbersChanged2.slice(0, row2Changes).sort((a, b) => a - b);
+                                                for (let s = 0; s < row2Changes; s++) {
+                                                    description = description + "\nRow " + (diffRows[1]+1) + ", Column " + (j+1) + ": " + (sortedNumbers2[s]+1);
+                                                    possibleChangeOrder.push(possibleChangeCount);
+                                                    possibleChangeNumber.push(sortedNumbers2[s]+1);
+                                                    possibleChangeRow.push(diffRows[1]);
+                                                    possibleChangeColumn.push(j);
+                                                    possibleChangePossibleCount++;
+                                                }
+                                            }
+
+                                            if (row3Changes > 0) {
+                                                // Sort numbers in ascending order
+                                                const sortedNumbers3 = numbersChanged3.slice(0, row3Changes).sort((a, b) => a - b);
+                                                for (let s = 0; s < row3Changes; s++) {
+                                                    description = description + "\nRow " + (diffRows[2]+1) + ", Column " + (j+1) + ": " + (sortedNumbers3[s]+1);
+                                                    possibleChangeOrder.push(possibleChangeCount);
+                                                    possibleChangeNumber.push(sortedNumbers3[s]+1);
+                                                    possibleChangeRow.push(diffRows[2]);
+                                                    possibleChangeColumn.push(j);
+                                                    possibleChangePossibleCount++;
+                                                }
+                                            }
+
+                                            possibleChangeDescription.push(description);
+                                            totalChangeType.push("possible");
+                                            totalChangeMethod.push("Hidden Triple - Column");
+                                            levelTwoChanges++;
+                                            hiddenTripleColumnChanges++;
+                                            possibleChangeCount++;
+                                            totalChangeCount++;
+                                        }
+                                        tempChanges++;
+
+                                        // Run previous methods to see if the puzzle can be solved
+                                        tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                        if (!solved) {
+                                            tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function hiddenTripleGroupCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let rows = new Array(9).fill().map(() => Array(3).fill(0));
+    let columns = new Array(9).fill().map(() => Array(3).fill(0));
+    let cellCount = new Array(9).fill(0);
+    let tripleNumbers = new Array(9).fill(0);
+    let tripleCount = 0;
+    let number1 = 0;
+    let number2 = 0;
+    let number3 = 0;
+    let diffRows = new Array(3).fill(0);
+    let diffColumns = new Array(3).fill(0);
+    let countDiffCells = new Array(3).fill(0);
+    let tempCount = 0;
+    let tempRow = 0;
+    let tempColumn = 0;
+    let sameFlag = false;
+    let totalCount = 0;
+    let cell1Changes = 0;
+    let cell2Changes = 0;
+    let cell3Changes = 0;
+    let numbersChanged1 = new Array(9).fill(0);
+    let numbersChanged2 = new Array(9).fill(0);
+    let numbersChanged3 = new Array(9).fill(0);
+    let description = "";
+
+    do {
+        tempChanges = 0;
+        for (let l = 0; l < 9 && !solved; l++) { // group number
+            for (let z = 0; z < 9; z++) {
+                rows[z].fill(0);
+                columns[z].fill(0);
+            }
+            cellCount.fill(0);
+            tripleNumbers.fill(0);
+            tripleCount = 0;
+
+            // Goes down the group, counts how many cells each number appears in, then stores the first three
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (!Groups[l][k]) {
+                    for (let i = ROW_START[l]; i <= ROW_END[l]; i++) { // row number
+                        for (let j = COLUMN_START[l]; j <= COLUMN_END[l]; j++) { // column number
+                            if (intPuzzle[i][j] === 0 && possible[i][j][k] === k+1) {
+                                if (cellCount[k] < 3) {
+                                    rows[k][cellCount[k]] = i;
+                                    columns[k][cellCount[k]] = j;
+                                }
+                                cellCount[k]++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Counts the number of numbers 1-9 that appear in only 2 or 3 cells
+            for (let k = 0; k < 9; k++) { // number 1-9
+                if (cellCount[k] === 2 || cellCount[k] === 3) {
+                    tripleNumbers[tripleCount] = k;
+                    tripleCount++;
+                }
+            }
+
+            // Checks to see if any of the numbers match any other numbers, forming a hidden triple
+            if (tripleCount > 2) {
+                // Stage 1
+                for (let a = 0; a <= tripleCount-3 && !solved; a++) {
+                    diffRows.fill(0);
+                    diffColumns.fill(0);
+                    countDiffCells.fill(0);
+                    number1 = tripleNumbers[a];
+                    diffRows[0] = rows[number1][0];
+                    diffColumns[0] = columns[number1][0];
+                    diffRows[1] = rows[number1][1];
+                    diffColumns[1] = columns[number1][1];
+                    if (cellCount[number1] === 2) {
+                        countDiffCells[0] = 2;
+                    }
+                    if (cellCount[number1] === 3) {
+                        diffRows[2] = rows[number1][2];
+                        diffColumns[2] = columns[number1][2];
+                        countDiffCells[0] = 3;
+                    }
+                    
+
+                    // Stage 2
+                    for (let b = a+1; b <= tripleCount-2 && !solved; b++) {
+                        number2 = tripleNumbers[b];
+                        tempCount = countDiffCells[0];
+
+                        for (let x = 0; x < cellCount[number2]; x++) {
+                            sameFlag = false;
+                            tempRow = rows[number2][x];
+                            tempColumn = columns[number2][x];
+                            for (let y = 0; y < countDiffCells[0]; y++) {
+                                if (tempRow === diffRows[y] && tempColumn === diffColumns[y]) {
+                                    sameFlag = true;
+                                }
+                            }
+                            if (sameFlag === false) {
+                                if (tempCount < 3) {
+                                    diffRows[tempCount] = tempRow;
+                                    diffColumns[tempCount] = tempColumn;
+                                }
+                                tempCount++;
+                            }
+                        }
+                        countDiffCells[1] = tempCount;
+
+                        // Stage 3
+                        if (countDiffCells[1] <= 3) { // There still may be a hidden triple
+                            for (let c = b+1; c <= tripleCount-1 && !solved; c++) {
+                                number3 = tripleNumbers[c];
+                                tempCount = countDiffCells[1];
+
+                                for (let x = 0; x < cellCount[number3]; x++) {
+                                    sameFlag = false;
+                                    tempRow = rows[number3][x];
+                                    tempColumn = columns[number3][x];
+                                    for (let y = 0; y < countDiffCells[1]; y++) {
+                                        if (tempRow === diffRows[y] && tempColumn === diffColumns[y]) {
+                                            sameFlag = true;
+                                        }
+                                    }
+                                    if (sameFlag === false) {
+                                        if (tempCount < 3) {
+                                            diffRows[tempCount] = tempRow;
+                                            diffColumns[tempCount] = tempColumn;
+                                        }
+                                        tempCount++;
+                                    }   
+                                }
+                                countDiffCells[2] = tempCount;
+
+                                if (countDiffCells[2] === 3) { // number1, number2 and number3 form a hidden triple in cell1, cell2 and cell3
+                                    totalCount = 0;
+                                    cell1Changes = 0;
+                                    cell2Changes = 0;
+                                    cell3Changes = 0;
+                                    numbersChanged1.fill(0);
+                                    numbersChanged2.fill(0);
+                                    numbersChanged3.fill(0);
+                                    description = "";
+
+                                    // Remove all numbers except number1, number2, number3 from 
+                                    // all cells except cells 1, 2, and 3
+                                    for (let k = 0; k < 9; k++) {
+                                        if (k !== number1 && k !== number2 && k !== number3) {
+                                            if (possible[diffRows[0]][diffColumns[0]][k] === k+1) {
+                                                possible[diffRows[0]][diffColumns[0]][k] = 0;
+                                                numbersChanged1[cell1Changes] = k;
+                                                cell1Changes++;
+                                                totalCount++;
+                                            }
+                                            if (possible[diffRows[1]][diffColumns[1]][k] === k+1) {
+                                                possible[diffRows[1]][diffColumns[1]][k] = 0;
+                                                numbersChanged2[cell2Changes] = k;
+                                                cell2Changes++;
+                                                totalCount++;
+                                            }
+                                            if (possible[diffRows[2]][diffColumns[2]][k] === k+1) {
+                                                possible[diffRows[2]][diffColumns[2]][k] = 0;
+                                                numbersChanged3[cell3Changes] = k;
+                                                cell3Changes++;
+                                                totalCount++;
+                                            }
+                                        }
+                                    }
+
+                                    // Save data to change log
+                                    if (totalCount > 0) {
+                                        if (!isGuessAndCheck && !isBruteForce) {
+                                            possibleChangeMethod.push("Hidden Triple - Group");
+
+                                            // Sort the numbers in ascending order
+                                            const sortedNumbers = [number1, number2, number3].sort((a, b) => a - b);
+                                            
+                                            description = "Since the numbers " + (sortedNumbers[0]+1) + ", " + (sortedNumbers[1]+1) + " and " +
+                                                (sortedNumbers[2]+1) + " form a hidden triple in the cells (" + (diffRows[0]+1) + "," + (diffColumns[0]+1) + "), (" +
+                                                (diffRows[1]+1) + "," + (diffColumns[1]+1) + ") and (" + (diffRows[2]+1) + "," + (diffColumns[2]+1) + 
+                                                "), the below numbers were removed as possible options:";
+
+                                            if (cell1Changes > 0) {
+                                                // Sort numbers in ascending order
+                                                const sortedNumbers1 = numbersChanged1.slice(0, cell1Changes).sort((a, b) => a - b);
+                                                for (let s = 0; s < cell1Changes; s++) {
+                                                    description = description + "\nRow " + (diffRows[0]+1) + ", Column " + (diffColumns[0]+1) + ": " + (sortedNumbers1[s]+1);
+                                                    possibleChangeOrder.push(possibleChangeCount);
+                                                    possibleChangeNumber.push(sortedNumbers1[s]+1);
+                                                    possibleChangeRow.push(diffRows[0]);
+                                                    possibleChangeColumn.push(diffColumns[0]);
+                                                    possibleChangePossibleCount++;
+                                                }
+                                            }
+
+                                            if (cell2Changes > 0) {
+                                                // Sort numbers in ascending order
+                                                const sortedNumbers2 = numbersChanged2.slice(0, cell2Changes).sort((a, b) => a - b);
+                                                for (let s = 0; s < cell2Changes; s++) {
+                                                    description = description + "\nRow " + (diffRows[1]+1) + ", Column " + (diffColumns[1]+1) + ": " + (sortedNumbers2[s]+1);
+                                                    possibleChangeOrder.push(possibleChangeCount);
+                                                    possibleChangeNumber.push(sortedNumbers2[s]+1);
+                                                    possibleChangeRow.push(diffRows[1]);
+                                                    possibleChangeColumn.push(diffColumns[1]);
+                                                    possibleChangePossibleCount++;
+                                                }
+                                            }
+
+                                            if (cell3Changes > 0) {
+                                                // Sort numbers in ascending order
+                                                const sortedNumbers3 = numbersChanged3.slice(0, cell3Changes).sort((a, b) => a - b);
+                                                for (let s = 0; s < cell3Changes; s++) {
+                                                    description = description + "\nRow " + (diffRows[2]+1) + ", Column " + (diffColumns[2]+1) + ": " + (sortedNumbers3[s]+1);
+                                                    possibleChangeOrder.push(possibleChangeCount);
+                                                    possibleChangeNumber.push(sortedNumbers3[s]+1);
+                                                    possibleChangeRow.push(diffRows[2]);
+                                                    possibleChangeColumn.push(diffColumns[2]);
+                                                    possibleChangePossibleCount++;
+                                                }
+                                            }   
+
+                                            possibleChangeDescription.push(description);
+                                            totalChangeType.push("possible");
+                                            totalChangeMethod.push("Hidden Triple - Group");
+                                            levelTwoChanges++;
+                                            hiddenTripleGroupChanges++;
+                                            possibleChangeCount++;
+                                            totalChangeCount++;
+                                        }
+                                        tempChanges++;
+
+                                        // Run previous methods to see if the puzzle can be solved
+                                        tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                        if (!solved) {
+                                            tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function nakedQuadChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempNakedQuadChanges = 0;
+    
+    do {
+        changes = 0;
+        changes += nakedQuadRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += nakedQuadColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += nakedQuadGroupCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        tempNakedQuadChanges += changes;
+    } while (changes !== 0 && !solved);
+
+    return changes;
+}
+
+function nakedQuadRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let numberCount = new Array(9).fill(0);
+    let numbers = new Array(9).fill().map(() => Array(4).fill(0));
+    let quadColumns = new Array(9).fill(0);
+    let quadCount = 0;
+    let column1 = 0;
+    let column2 = 0;
+    let column3 = 0;
+    let column4 = 0;
+    let diffNumbers = new Array(4).fill(0);
+    let countDiffNumbers = new Array(4).fill(0);
+    let tempCount = 0;
+    let tempNumber = 0;
+    let sameFlag = false;
+    let totalCount = 0;
+    let number1Changes = 0;
+    let number2Changes = 0;
+    let number3Changes = 0;
+    let number4Changes = 0;
+    let columnsChanged1 = new Array(9).fill(0);
+    let columnsChanged2 = new Array(9).fill(0);
+    let columnsChanged3 = new Array(9).fill(0);
+    let columnsChanged4 = new Array(9).fill(0);
+    let description = "";
+
+    do {
+        tempChanges = 0;
+        for (let i = 0; i < 9 && !solved; i++) { // row number
+            for (let z = 0; z < 9; z++) {
+                numbers[z].fill(0);
+            }
+            numberCount.fill(0);
+            quadColumns.fill(0);
+            quadCount = 0;
+
+            // Goes down the row and counts the number of options in each cell and stores the first four
+            for (let j = 0; j < 9; j++) { // column number
+                if (intPuzzle[i][j] === 0) {
+                    for (let k = 0; k < 9; k++) { // number 1-9
+                        if (possible[i][j][k] === k+1) {
+                            if (numberCount[j] < 4) {
+                                numbers[j][numberCount[j]] = k;
+                            }
+                            numberCount[j]++;
+                        }
+                    }
+                }
+            }
+
+            // Counts number of cells with 4 or less options
+            for (let j = 0; j < 9; j++) { // column number
+                if (numberCount[j] === 2 || numberCount[j] === 3 || numberCount[j] === 4) {
+                    quadColumns[quadCount] = j;
+                    quadCount++;
+                }
+            }
+
+            // Checks to see if any of the two, three or four option cells have the same numbers, forming a naked quad
+            if (quadCount > 3) {
+                // Stage 1
+                for (let a = 0; a <= quadCount-4 && !solved; a++) {
+                    diffNumbers.fill(0);
+                    countDiffNumbers.fill(0);
+                    column1 = quadColumns[a];
+                    diffNumbers[0] = numbers[column1][0];
+                    diffNumbers[1] = numbers[column1][1];
+                    if (numberCount[column1] === 2) {
+                        countDiffNumbers[0] = 2;
+                    }
+                    if (numberCount[column1] === 3) {
+                        diffNumbers[2] = numbers[column1][2];
+                        countDiffNumbers[0] = 3;
+                    }
+                    if (numberCount[column1] === 4) {
+                        diffNumbers[2] = numbers[column1][2];
+                        diffNumbers[3] = numbers[column1][3];
+                        countDiffNumbers[0] = 4;
+                    }
+                    
+                    // Stage 2
+                    for (let b = a+1; b <= quadCount-3 && !solved; b++) {
+                        column2 = quadColumns[b];
+                        tempCount = countDiffNumbers[0];
+                        
+                        for (let x = 0; x < numberCount[column2]; x++) {
+                            sameFlag = false;
+                            tempNumber = numbers[column2][x];
+                            for (let y = 0; y < countDiffNumbers[0]; y++) {
+                                if (tempNumber === diffNumbers[y]) {
+                                    sameFlag = true;
+                                }
+                            }
+                            if (sameFlag === false) {
+                                if (tempCount < 4) {
+                                    diffNumbers[tempCount] = tempNumber;
+                                }
+                                tempCount++;
+                            }
+                        }
+                        countDiffNumbers[1] = tempCount;
+                        
+                        // Stage 3
+                        if (countDiffNumbers[1] <= 4) { // There still may be a naked quad
+                            for (let c = b+1; c <= quadCount-2 && !solved; c++) {
+                                column3 = quadColumns[c];
+                                tempCount = countDiffNumbers[1];
+                                
+                                for (let x = 0; x < numberCount[column3]; x++) {
+                                    sameFlag = false;
+                                    tempNumber = numbers[column3][x];
+                                    for (let y = 0; y < countDiffNumbers[1]; y++) {
+                                        if (tempNumber === diffNumbers[y]) {
+                                            sameFlag = true;
+                                        }
+                                    }
+                                    if (sameFlag === false) {
+                                        if (tempCount < 4) {
+                                            diffNumbers[tempCount] = tempNumber;
+                                        }
+                                        tempCount++;
+                                    }
+                                }
+                                countDiffNumbers[2] = tempCount;
+
+                                // Stage 4
+                                if (countDiffNumbers[2] === 4) { // There still may be a naked quad
+                                    for (let d = c+1; d <= quadCount-1 && !solved; d++) {
+                                        column4 = quadColumns[d];
+                                        tempCount = countDiffNumbers[2];
+
+                                        for (let x = 0; x < numberCount[column4]; x++) {
+                                            sameFlag = false;
+                                            tempNumber = numbers[column4][x];
+                                            for (let y = 0; y < countDiffNumbers[2]; y++) {
+                                                if (tempNumber === diffNumbers[y]) {
+                                                    sameFlag = true;
+                                                }
+                                            }
+                                            if (sameFlag === false) {
+                                                if (tempCount < 4) {
+                                                    diffNumbers[tempCount] = tempNumber;
+                                                }
+                                                tempCount++;
+                                            }
+                                        }
+                                        countDiffNumbers[3] = tempCount;
+
+                                        if (countDiffNumbers[3] === 4) { // The 4 numbers stored in diffNumbers form a naked quad in columns 1, 2, 3, & 4
+                                            totalCount = 0;
+                                            number1Changes = 0;
+                                            number2Changes = 0;
+                                            number3Changes = 0;
+                                            number4Changes = 0;
+                                            columnsChanged1.fill(0);
+                                            columnsChanged2.fill(0);
+                                            columnsChanged3.fill(0);
+                                            columnsChanged4.fill(0);
+                                            description = "";
+
+                                            // Sort the numbers in ascending order while maintaining their original indices
+                                            let sortedNumbers = [
+                                                { value: diffNumbers[0], index: 0 },
+                                                { value: diffNumbers[1], index: 1 },
+                                                { value: diffNumbers[2], index: 2 },
+                                                { value: diffNumbers[3], index: 3 }
+                                            ].sort((a, b) => a.value - b.value);
+
+                                            // Create mapping arrays to track which original number corresponds to which sorted position
+                                            let originalToSorted = [0, 0, 0, 0];
+                                            let sortedToOriginal = [0, 0, 0, 0];
+                                            for (let i = 0; i < 4; i++) {
+                                                originalToSorted[sortedNumbers[i].index] = i;
+                                                sortedToOriginal[i] = sortedNumbers[i].index;
+                                            }
+
+                                            // Remove number1, number2, number3, and number4 from every cell 
+                                            // in row other than column1, column2, column3, and column4
+                                            for (let j = 0; j < 9; j++) {
+                                                if (intPuzzle[i][j] === 0 && j !== column1 && j !== column2 && j !== column3 && j !== column4) {
+                                                    if (possible[i][j][diffNumbers[0]] === diffNumbers[0]+1) {
+                                                        possible[i][j][diffNumbers[0]] = 0;
+                                                        columnsChanged1[number1Changes] = j;
+                                                        number1Changes++;
+                                                        totalCount++;
+                                                    }
+                                                    if (possible[i][j][diffNumbers[1]] === diffNumbers[1]+1) {
+                                                        possible[i][j][diffNumbers[1]] = 0;
+                                                        columnsChanged2[number2Changes] = j;
+                                                        number2Changes++;
+                                                        totalCount++;
+                                                    }
+                                                    if (possible[i][j][diffNumbers[2]] === diffNumbers[2]+1) {
+                                                        possible[i][j][diffNumbers[2]] = 0;
+                                                        columnsChanged3[number3Changes] = j;
+                                                        number3Changes++;
+                                                        totalCount++;
+                                                    }
+                                                    if (possible[i][j][diffNumbers[3]] === diffNumbers[3]+1) {
+                                                        possible[i][j][diffNumbers[3]] = 0;
+                                                        columnsChanged4[number4Changes] = j;
+                                                        number4Changes++;
+                                                        totalCount++;
+                                                    }
+                                                }
+                                            }
+
+                                            // Save data to change log
+                                            if (totalCount > 0) {
+                                                if (!isGuessAndCheck && !isBruteForce) {
+                                                    possibleChangeMethod.push("Naked Quad - Row");
+                                                    
+                                                    description = "Since the numbers " + (sortedNumbers[0].value+1) + ", " + (sortedNumbers[1].value+1) +
+                                                        ", " + (sortedNumbers[2].value+1) + " and " + (sortedNumbers[3].value+1) + " form a naked quad in the cells (" + (i+1) + "," + (column1+1) + "), (" +
+                                                        (i+1) + "," + (column2+1) + "), (" + (i+1) + "," + (column3+1) + "), and (" + (i+1) + "," + (column4+1) + 
+                                                        "), the below numbers were removed as possible options:";
+        
+                                                    // Map the changes to the sorted order
+                                                    let changes = [
+                                                        { count: number1Changes, columns: columnsChanged1, number: diffNumbers[0] },
+                                                        { count: number2Changes, columns: columnsChanged2, number: diffNumbers[1] },
+                                                        { count: number3Changes, columns: columnsChanged3, number: diffNumbers[2] },
+                                                        { count: number4Changes, columns: columnsChanged4, number: diffNumbers[3] }
+                                                    ];
+        
+                                                    // Log changes in sorted order
+                                                    for (let s = 0; s < 4; s++) {
+                                                        const originalIndex = sortedToOriginal[s];
+                                                        if (changes[originalIndex].count > 0) {
+                                                            for (let t = 0; t < changes[originalIndex].count; t++) {
+                                                                description = description + "\nRow " + (i+1) + ", Column " + (changes[originalIndex].columns[t]+1) + ": " + (sortedNumbers[s].value+1);
+                                                                possibleChangeOrder.push(possibleChangeCount);
+                                                                possibleChangeNumber.push(sortedNumbers[s].value+1);
+                                                                possibleChangeRow.push(i);
+                                                                possibleChangeColumn.push(changes[originalIndex].columns[t]);
+                                                                possibleChangePossibleCount++;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    possibleChangeDescription.push(description);
+                                                    totalChangeType.push("possible");
+                                                    totalChangeMethod.push("Naked Quad - Row");
+                                                    levelTwoChanges++;
+                                                    nakedQuadRowChanges++;
+                                                    possibleChangeCount++;
+                                                    totalChangeCount++;
+                                                }
+                                                tempChanges++;
+
+                                                // Run previous methods to see if the puzzle can be solved
+                                                tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                                if (!solved) {
+                                                    tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }   
+                }
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function nakedQuadColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let numberCount = new Array(9).fill(0);
+    let numbers = new Array(9).fill().map(() => Array(4).fill(0));
+    let quadRows = new Array(9).fill(0);
+    let quadCount = 0;
+    let row1 = 0;
+    let row2 = 0;
+    let row3 = 0;
+    let row4 = 0;
+    let diffNumbers = new Array(4).fill(0);
+    let countDiffNumbers = new Array(4).fill(0);
+    let tempCount = 0;
+    let tempNumber = 0;
+    let sameFlag = false;
+    let totalCount = 0;
+    let number1Changes = 0;
+    let number2Changes = 0;
+    let number3Changes = 0;
+    let number4Changes = 0;
+    let rowsChanged1 = new Array(9).fill(0);
+    let rowsChanged2 = new Array(9).fill(0);
+    let rowsChanged3 = new Array(9).fill(0);
+    let rowsChanged4 = new Array(9).fill(0);
+    let description = "";
+
+    do {
+        tempChanges = 0;
+        for (let j = 0; j < 9 && !solved; j++) { // column number
+            for (let z = 0; z < 9; z++) {
+                numbers[z].fill(0);
+            }
+            numberCount.fill(0);
+            quadRows.fill(0);
+            quadCount = 0;
+
+            // Goes down the column and counts the number of options in each cell and stores the first four
+            for (let i = 0; i < 9; i++) { // row number
+                if (intPuzzle[i][j] === 0) {
+                    for (let k = 0; k < 9; k++) { // number 1-9
+                        if (possible[i][j][k] === k+1) {
+                            if (numberCount[i] < 4) {
+                                numbers[i][numberCount[i]] = k;
+                            }
+                            numberCount[i]++;
+                        }
+                    }
+                }
+            }
+
+            // Counts number of cells with 4 or less options
+            for (let i = 0; i < 9; i++) { // row number
+                if (numberCount[i] === 2 || numberCount[i] === 3 || numberCount[i] === 4) {
+                    quadRows[quadCount] = i;
+                    quadCount++;
+                }
+            }
+
+            // Checks to see if any of the two, three or four option cells have the same numbers, forming a naked quad
+            if (quadCount > 3) {
+                // Stage 1
+                for (let a = 0; a <= quadCount-4 && !solved; a++) {
+                    diffNumbers.fill(0);
+                    countDiffNumbers.fill(0);
+                    row1 = quadRows[a];
+                    diffNumbers[0] = numbers[row1][0];
+                    diffNumbers[1] = numbers[row1][1];
+                    if (numberCount[row1] === 2) {
+                        countDiffNumbers[0] = 2;
+                    }
+                    if (numberCount[row1] === 3) {
+                        diffNumbers[2] = numbers[row1][2];
+                        countDiffNumbers[0] = 3;
+                    }
+                    if (numberCount[row1] === 4) {
+                        diffNumbers[2] = numbers[row1][2];
+                        diffNumbers[3] = numbers[row1][3];
+                        countDiffNumbers[0] = 4;
+                    }
+
+                    // Stage 2
+                    for (let b = a+1; b <= quadCount-3 && !solved; b++) {
+                        row2 = quadRows[b];
+                        tempCount = countDiffNumbers[0];
+
+                        for (let x = 0; x < numberCount[row2]; x++) {
+                            sameFlag = false;
+                            tempNumber = numbers[row2][x];
+                            for (let y = 0; y < countDiffNumbers[0]; y++) {
+                                if (tempNumber === diffNumbers[y]) {
+                                    sameFlag = true;
+                                }
+                            }
+                            if (sameFlag === false) {
+                                if (tempCount < 4) {
+                                    diffNumbers[tempCount] = tempNumber;
+                                }
+                                tempCount++;
+                            }
+                        }
+                        countDiffNumbers[1] = tempCount;
+
+                        // Stage 3
+                        if (countDiffNumbers[1] <= 4) { // There still may be a naked quad
+                            for (let c = b+1; c <= quadCount-2 && !solved; c++) {
+                                row3 = quadRows[c];
+                                tempCount = countDiffNumbers[1];
+
+                                for (let x = 0; x < numberCount[row3]; x++) {
+                                    sameFlag = false;
+                                    tempNumber = numbers[row3][x];
+                                    for (let y = 0; y < countDiffNumbers[1]; y++) {
+                                        if (tempNumber === diffNumbers[y]) {
+                                            sameFlag = true;
+                                        }
+                                    }
+                                    if (sameFlag === false) {
+                                        if (tempCount < 4) {
+                                            diffNumbers[tempCount] = tempNumber;
+                                        }
+                                        tempCount++;
+                                    }
+                                }
+                                countDiffNumbers[2] = tempCount;
+
+                                // Stage 4
+                                if (countDiffNumbers[2] === 4) { // There still may be a naked quad
+                                    for (let d = c+1; d <= quadCount-1 && !solved; d++) {
+                                        row4 = quadRows[d];
+                                        tempCount = countDiffNumbers[2];
+
+                                        for (let x = 0; x < numberCount[row4]; x++) {
+                                            sameFlag = false;
+                                            tempNumber = numbers[row4][x];
+                                            for (let y = 0; y < countDiffNumbers[2]; y++) {
+                                                if (tempNumber === diffNumbers[y]) {
+                                                    sameFlag = true;
+                                                }
+                                            }
+                                            if (sameFlag === false) {
+                                                if (tempCount < 4) {
+                                                    diffNumbers[tempCount] = tempNumber;
+                                                }
+                                                tempCount++;
+                                            }
+                                        }
+                                        countDiffNumbers[3] = tempCount;
+
+                                        if (countDiffNumbers[3] === 4) { // The 4 numbers stored in diffNumbers form a naked quad in rows 1, 2, 3, & 4
+                                            totalCount = 0;
+                                            number1Changes = 0;
+                                            number2Changes = 0;
+                                            number3Changes = 0;
+                                            number4Changes = 0;
+                                            rowsChanged1.fill(0);
+                                            rowsChanged2.fill(0);
+                                            rowsChanged3.fill(0);
+                                            rowsChanged4.fill(0);
+                                            description = "";
+
+                                            // Sort the numbers in ascending order while maintaining their original indices
+                                            let sortedNumbers = [
+                                                { value: diffNumbers[0], index: 0 },
+                                                { value: diffNumbers[1], index: 1 },
+                                                { value: diffNumbers[2], index: 2 },
+                                                { value: diffNumbers[3], index: 3 }
+                                            ].sort((a, b) => a.value - b.value);
+
+                                            // Create mapping arrays to track which original number corresponds to which sorted position
+                                            let originalToSorted = [0, 0, 0, 0];
+                                            let sortedToOriginal = [0, 0, 0, 0];
+                                            for (let i = 0; i < 4; i++) {
+                                                originalToSorted[sortedNumbers[i].index] = i;
+                                                sortedToOriginal[i] = sortedNumbers[i].index;
+                                            }
+
+                                            // Remove number1, number2, number3, and number4 from every cell 
+                                            // in column other than row1, row2, row3, and row4
+                                            for (let i = 0; i < 9; i++) {
+                                                if (intPuzzle[i][j] === 0 && i !== row1 && i !== row2 && i !== row3 && i !== row4) {
+                                                    if (possible[i][j][diffNumbers[0]] === diffNumbers[0]+1) {
+                                                        possible[i][j][diffNumbers[0]] = 0;
+                                                        rowsChanged1[number1Changes] = i;
+                                                        number1Changes++;
+                                                        totalCount++;
+                                                    }
+                                                    if (possible[i][j][diffNumbers[1]] === diffNumbers[1]+1) {
+                                                        possible[i][j][diffNumbers[1]] = 0;
+                                                        rowsChanged2[number2Changes] = i;
+                                                        number2Changes++;
+                                                        totalCount++;
+                                                    }
+                                                    if (possible[i][j][diffNumbers[2]] === diffNumbers[2]+1) {
+                                                        possible[i][j][diffNumbers[2]] = 0;
+                                                        rowsChanged3[number3Changes] = i;
+                                                        number3Changes++;
+                                                        totalCount++;
+                                                    }
+                                                    if (possible[i][j][diffNumbers[3]] === diffNumbers[3]+1) {
+                                                        possible[i][j][diffNumbers[3]] = 0;
+                                                        rowsChanged4[number4Changes] = i;
+                                                        number4Changes++;
+                                                        totalCount++;
+                                                    }
+                                                }
+                                            }
+
+                                            // Save data to change log
+                                            if (totalCount > 0) {
+                                                if (!isGuessAndCheck && !isBruteForce) {
+                                                    possibleChangeMethod.push("Naked Quad - Column");
+
+                                                    description = "Since the numbers " + (sortedNumbers[0].value+1) + ", " + (sortedNumbers[1].value+1) +
+                                                        ", " + (sortedNumbers[2].value+1) + " and " + (sortedNumbers[3].value+1) + " form a naked quad in the cells (" + (row1+1) + "," + (j+1) + "), (" +
+                                                        (row2+1) + "," + (j+1) + "), (" + (row3+1) + "," + (j+1) + "), and (" + (row4+1) + "," + (j+1) + 
+                                                        "), the below numbers were removed as possible options:";
+        
+                                                    // Map the changes to the sorted order
+                                                    let changes = [
+                                                        { count: number1Changes, rows: rowsChanged1, number: diffNumbers[0] },
+                                                        { count: number2Changes, rows: rowsChanged2, number: diffNumbers[1] },
+                                                        { count: number3Changes, rows: rowsChanged3, number: diffNumbers[2] },
+                                                        { count: number4Changes, rows: rowsChanged4, number: diffNumbers[3] }
+                                                    ];
+        
+                                                    // Log changes in sorted order
+                                                    for (let s = 0; s < 4; s++) {
+                                                        const originalIndex = sortedToOriginal[s];
+                                                        if (changes[originalIndex].count > 0) {
+                                                            for (let t = 0; t < changes[originalIndex].count; t++) {
+                                                                description = description + "\nRow " + (changes[originalIndex].rows[t]+1) + ", Column " + (j+1) + ": " + (sortedNumbers[s].value+1);
+                                                                possibleChangeOrder.push(possibleChangeCount);
+                                                                possibleChangeNumber.push(sortedNumbers[s].value+1);
+                                                                possibleChangeRow.push(changes[originalIndex].rows[t]);
+                                                                possibleChangeColumn.push(j);
+                                                                possibleChangePossibleCount++;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    possibleChangeDescription.push(description);
+                                                    totalChangeType.push("possible");
+                                                    totalChangeMethod.push("Naked Quad - Column");
+                                                    levelTwoChanges++;
+                                                    nakedQuadColumnChanges++;
+                                                    possibleChangeCount++;
+                                                    totalChangeCount++;
+                                                }
+                                                tempChanges++;
+
+                                                // Run previous methods to see if the puzzle can be solved
+                                                tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                                if (!solved) {
+                                                    tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }   
+                }
+            }
+        }
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function nakedQuadGroupCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let numberCount = new Array(9).fill().map(() => Array(9).fill(0));
+    let numbers = new Array(9).fill().map(() => Array(9).fill(0).map(() => Array(4).fill(0)));
+    let quadRows = new Array(9).fill(0);
+    let quadColumns = new Array(9).fill(0);
+    let quadCount = 0;
+    let row1 = 0;
+    let row2 = 0;
+    let row3 = 0;
+    let row4 = 0;
+    let column1 = 0;
+    let column2 = 0;
+    let column3 = 0;
+    let column4 = 0;
+    let diffNumbers = new Array(4).fill(0);
+    let countDiffNumbers = new Array(4).fill(0);
+    let tempCount = 0;
+    let tempNumber = 0;
+    let sameFlag = false;
+    let totalCount = 0;
+    let number1Changes = 0;
+    let number2Changes = 0;
+    let number3Changes = 0;
+    let number4Changes = 0;
+    let rowsChanged1 = new Array(9).fill(0);
+    let rowsChanged2 = new Array(9).fill(0);
+    let rowsChanged3 = new Array(9).fill(0);
+    let rowsChanged4 = new Array(9).fill(0);
+    let columnsChanged1 = new Array(9).fill(0);
+    let columnsChanged2 = new Array(9).fill(0);
+    let columnsChanged3 = new Array(9).fill(0);
+    let columnsChanged4 = new Array(9).fill(0);
+    let description = "";
+
+    do {
+        tempChanges = 0;
+        for (let l = 0; l < 9 && !solved; l++) { // group number
+            for (let x = 0; x < 9; x++) {
+                numberCount[x].fill(0);
+                for (let y = 0; y < 9; y++) {
+                    numbers[x][y].fill(0);
+                }
+            }
+            quadRows.fill(0);
+            quadColumns.fill(0);
+            quadCount = 0;
+
+            // Goes down the group and counts the number of options in each cell and stores the first four
+            for (let i = ROW_START[l]; i <= ROW_END[l]; i++) { // row number
+                for (let j = COLUMN_START[l]; j <= COLUMN_END[l]; j++) { // column number
+                    if (intPuzzle[i][j] === 0) {
+                        for (let k = 0; k < 9; k++) { // number 1-9
+                            if (possible[i][j][k] === k+1) {
+                                if (numberCount[i][j] < 4) {
+                                    numbers[i][j][numberCount[i][j]] = k;
+                                }
+                                numberCount[i][j]++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Counts number of cells with 4 or less options
+            for (let i = ROW_START[l]; i <= ROW_END[l]; i++) { // row number
+                for (let j = COLUMN_START[l]; j <= COLUMN_END[l]; j++) { // column number
+                    if (numberCount[i][j] === 2 || numberCount[i][j] === 3 || numberCount[i][j] === 4) {
+                        quadRows[quadCount] = i;
+                        quadColumns[quadCount] = j;
+                        quadCount++;
+                    }
+                }
+            }
+
+            // Checks to see if any of the two, three or four option cells have the same numbers, forming a naked quad
+            if (quadCount > 3) {
+                // Stage 1
+                for (let a = 0; a <= quadCount-4 && !solved; a++) {
+                    diffNumbers.fill(0);
+                    countDiffNumbers.fill(0);
+                    row1 = quadRows[a];
+                    column1 = quadColumns[a];
+                    diffNumbers[0] = numbers[row1][column1][0];
+                    diffNumbers[1] = numbers[row1][column1][1];
+                    if (numberCount[row1][column1] === 2) {
+                        countDiffNumbers[0] = 2;
+                    }
+                    if (numberCount[row1][column1] === 3) {
+                        diffNumbers[2] = numbers[row1][column1][2];
+                        countDiffNumbers[0] = 3;
+                    }
+                    if (numberCount[row1][column1] === 4) {
+                        diffNumbers[2] = numbers[row1][column1][2];
+                        diffNumbers[3] = numbers[row1][column1][3];
+                        countDiffNumbers[0] = 4;
+                    }
+
+                    // Stage 2
+                    for (let b = a+1; b <= quadCount-3 && !solved; b++) {
+                        row2 = quadRows[b];
+                        column2 = quadColumns[b];
+                        tempCount = countDiffNumbers[0];
+
+                        for (let x = 0; x < numberCount[row2][column2]; x++) {
+                            sameFlag = false;
+                            tempNumber = numbers[row2][column2][x];
+                            for (let y = 0; y < countDiffNumbers[0]; y++) {
+                                if (tempNumber === diffNumbers[y]) {
+                                    sameFlag = true;
+                                }
+                            }
+                            if (sameFlag === false) {
+                                if (tempCount < 4) {
+                                    diffNumbers[tempCount] = tempNumber;
+                                }
+                                tempCount++;
+                            }
+                        }
+                        countDiffNumbers[1] = tempCount;
+
+                        // Stage 3
+                        if (countDiffNumbers[1] <= 4) { // There still may be a naked quad
+                            for (let c = b+1; c <= quadCount-2 && !solved; c++) {
+                                row3 = quadRows[c];
+                                column3 = quadColumns[c];
+                                tempCount = countDiffNumbers[1];
+
+                                for (let x = 0; x < numberCount[row3][column3]; x++) {
+                                    sameFlag = false;
+                                    tempNumber = numbers[row3][column3][x];
+                                    for (let y = 0; y < countDiffNumbers[1]; y++) {
+                                        if (tempNumber === diffNumbers[y]) {
+                                            sameFlag = true;
+                                        }
+                                    }
+                                    if (sameFlag === false) {
+                                        if (tempCount < 4) {
+                                            diffNumbers[tempCount] = tempNumber;
+                                        }
+                                        tempCount++;
+                                    }
+                                }
+                                countDiffNumbers[2] = tempCount;
+
+                                // Stage 4
+                                if (countDiffNumbers[2] === 4) { // There still may be a naked quad
+                                    for (let d = c+1; d <= quadCount-1 && !solved; d++) {
+                                        row4 = quadRows[d];
+                                        column4 = quadColumns[d];
+                                        tempCount = countDiffNumbers[2];
+
+                                        for (let x = 0; x < numberCount[row4][column4]; x++) {
+                                            sameFlag = false;
+                                            tempNumber = numbers[row4][column4][x];
+                                            for (let y = 0; y < countDiffNumbers[2]; y++) {
+                                                if (tempNumber === diffNumbers[y]) {
+                                                    sameFlag = true;
+                                                }
+                                            }
+                                            if (sameFlag === false) {
+                                                if (tempCount < 4) {
+                                                    diffNumbers[tempCount] = tempNumber;
+                                                }
+                                                tempCount++;
+                                            }
+                                        }
+                                        countDiffNumbers[3] = tempCount;
+
+                                        if (countDiffNumbers[3] === 4) { // The 4 numbers stored in diffNumbers form a naked quad in rows 1, 2, 3, & 4
+                                            totalCount = 0;
+                                            number1Changes = 0;
+                                            number2Changes = 0;
+                                            number3Changes = 0;
+                                            number4Changes = 0;
+                                            rowsChanged1.fill(0);
+                                            rowsChanged2.fill(0);
+                                            rowsChanged3.fill(0);
+                                            rowsChanged4.fill(0);
+                                            description = "";
+
+                                            // Sort the numbers in ascending order while maintaining their original indices
+                                            let sortedNumbers = [
+                                                { value: diffNumbers[0], index: 0 },
+                                                { value: diffNumbers[1], index: 1 },
+                                                { value: diffNumbers[2], index: 2 },
+                                                { value: diffNumbers[3], index: 3 }
+                                            ].sort((a, b) => a.value - b.value);
+
+                                            // Create mapping arrays to track which original number corresponds to which sorted position
+                                            let originalToSorted = [0, 0, 0, 0];
+                                            let sortedToOriginal = [0, 0, 0, 0];
+                                            for (let i = 0; i < 4; i++) {
+                                                originalToSorted[sortedNumbers[i].index] = i;
+                                                sortedToOriginal[i] = sortedNumbers[i].index;
+                                            }
+
+                                            // Remove number1, number2, number3, and number4 from every cell 
+                                            // in column other than row1, row2, row3, and row4
+                                            for (let i = ROW_START[l]; i <= ROW_END[l]; i++) {
+                                                for (let j = COLUMN_START[l]; j <= COLUMN_END[l]; j++) {
+                                                    if (intPuzzle[i][j] === 0 && !(i === row1 && j === column1) && !(i === row2 && j === column2) &&
+                                                        !(i === row3 && j === column3) && !(i === row4 && j === column4)) {
+                                                        if (possible[i][j][diffNumbers[0]] === diffNumbers[0]+1) {
+                                                            possible[i][j][diffNumbers[0]] = 0;
+                                                            rowsChanged1[number1Changes] = i;
+                                                            columnsChanged1[number1Changes] = j;
+                                                            number1Changes++;
+                                                            totalCount++;
+                                                        }
+                                                        if (possible[i][j][diffNumbers[1]] === diffNumbers[1]+1) {
+                                                            possible[i][j][diffNumbers[1]] = 0;
+                                                            rowsChanged2[number2Changes] = i;
+                                                            columnsChanged2[number2Changes] = j;
+                                                            number2Changes++;
+                                                            totalCount++;
+                                                        }
+                                                        if (possible[i][j][diffNumbers[2]] === diffNumbers[2]+1) {
+                                                            possible[i][j][diffNumbers[2]] = 0;
+                                                            rowsChanged3[number3Changes] = i;
+                                                            columnsChanged3[number3Changes] = j;
+                                                            number3Changes++;
+                                                            totalCount++;
+                                                        }
+                                                        if (possible[i][j][diffNumbers[3]] === diffNumbers[3]+1) {
+                                                            possible[i][j][diffNumbers[3]] = 0;
+                                                            rowsChanged4[number4Changes] = i;
+                                                            columnsChanged4[number4Changes] = j;
+                                                            number4Changes++;
+                                                            totalCount++;
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // Save data to change log
+                                            if (totalCount > 0) {
+                                                if (!isGuessAndCheck && !isBruteForce) {
+                                                    possibleChangeMethod.push("Naked Quad - Group");
+
+                                                    description = "Since the numbers " + (sortedNumbers[0].value+1) + ", " + (sortedNumbers[1].value+1) +
+                                                        ", " + (sortedNumbers[2].value+1) + " and " + (sortedNumbers[3].value+1) + " form a naked quad in the cells (" + (row1+1) + "," + (column1+1) + "), (" +
+                                                        (row2+1) + "," + (column2+1) + "), (" + (row3+1) + "," + (column3+1) + "), and (" + (row4+1) + "," + (column4+1) + 
+                                                        "), the below numbers were removed as possible options:";
+
+                                                    // Map the changes to the sorted order
+                                                    let changes = [
+                                                        { count: number1Changes, rows: rowsChanged1, columns: columnsChanged1, number: diffNumbers[0] },
+                                                        { count: number2Changes, rows: rowsChanged2, columns: columnsChanged2, number: diffNumbers[1] },
+                                                        { count: number3Changes, rows: rowsChanged3, columns: columnsChanged3, number: diffNumbers[2] },
+                                                        { count: number4Changes, rows: rowsChanged4, columns: columnsChanged4, number: diffNumbers[3] }
+                                                    ];
+
+                                                    // Log changes in sorted order
+                                                    for (let s = 0; s < 4; s++) {
+                                                        const originalIndex = sortedToOriginal[s];
+                                                        if (changes[originalIndex].count > 0) {
+                                                            for (let t = 0; t < changes[originalIndex].count; t++) {
+                                                                description = description + "\nRow " + (changes[originalIndex].rows[t]+1) + ", Column " + (changes[originalIndex].columns[t]+1) + ": " + (sortedNumbers[s].value+1);
+                                                                possibleChangeOrder.push(possibleChangeCount);
+                                                                possibleChangeNumber.push(sortedNumbers[s].value+1);
+                                                                possibleChangeRow.push(changes[originalIndex].rows[t]);
+                                                                possibleChangeColumn.push(changes[originalIndex].columns[t]);
+                                                                possibleChangePossibleCount++;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    possibleChangeDescription.push(description);
+                                                    totalChangeType.push("possible");
+                                                    totalChangeMethod.push("Naked Quad - Group");
+                                                    levelTwoChanges++;
+                                                    nakedQuadGroupChanges++;
+                                                    possibleChangeCount++;
+                                                    totalChangeCount++;
+                                                }
+                                                tempChanges++;
+
+                                                // Run previous methods to see if the puzzle can be solved
+                                                tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                                if (!solved) {
+                                                    tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function xWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempXWingChanges = 0;
+
+    do {
+        changes = 0;
+        changes += xWingRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += xWingColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        tempXWingChanges += changes;
+    } while (changes !== 0 && !solved);
+    
+    return tempXWingChanges;
+}
+
+function xWingRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let count = new Array(9).fill(0);
+    let columns = new Array(9).fill().map(() => new Array(2).fill(0));
+    let doubleRows = new Array(9).fill(0);
+    let doubleCount = 0;
+    let row1 = 0;
+    let row2 = 0;
+    let column1 = 0;
+    let column2 = 0;
+    let totalCount = 0;
+    let column1Changes = 0;
+    let column2Changes = 0;
+    let rowsChanged1 = new Array(9).fill(0);
+    let rowsChanged2 = new Array(9).fill(0);
+    let description;
+
+    do {
+        tempChanges = 0;
+        for (let k = 0; k < 9 && !solved; k++) {
+            count.fill(0);
+            doubleRows.fill(0);
+            doubleCount = 0;
+
+            // Goes down each row, counts the number of columns the number k appears in,
+            // and then stores the first two columns
+            for (let i = 0; i < 9; i++) { // row number
+                if (!Rows[i][k]) {
+                    for (let j = 0; j < 9; j++) { // column number
+                        if (intPuzzle[i][j] === 0 && possible[i][j][k] === k+1) {
+                            if (count[i] < 2) {
+                                columns[i][count[i]] = j;
+                            }
+                            count[i]++;
+                        }
+                    }
+                }
+            }
+
+            // Counts the number of rows the number appears twice in and stores them
+            for (let i = 0; i < 9; i++) { // row number
+                if (count[i] === 2) {
+                    doubleRows[doubleCount] = i;
+                    doubleCount++;
+                }
+            }
+
+            if (doubleCount > 1) {
+                // Stage 1
+                for (let a = 0; a <= doubleCount-2 && !solved; a++) {
+                    row1 = doubleRows[a];
+                    column1 = columns[row1][0];
+                    column2 = columns[row1][1];
+
+                    // Stage 2
+                    for (let b = a+1; b <= doubleCount-1 && !solved; b++) {
+                        row2 = doubleRows[b];
+
+                        if (columns[row2][0] === column1 && columns[row2][1] === column2) {
+                            // There is an X Wing in row1, row2 and column1, column2
+                            totalCount = 0;
+                            column1Changes = 0;
+                            column2Changes = 0;
+                            rowsChanged1.fill(0);
+                            rowsChanged2.fill(0);
+                            description = "";
+
+                            // Remove number k from every cell in column1 and column2 other than row1 and row2
+                            for (let i = 0; i < 9; i++) { // row number
+                                if (i !== row1 && i !== row2) {
+                                    if (intPuzzle[i][column1] === 0 && possible[i][column1][k] === k+1) {
+                                        possible[i][column1][k] = 0;
+                                        rowsChanged1[column1Changes] = i;
+                                        column1Changes++;
+                                        totalCount++;
+                                    }
+                                    if (intPuzzle[i][column2] === 0 && possible[i][column2][k] === k+1) {
+                                        possible[i][column2][k] = 0;
+                                        rowsChanged2[column2Changes] = i;
+                                        column2Changes++;
+                                        totalCount++;
+                                    }
+                                }
+                            }
+
+                            // Save data to change log
+                            if (totalCount > 0) {
+                                if (!isGuessAndCheck && !isBruteForce) {
+                                    possibleChangeMethod.push("X Wing - Row");
+
+                                    description = "Since the number " + (k+1) + " forms an X Wing in the rows " + (row1+1) + " and " + (row2+1) + ", columns " + (column1+1) + " and " + (column2+1) + 
+                                        ", it was removed from the below cells as a possible option:";
+
+                                    // Create arrays to store all changes for sorting
+                                    let allChanges = [];
+                                    
+                                    // Add column1 changes
+                                    for (let s = 0; s < column1Changes; s++) {
+                                        allChanges.push({
+                                            row: rowsChanged1[s],
+                                            column: column1,
+                                            number: k+1
+                                        });
+                                    }
+                                    
+                                    // Add column2 changes
+                                    for (let s = 0; s < column2Changes; s++) {
+                                        allChanges.push({
+                                            row: rowsChanged2[s],
+                                            column: column2,
+                                            number: k+1
+                                        });
+                                    }
+                                    
+                                    // Sort changes by row, then column
+                                    allChanges.sort((a, b) => {
+                                        if (a.row !== b.row) return a.row - b.row;
+                                        return a.column - b.column;
+                                    });
+                                    
+                                    // Add sorted changes to description and tracking arrays
+                                    for (let change of allChanges) {
+                                        description += "\nRow " + (change.row+1) + ", Column " + (change.column+1) + ": " + change.number;
+                                        possibleChangeOrder.push(possibleChangeCount);
+                                        possibleChangeNumber.push(change.number);
+                                        possibleChangeRow.push(change.row);
+                                        possibleChangeColumn.push(change.column);
+                                        possibleChangePossibleCount++;
+                                    }
+
+                                    possibleChangeDescription.push(description);
+                                    totalChangeType.push("possible");
+                                    totalChangeMethod.push("X Wing - Row");
+                                    levelTwoChanges++;
+                                    xWingRowChanges++;
+                                    possibleChangeCount++;
+                                    totalChangeCount++;
+                                }
+                                tempChanges++;
+
+                                // Run previous methods to see if the puzzle can be solved
+                                tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce); 
+                                if (!solved) {
+                                    tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function xWingColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let count = new Array(9).fill(0);
+    let rows = new Array(9).fill().map(() => new Array(2).fill(0));
+    let doubleColumns = new Array(9).fill(0);
+    let doubleCount = 0;
+    let row1 = 0;
+    let row2 = 0;
+    let column1 = 0;
+    let column2 = 0;
+    let totalCount = 0;
+    let row1Changes = 0;
+    let row2Changes = 0;
+    let columnsChanged1 = new Array(9).fill(0);
+    let columnsChanged2 = new Array(9).fill(0);
+    let description;
+
+    do {
+        tempChanges = 0;
+        for (let k = 0; k < 9 && !solved; k++) {
+            count.fill(0);
+            doubleColumns.fill(0);
+            doubleCount = 0;
+
+            // Goes down each column, counts the number of rows the number k appears in,
+            // and then stores the first two rows
+            for (let j = 0; j < 9; j++) { // column number
+                if (!Columns[j][k]) {
+                    for (let i = 0; i < 9; i++) { // row number
+                        if (intPuzzle[i][j] === 0 && possible[i][j][k] === k+1) {
+                            if (count[j] < 2) {
+                                rows[j][count[j]] = i;
+                            }
+                            count[j]++;
+                        }
+                    }
+                }
+            }
+
+            // Counts the number of columns the number appears twice in and stores them
+            for (let j = 0; j < 9; j++) { // column number
+                if (count[j] === 2) {
+                    doubleColumns[doubleCount] = j;
+                    doubleCount++;
+                }
+            }
+
+            if (doubleCount > 1) {
+                // Stage 1
+                for (let a = 0; a <= doubleCount-2 && !solved; a++) {
+                    column1 = doubleColumns[a];
+                    row1 = rows[column1][0];
+                    row2 = rows[column1][1];
+
+                    // Stage 2
+                    for (let b = a+1; b <= doubleCount-1 && !solved; b++) {
+                        column2 = doubleColumns[b];
+
+                        if (rows[column2][0] === row1 && rows[column2][1] === row2) {
+                            // There is an X Wing in row1, row2 and column1, column2
+                            totalCount = 0;
+                            row1Changes = 0;
+                            row2Changes = 0;
+                            columnsChanged1.fill(0);
+                            columnsChanged2.fill(0);
+                            description = "";
+
+                            // Remove number k from every cell in row1 and row2 other than column1 and column2
+                            for (let j = 0; j < 9; j++) { // column number
+                                if (j !== column1 && j !== column2) {
+                                    if (intPuzzle[row1][j] === 0 && possible[row1][j][k] === k+1) {
+                                        possible[row1][j][k] = 0;
+                                        columnsChanged1[row1Changes] = j;
+                                        row1Changes++;
+                                        totalCount++;
+                                    }
+                                    if (intPuzzle[row2][j] === 0 && possible[row2][j][k] === k+1) {
+                                        possible[row2][j][k] = 0;
+                                        columnsChanged2[row2Changes] = j;
+                                        row2Changes++;
+                                        totalCount++;
+                                    }
+                                }
+                            }
+
+                            // Save data to change log
+                            if (totalCount > 0) {
+                                if (!isGuessAndCheck && !isBruteForce) {
+                                    possibleChangeMethod.push("X Wing - Column");
+
+                                    description = "Since the number " + (k+1) + " forms an X Wing in the rows " + (row1+1) + " and " + (row2+1) + ", columns " + (column1+1) + " and " + (column2+1) + 
+                                        ", it was removed from the below cells as a possible option:";
+
+                                    // Create arrays to store all changes for sorting
+                                    let allChanges = [];
+                                    
+                                    // Add column1 changes
+                                    for (let s = 0; s < row1Changes; s++) {
+                                        allChanges.push({
+                                            row: row1,
+                                            column: columnsChanged1[s],
+                                            number: k+1
+                                        });
+                                    }
+                                    
+                                    // Add column2 changes
+                                    for (let s = 0; s < row2Changes; s++) {
+                                        allChanges.push({
+                                            row: row2,
+                                            column: columnsChanged2[s],
+                                            number: k+1
+                                        }); 
+                                    }
+
+                                    // Sort changes by row, then column
+                                    allChanges.sort((a, b) => {
+                                        if (a.row !== b.row) return a.row - b.row;
+                                        return a.column - b.column;
+                                    });
+
+                                    // Add sorted changes to description and tracking arrays
+                                    for (let change of allChanges) {
+                                        description += "\nRow " + (change.row+1) + ", Column " + (change.column+1) + ": " + change.number;
+                                        possibleChangeOrder.push(possibleChangeCount);
+                                        possibleChangeNumber.push(change.number);
+                                        possibleChangeRow.push(change.row);
+                                        possibleChangeColumn.push(change.column);
+                                        possibleChangePossibleCount++;
+                                    }
+
+                                    possibleChangeDescription.push(description);
+                                    totalChangeType.push("possible");
+                                    totalChangeMethod.push("X Wing - Column");
+                                    levelTwoChanges++;
+                                    xWingColumnChanges++;
+                                    possibleChangeCount++;
+                                    totalChangeCount++;
+                                }
+                                tempChanges++;
+
+                                // Run previous methods to see if the puzzle can be solved
+                                tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce); 
+                                if (!solved) {
+                                    tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
                                 }
                             }
                         }
