@@ -26,6 +26,9 @@ let nakedQuadColumnChanges = 0;
 let nakedQuadGroupChanges = 0;
 let xWingRowChanges = 0;
 let xWingColumnChanges = 0;
+let yWingRowGroupChanges = 0;
+let yWingColumnGroupChanges = 0;
+let yWingRowColumnChanges = 0;
 
 let mainChangeCount = 0;
 let possibleChangeCount = 0;
@@ -125,7 +128,9 @@ export function solvePuzzle(startPuzzleString) {
         nakedQuadGroupChanges,
         xWingRowChanges,
         xWingColumnChanges,
-
+        yWingRowGroupChanges,
+        yWingColumnGroupChanges,
+        yWingRowColumnChanges,
 
         mainChangeMethod,
         mainChangeDescription,
@@ -194,7 +199,9 @@ function resetMetrics() {
     nakedQuadGroupChanges = 0;
     xWingRowChanges = 0;
     xWingColumnChanges = 0;
-
+    yWingRowGroupChanges = 0;
+    yWingColumnGroupChanges = 0;
+    yWingRowColumnChanges = 0;
 
     mainChangeNumber = [];
     mainChangeMethod = [];
@@ -2002,7 +2009,7 @@ function levelTwoMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndC
         changes += hiddenTripleChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
         changes += nakedQuadChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
         changes += xWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
-        // changes += yWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += yWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
         tempLevelTwoChanges += changes;
     } while (changes !== 0 && !solved);
 
@@ -3482,7 +3489,7 @@ function nakedQuadChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndC
         tempNakedQuadChanges += changes;
     } while (changes !== 0 && !solved);
 
-    return changes;
+    return tempNakedQuadChanges;
 }
 
 function nakedQuadRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
@@ -4024,6 +4031,7 @@ function nakedQuadColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGues
                 }
             }
         }
+        changes += tempChanges;
     } while (tempChanges !== 0 && !solved);
 
     return changes;
@@ -4323,6 +4331,7 @@ function nakedQuadGroupCheck(intPuzzle, possible, Rows, Columns, Groups, isGuess
                 }
             }
         }
+        changes += tempChanges;
     } while (tempChanges !== 0 && !solved);
 
     return changes;
@@ -4494,6 +4503,7 @@ function xWingRowCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAndChe
                 }
             }
         }
+        changes += tempChanges;
     } while (tempChanges !== 0 && !solved);
 
     return changes;
@@ -4651,7 +4661,571 @@ function xWingColumnCheck(intPuzzle, possible, Rows, Columns, Groups, isGuessAnd
                 }
             }
         }
+        changes += tempChanges;
     } while (tempChanges !== 0 && !solved);
 
     return changes;
 }
+
+function yWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempYWingChanges = 0;
+    let isTwoOption = new Array(9).fill().map(() => new Array(9).fill(false));
+    let numbers = new Array(9).fill().map(() => new Array(9).fill(0).map(() => new Array(2).fill(0)));
+    
+    do {
+        changes = 0;
+        changes += rowColumnYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += rowGroupYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += columnGroupYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        tempYWingChanges += changes;
+    } while (changes !== 0 && !solved);
+    
+    return tempYWingChanges;
+}
+
+function rowColumnYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let A;
+    let B;
+    let C;
+    let rowWingColumn;
+    let isRowWing_AC;
+    let isRowWing_BC;
+    let columnWingRow;
+    let centerWingGroup;
+    let yWingChangesMade;
+    let description;
+
+    do {
+        tempChanges = 0;
+        updateTwoOption(intPuzzle, possible, numbers, isTwoOption);
+        yWingChangesMade = false;
+
+        for (let i = 0; i < 9 && !yWingChangesMade && !solved; i++) { // row number
+            for (let j = 0; j < 9 && !yWingChangesMade && !solved; j++) { // column number
+                A = 0;
+                B = 0;
+                C = 0;
+
+                if (isTwoOption[i][j] === true) {
+                    A = numbers[i][j][0];
+                    B = numbers[i][j][1];
+                    centerWingGroup = determineGroup(i, j);
+
+                    // go down the row to see if there is another two option cell
+                    // that can be a wing cell
+                    for (let q = 0; q < 9 && !yWingChangesMade && !solved; q++) { // column number
+                        rowWingColumn = -1;
+                        let tempGroup = determineGroup(i, q);
+                        isRowWing_AC = false;
+                        isRowWing_BC = false;
+
+                        if (isTwoOption[i][q] === true && q !== j && tempGroup !== centerWingGroup) {
+                            if (numbers[i][q][0] === A && numbers[i][q][1] !== B) {
+                                rowWingColumn = q;
+                                C = numbers[i][q][1];
+                                isRowWing_AC = true;
+                            } else if (numbers[i][q][0] === B && numbers[i][q][1] !== A) {
+                                rowWingColumn = q;
+                                C = numbers[i][q][1];
+                                isRowWing_BC = true;
+                            } else if (numbers[i][q][0] !== A && numbers[i][q][1] === B) {
+                                rowWingColumn = q;
+                                C = numbers[i][q][0];
+                                isRowWing_BC = true;
+                            } else if (numbers[i][q][0] !== B && numbers[i][q][1] === A) {
+                                rowWingColumn = q;
+                                C = numbers[i][q][0];
+                                isRowWing_AC = true;
+                            }
+
+                            // if a row wing has been found, check for a column wing
+                            if (rowWingColumn !== -1) {
+                                columnWingRow = -1;
+                                
+                                for (let r = 0; r < 9 && !yWingChangesMade && !solved; r++) { // row number
+                                    tempGroup = determineGroup(r, j);
+
+                                    if (isTwoOption[r][j] === true && r !== i && tempGroup !== centerWingGroup) {
+                                        // check to see if the column wing is equal to the opposite config of the row wing
+                                        // case 1) Row Wing = AC, is Column Wing = BC?
+                                        // case 2) Row Wing = BC, is Column Wing = AC?
+                                        
+                                        if ((isRowWing_AC === true && ((numbers[r][j][0] === B && numbers[r][j][1] === C) ||
+                                                (numbers[r][j][1] === B && numbers[r][j][0] === C))) ||
+                                                (isRowWing_BC === true && ((numbers[r][j][0] === A && numbers[r][j][1] === C) ||
+                                                (numbers[r][j][1] === A && numbers[r][j][0] === C)))) {
+                                            // Y Wing exists!!
+                                            columnWingRow = r;
+                                            description = "";
+
+                                            // Remove C from the cell at (columnWingRow, rowWingColumn), if it's an option
+                                            if (intPuzzle[columnWingRow][rowWingColumn] === 0 && possible[columnWingRow][rowWingColumn][C-1] === C) {
+                                                // Remove C and record the change
+                                                possible[columnWingRow][rowWingColumn][C-1] = 0;
+                                                yWingChangesMade = true;
+                                            }
+                                        }
+
+                                        // save changes to change log
+                                        if (yWingChangesMade) { 
+                                            if (!isGuessAndCheck && !isBruteForce) {
+                                                possibleChangeMethod.push("Y Wing - Row + Column");
+
+                                                // Sort the numbers in ascending order
+                                                const sortedNumbers = [A, B, C].sort((a, b) => a - b);
+                                                const numbersText = sortedNumbers.slice(0, -1).join(", ") + " and " + sortedNumbers[sortedNumbers.length - 1];
+
+                                                description = "Since the numbers " + numbersText +
+                                                    " form a Y Wing with the center wing at Row " + (i+1) + " Column " + (j+1) +
+                                                    ", the row wing at Row " + (i+1) + " Column " + (rowWingColumn+1) +
+                                                    ", and the column wing at Row " + (columnWingRow+1) + " Column " + (j+1) +
+                                                    ", the below numbers were removed as possible options:";
+                                                description = description + "\nRow " + (columnWingRow+1) + ", Column " + (rowWingColumn+1) + ": " + C;
+                                                possibleChangeOrder.push(possibleChangeCount);
+                                                possibleChangeNumber.push(C);
+                                                possibleChangeRow.push(columnWingRow);
+                                                possibleChangeColumn.push(rowWingColumn);
+                                                possibleChangeDescription.push(description);
+                                                totalChangeType.push("possible");
+                                                possibleChangePossibleCount++;
+                                                levelTwoChanges++;
+                                                yWingRowColumnChanges++;
+                                                possibleChangeCount++;
+                                                totalChangeCount++;
+                                            }
+                                            tempChanges++;
+
+                                            // Run previous methods to see if the puzzle can be solved
+                                            tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                            if (!solved) {
+                                                tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function rowGroupYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let yWingChanges = 0;
+    let A;
+    let B;
+    let C;
+    let rowWingColumn;
+    let rowWingGroup;
+    let isRowWing_AC;
+    let isRowWing_BC;
+    let centerWingGroup;
+    let groupWingColumn;
+    let groupWingRow;
+    let yWingChangesMade;
+    let rowsChanged = new Array(5).fill(0);
+    let columnsChanged = new Array(5).fill(0);
+    let description;
+
+    do {
+        tempChanges = 0;
+        updateTwoOption(intPuzzle, possible, numbers, isTwoOption);
+        yWingChangesMade = false;
+
+        for (let i = 0; i < 9 && !yWingChangesMade && !solved; i++) { // row number
+            for (let j = 0; j < 9 && !yWingChangesMade && !solved; j++) { // column number
+                A = 0;
+                B = 0;
+                C = 0;
+
+                if (isTwoOption[i][j] === true) {
+                    A = numbers[i][j][0];
+                    B = numbers[i][j][1];
+                    centerWingGroup = determineGroup(i, j);
+
+                    // go down the row to see if there is another two option cell
+                    // that can be a wing cell
+                    for (let q = 0; q < 9 && !yWingChangesMade && !solved; q++) { // column number
+                        rowWingColumn = -1;
+                        rowWingGroup = -1;
+                        let tempGroup = determineGroup(i, q);
+                        isRowWing_AC = false;
+                        isRowWing_BC = false;
+
+                        if (isTwoOption[i][q] === true && q !== j && tempGroup !== centerWingGroup) {
+                            if (numbers[i][q][0] === A && numbers[i][q][1] !== B) {
+                                rowWingColumn = q;
+                                rowWingGroup = determineGroup(i, q);
+                                C = numbers[i][q][1];
+                                isRowWing_AC = true;
+                            } else if (numbers[i][q][0] === B && numbers[i][q][1] !== A) {
+                                rowWingColumn = q;
+                                rowWingGroup = determineGroup(i, q);
+                                C = numbers[i][q][1];
+                                isRowWing_BC = true;
+                            } else if (numbers[i][q][0] !== A && numbers[i][q][1] === B) {
+                                rowWingColumn = q;
+                                rowWingGroup = determineGroup(i, q);
+                                C = numbers[i][q][0];
+                                isRowWing_BC = true;
+                            } else if (numbers[i][q][0] !== B && numbers[i][q][1] === A) {
+                                rowWingColumn = q;
+                                rowWingGroup = determineGroup(i, q);
+                                C = numbers[i][q][0];
+                                isRowWing_AC = true;
+                            }
+
+                            // if a row wing has been found, check for a group wing
+                            if (rowWingColumn !== -1) {
+                                groupWingColumn = -1;
+                                groupWingRow = -1;
+
+                                for (let r = ROW_START[centerWingGroup]; r <= ROW_END[centerWingGroup] && !yWingChangesMade && !solved; r++) { // row number
+                                    for (let s = COLUMN_START[centerWingGroup]; s <= COLUMN_END[centerWingGroup] && !yWingChangesMade && !solved; s++) { // column number
+                                        if (isTwoOption[r][s] === true && r !== i) {
+                                            // check to see if the group wing is equal to the opposite config of the row wing
+                                            // case 1) Row Wing = AC, is Group Wing = BC?
+                                            // case 2) Row Wing = BC, is Group Wing = AC?
+
+                                            if ((isRowWing_AC === true && ((numbers[r][s][0] === B && numbers[r][s][1] === C) ||
+                                                    (numbers[r][s][1] === B && numbers[r][s][0] === C))) ||
+                                                    (isRowWing_BC === true && ((numbers[r][s][0] === A && numbers[r][s][1] === C) ||
+                                                    (numbers[r][s][1] === A && numbers[r][s][0] === C)))) {
+                                                // Y Wing exists!!
+                                                groupWingRow = r;
+                                                groupWingColumn = s;
+                                                yWingChanges = 0;
+                                                rowsChanged.fill(0);
+                                                columnsChanged.fill(0);
+                                                description = "";
+
+                                                // Remove C from all cells that are:
+                                                // 1) in both the Group Wing's row & the Row Wing's group OR
+                                                // 2) in the Center group & current row
+                                                for (let t = COLUMN_START[rowWingGroup]; t <= COLUMN_END[rowWingGroup]; t++) {
+                                                    if (intPuzzle[groupWingRow][t] === 0 && possible[groupWingRow][t][C-1] === C && t !== groupWingColumn) {
+                                                        // Remove C and record the change
+                                                        possible[groupWingRow][t][C-1] = 0;
+                                                        rowsChanged[yWingChanges] = groupWingRow;
+                                                        columnsChanged[yWingChanges] = t;
+                                                        yWingChangesMade = true;
+                                                        yWingChanges++;
+                                                    }
+                                                }
+
+                                                for (let t = COLUMN_START[centerWingGroup]; t <= COLUMN_END[centerWingGroup]; t++) {
+                                                    if (intPuzzle[i][t] === 0 && possible[i][t][C-1] === C && t !== j) {
+                                                        // Remove C and record the change
+                                                        possible[i][t][C-1] = 0;    
+                                                        rowsChanged[yWingChanges] = i;
+                                                        columnsChanged[yWingChanges] = t;
+                                                        yWingChangesMade = true;
+                                                        yWingChanges++;
+                                                    }
+                                                }
+                                                
+                                                // save changes to change log
+                                                if (yWingChangesMade) {
+                                                    if (!isGuessAndCheck && !isBruteForce) {
+                                                        possibleChangeMethod.push("Y Wing - Row + Group");
+
+                                                        // Sort the numbers in ascending order
+                                                        const sortedNumbers = [A, B, C].sort((a, b) => a - b);
+                                                        const numbersText = sortedNumbers.slice(0, -1).join(", ") + " and " + sortedNumbers[sortedNumbers.length - 1];
+                                                        description = "Since the numbers " + numbersText +
+                                                            " form a Y Wing with the center wing at Row " + (i+1) + " Column " + (j+1) +
+                                                            ", the row wing at Row " + (i+1) + " Column " + (rowWingColumn+1) +
+                                                            ", and the group wing at Row " + (groupWingRow+1) + " Column " + (groupWingColumn+1) +
+                                                            ", the below numbers were removed as possible options:";    
+
+                                                        // Create an array of changes to sort
+                                                        const changes = [];
+                                                        for (let u = 0; u < yWingChanges; u++) {
+                                                            changes.push({
+                                                                row: rowsChanged[u],
+                                                                column: columnsChanged[u],
+                                                                number: C
+                                                            });
+                                                        }
+
+                                                        // Sort changes by number, then row, then column
+                                                        changes.sort((a, b) => {
+                                                            if (a.number !== b.number) return a.number - b.number;
+                                                            if (a.row !== b.row) return a.row - b.row;
+                                                            return a.column - b.column;
+                                                        });
+
+                                                        // Add sorted changes to description and arrays
+                                                        for (const change of changes) {
+                                                            description = description + "\nRow " + (change.row+1) + ", Column " + (change.column+1) + ": " + change.number;
+                                                            possibleChangeOrder.push(possibleChangeCount);
+                                                            possibleChangeNumber.push(change.number);
+                                                            possibleChangeRow.push(change.row);
+                                                            possibleChangeColumn.push(change.column);
+                                                            possibleChangePossibleCount++;
+                                                        }
+
+                                                        possibleChangeDescription.push(description);
+                                                        totalChangeType.push("possible");
+                                                        levelTwoChanges++;
+                                                        yWingRowGroupChanges++;
+                                                        possibleChangeCount++;
+                                                        totalChangeCount++;
+                                                    }
+                                                    tempChanges++;
+
+                                                    // Run previous methods to see if the puzzle can be solved
+                                                    tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                                    if (!solved) {
+                                                        tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                                    }
+                                                }
+                                            }   
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function columnGroupYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, Columns, Groups, isGuessAndCheck, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let yWingChanges = 0;
+    let A;
+    let B;
+    let C;
+    let columnWingRow;
+    let columnWingGroup;
+    let isColumnWing_AC;
+    let isColumnWing_BC;
+    let centerWingGroup;
+    let groupWingRow;
+    let groupWingColumn;
+    let yWingChangesMade;
+    let rowsChanged = new Array(5).fill(0);
+    let columnsChanged = new Array(5).fill(0);
+    let description;
+
+    do {
+        tempChanges = 0;
+        updateTwoOption(intPuzzle, possible, numbers, isTwoOption);
+        yWingChangesMade = false;
+
+        for (let i = 0; i < 9 && !yWingChangesMade && !solved; i++) { // row number
+            for (let j = 0; j < 9 && !yWingChangesMade && !solved; j++) { // column number
+                A = 0;
+                B = 0;
+                C = 0;
+
+                if (isTwoOption[i][j] === true) {
+                    A = numbers[i][j][0];
+                    B = numbers[i][j][1];
+                    centerWingGroup = determineGroup(i, j);
+                }
+
+                // go down the column to see if there is another two option cell
+                // that can be a wing cell
+                for (let q = 0; q < 9 && !yWingChangesMade && !solved; q++) { // row number
+                    columnWingRow = -1;
+                    columnWingGroup = -1;
+                    let tempGroup = determineGroup(q, j);
+                    isColumnWing_AC = false;
+                    isColumnWing_BC = false;
+
+                    if (isTwoOption[q][j] === true && q !== i && tempGroup !== centerWingGroup) {   
+                        if (numbers[q][j][0] === A && numbers[q][j][1] !== B) {
+                            columnWingRow = q;
+                            columnWingGroup = determineGroup(q, j);
+                            C = numbers[q][j][1];
+                            isColumnWing_AC = true;
+                        } else if (numbers[q][j][0] === B && numbers[q][j][1] !== A) {
+                            columnWingRow = q;
+                            columnWingGroup = determineGroup(q, j);
+                            C = numbers[q][j][1];
+                            isColumnWing_BC = true;
+                        } else if (numbers[q][j][0] !== A && numbers[q][j][1] === B) {
+                            columnWingRow = q;
+                            columnWingGroup = determineGroup(q, j);
+                            C = numbers[q][j][0];
+                            isColumnWing_BC = true;
+                        } else if (numbers[q][j][0] !== B && numbers[q][j][1] === A) {
+                            columnWingRow = q;
+                            columnWingGroup = determineGroup(q, j);
+                            C = numbers[q][j][0];
+                            isColumnWing_AC = true;
+                        }   
+
+                        // if a column wing has been found, check for a group wing
+                        if (columnWingRow !== -1) {
+                            groupWingRow = -1;
+                            groupWingColumn = -1;
+
+                            for (let r = ROW_START[centerWingGroup]; r <= ROW_END[centerWingGroup] && !yWingChangesMade && !solved; r++) { // row number
+                                for (let s = COLUMN_START[centerWingGroup]; s <= COLUMN_END[centerWingGroup] && !yWingChangesMade && !solved; s++) { // column number
+                                    if (isTwoOption[r][s] === true && s !== j) {
+                                        // check to see if the group wing is equal to the opposite config of the column wing
+                                        // case 1) Column Wing = AC, is Group Wing = BC?
+                                        // case 2) Column Wing = BC, is Group Wing = AC?
+
+                                        if ((isColumnWing_AC === true && ((numbers[r][s][0] === B && numbers[r][s][1] === C) ||
+                                                (numbers[r][s][1] === B && numbers[r][s][0] === C))) ||
+                                                (isColumnWing_BC === true && ((numbers[r][s][0] === A && numbers[r][s][1] === C) ||
+                                                (numbers[r][s][1] === A && numbers[r][s][0] === C)))) {
+                                            // Y Wing exists!!
+                                            groupWingRow = r;
+                                            groupWingColumn = s;
+                                            yWingChanges = 0;
+                                            rowsChanged.fill(0);
+                                            columnsChanged.fill(0);
+                                            description = "";
+
+                                            // Remove C from all cells that are:    
+                                            // 1) in both the Group Wing's row & the Column Wing's group OR
+                                            // 2) in the Center group & current column
+                                            for (let t = ROW_START[columnWingGroup]; t <= ROW_END[columnWingGroup]; t++) {
+                                                if (intPuzzle[t][groupWingColumn] === 0 && possible[t][groupWingColumn][C-1] === C && t !== groupWingRow) {
+                                                    // Remove C and record the change
+                                                    possible[t][groupWingColumn][C-1] = 0;
+                                                    rowsChanged[yWingChanges] = t;
+                                                    columnsChanged[yWingChanges] = groupWingColumn;
+                                                    yWingChangesMade = true;
+                                                    yWingChanges++;
+                                                }
+                                            }
+
+                                            for (let t = ROW_START[centerWingGroup]; t <= ROW_END[centerWingGroup]; t++) {
+                                                if (intPuzzle[t][j] === 0 && possible[t][j][C-1] === C && t !== i) {
+                                                    // Remove C and record the change
+                                                    possible[t][j][C-1] = 0;
+                                                    rowsChanged[yWingChanges] = t;
+                                                    columnsChanged[yWingChanges] = j;
+                                                    yWingChangesMade = true;
+                                                    yWingChanges++;
+                                                }
+                                            }
+                                            
+                                            // save changes to change log
+                                            if (yWingChangesMade) {
+                                                if (!isGuessAndCheck && !isBruteForce) {
+                                                    possibleChangeMethod.push("Y Wing - Column + Group");
+
+                                                    // Sort the numbers in ascending order
+                                                    const sortedNumbers = [A, B, C].sort((a, b) => a - b);
+                                                    const numbersText = sortedNumbers.slice(0, -1).join(", ") + " and " + sortedNumbers[sortedNumbers.length - 1];
+                                                    description = "Since the numbers " + numbersText +
+                                                        " form a Y Wing with the center wing at Row " + (i+1) + " Column " + (j+1) +
+                                                        ", the column wing at Row " + (columnWingRow+1) + " Column " + (j+1) +
+                                                        ", and the group wing at Row " + (groupWingRow+1) + " Column " + (groupWingColumn+1) +
+                                                        ", the below numbers were removed as possible options:";
+
+                                                    // Create an array of changes to sort
+                                                    const changes = [];
+                                                    for (let u = 0; u < yWingChanges; u++) {
+                                                        changes.push({
+                                                            row: rowsChanged[u],
+                                                            column: columnsChanged[u],
+                                                            number: C
+                                                        });
+                                                    }
+
+                                                    // Sort changes by number, then row, then column
+                                                    changes.sort((a, b) => {
+                                                        if (a.number !== b.number) return a.number - b.number;
+                                                        if (a.row !== b.row) return a.row - b.row;
+                                                        return a.column - b.column;
+                                                    });
+                                                    
+                                                    // Add sorted changes to description and arrays
+                                                    for (const change of changes) {
+                                                        description = description + "\nRow " + (change.row+1) + ", Column " + (change.column+1) + ": " + change.number;
+                                                        possibleChangeOrder.push(possibleChangeCount);
+                                                        possibleChangeNumber.push(change.number);
+                                                        possibleChangeRow.push(change.row);
+                                                        possibleChangeColumn.push(change.column);
+                                                        possibleChangePossibleCount++;
+                                                    }
+
+                                                    possibleChangeDescription.push(description);
+                                                    totalChangeType.push("possible");
+                                                    levelTwoChanges++;
+                                                    yWingColumnGroupChanges++;
+                                                    possibleChangeCount++;
+                                                    totalChangeCount++;
+                                                }
+                                                tempChanges++;
+
+                                                // Run previous methods to see if the puzzle can be solved
+                                                tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+                                                if (!solved) {
+                                                    tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);          
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+
+function updateTwoOption(intPuzzle, possible, numbers, isTwoOption) {
+    let cellCount;
+    
+    for (let i = 0; i < 9; i++) {
+        isTwoOption[i].fill(false);
+        for (let j = 0; j < 9; j++) {
+            numbers[i][j].fill(0);
+        }
+    }
+
+    for (let i = 0; i < 9; i++) { // row number
+        for (let j = 0; j < 9; j++) { // column number
+            cellCount = 0;
+            if (intPuzzle[i][j] === 0) {
+                for (let k = 0; k < 9; k++) { // number 1-9
+                    if (possible[i][j][k] === k+1) {
+                        if (cellCount === 0) {
+                            numbers[i][j][0] = k+1;
+                        } else if (cellCount === 1) {
+                            numbers[i][j][1] = k+1;
+                        }
+                        cellCount++;
+                    }
+                }
+            }
+
+            if (cellCount === 2) {
+                isTwoOption[i][j] = true;
+            }   
+        }
+    }
+}
+
+
