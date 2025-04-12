@@ -1,4 +1,5 @@
 let solved = false;
+let bruteForceSolved = false;
 let levelZeroChanges = 0;
 let oneInARowChanges = 0;
 let oneInAColumnChanges = 0;
@@ -29,7 +30,9 @@ let xWingColumnChanges = 0;
 let yWingRowGroupChanges = 0;
 let yWingColumnGroupChanges = 0;
 let yWingRowColumnChanges = 0;
-
+let levelThreeChanges = 0;
+let guessAndCheckChanges = 0;
+let bruteForceChanges = 0;
 let mainChangeCount = 0;
 let possibleChangeCount = 0;
 let possibleChangePossibleCount = 0;
@@ -65,12 +68,10 @@ const COLUMN_END = [2,5,8,2,5,8,2,5,8];
 export function solvePuzzle(startPuzzleString) {
     const startTime = performance.now();
     resetMetrics();
-    const startPuzzle = convertPuzzleToIntArray(startPuzzleString);
     let solvePuzzle = convertPuzzleToIntArray(startPuzzleString);
     let solveRows = initializeRows(solvePuzzle);
     let solveColumns = initializeColumns(solvePuzzle);
     let solveGroups = initializeGroups(solvePuzzle);
-    const startPossible = initializePossible(solvePuzzle, solveRows, solveColumns, solveGroups);
     let solvePossible = initializePossible(solvePuzzle, solveRows, solveColumns, solveGroups);
 
     levelZeroMethods(solvePuzzle, solvePossible, solveRows, solveColumns, solveGroups, false, false);
@@ -80,7 +81,7 @@ export function solvePuzzle(startPuzzleString) {
         if (!solved) {
             levelTwoMethods(solvePuzzle, solvePossible, solveRows, solveColumns, solveGroups, false, false);
             if (!solved) {
-                // levelThreeMethods(solvePuzzle, solvePossible, solveRows, solveColumns, solveGroups);
+                levelThreeMethods(solvePuzzle, solvePossible, solveRows, solveColumns, solveGroups);
             }
         }
     }
@@ -132,6 +133,10 @@ export function solvePuzzle(startPuzzleString) {
         yWingColumnGroupChanges,
         yWingRowColumnChanges,
 
+        levelThreeChanges,
+        guessAndCheckChanges,
+        bruteForceChanges,
+
         mainChangeMethod,
         mainChangeDescription,
         mainChangeNumber,
@@ -169,7 +174,8 @@ export function solvePuzzle(startPuzzleString) {
 
 function resetMetrics() {
     solved = false;
-    
+    bruteForceSolved = false;
+
     levelZeroChanges = 0;
     oneInARowChanges = 0;
     oneInAColumnChanges = 0;
@@ -202,6 +208,10 @@ function resetMetrics() {
     yWingRowGroupChanges = 0;
     yWingColumnGroupChanges = 0;
     yWingRowColumnChanges = 0;
+
+    levelThreeChanges = 0;
+    guessAndCheckChanges = 0;
+    bruteForceChanges = 0;
 
     mainChangeNumber = [];
     mainChangeMethod = [];
@@ -5194,7 +5204,6 @@ function columnGroupYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, 
     return changes;
 }
 
-
 function updateTwoOption(intPuzzle, possible, numbers, isTwoOption) {
     let cellCount;
     
@@ -5228,4 +5237,387 @@ function updateTwoOption(intPuzzle, possible, numbers, isTwoOption) {
     }
 }
 
+function levelThreeMethods(intPuzzle, possible, Rows, Columns, Groups) {
+    let changes = 0;
+    let tempLevelThreeChanges = 0;
 
+    do {
+        changes = 0;
+        changes += guessAndCheck(intPuzzle, possible, Rows, Columns, Groups, false);
+        tempLevelThreeChanges += changes;
+    } while (changes !== 0 && !solved);
+    
+    if (!solved) {
+        // clone intPuzzle, possible, Rows, Columns, and Groups here and feed them into bruteForce below
+        let clonePuzzle = new Array(9).fill().map(() => new Array(9).fill(0));
+        let clonePossible = new Array(9).fill().map(() => new Array(9).fill(0).map(() => new Array(9).fill(0)));
+        let cloneRows = new Array(9).fill().map(() => new Array(9).fill(false));
+        let cloneColumns = new Array(9).fill().map(() => new Array(9).fill(false));
+        let cloneGroups = new Array(9).fill().map(() => new Array(9).fill(false));
+
+        setGameOrBoolEqual(intPuzzle, clonePuzzle);
+        setPossibleEqual(possible, clonePossible);
+        setGameOrBoolEqual(Rows, cloneRows);
+        setGameOrBoolEqual(Columns, cloneColumns);
+        setGameOrBoolEqual(Groups, cloneGroups);
+
+        bruteForce(clonePuzzle, clonePossible, cloneRows, cloneColumns, cloneGroups);
+
+        // update possible so the puzzle will solve by calling previous methods again
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                if (intPuzzle[i][j] !== clonePuzzle[i][j]) {
+                    for (let k = 0; k < 9; k++) {
+                        if (possible[i][j][k] !== 0 && possible[i][j][k] !== clonePuzzle[i][j]) {
+                            possible[i][j][k] = 0;
+                            possibleChangeOrder.push(possibleChangeCount);
+                            possibleChangeNumber.push(k+1);
+                            possibleChangeRow.push(i);
+                            possibleChangeColumn.push(j);
+                            possibleChangePossibleCount++;
+                        }
+                    }
+                }
+            }
+        }
+        totalChangeType.push("possible");
+        levelThreeChanges++;
+        bruteForceChanges++;
+        possibleChangeCount++;
+        totalChangeCount++;
+
+        // save data to change log
+        possibleChangeMethod.push("Brute Force");
+        let description = "Eliminating the highlighted possible options makes the puzzle solvable using previous methods";
+        possibleChangeDescription.push(description);
+
+        // call previous methods again to solve the puzzle
+        levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, false, false);
+        if (!solved) {
+            levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, false, false);
+            if (!solved) {
+                levelTwoMethods(intPuzzle, possible, Rows, Columns, Groups, false, false);
+                if (!solved) {
+                    guessAndCheck(intPuzzle, possible, Rows, Columns, Groups, false);
+                }
+            }
+        }
+    }
+
+    return tempLevelThreeChanges;
+}
+
+function guessAndCheck(intPuzzle, possible, Rows, Columns, Groups, isBruteForce) {
+    let changes = 0;
+    let tempChanges = 0;
+    let tempCount;
+    let tempOptions = new Array(9).fill(0);
+    let clonePuzzles = new Array(9).fill().map(() => new Array(9).fill(0).map(() => new Array(9).fill(0))); // first index: clone game number, second index: row, third index: column
+    let clonePossible = new Array(9).fill().map(() => new Array(9).fill(0).map(() => new Array(9).fill(0)));
+    let cloneRows = new Array(9).fill().map(() => new Array(9).fill(false));
+    let cloneColumns = new Array(9).fill().map(() => new Array(9).fill(false));
+    let cloneGroups = new Array(9).fill().map(() => new Array(9).fill(false));
+    let contradictionFound;
+    let sameNumFound;
+    let tempSolved;
+    let description;
+    
+    do {
+        tempChanges = 0;
+        contradictionFound = false;
+        sameNumFound = false;
+        tempSolved = false;
+        
+        for (let optionCount = 2; optionCount < 10 && !contradictionFound && !sameNumFound && !tempSolved; optionCount++) {
+            for (let i = 0; i < 9 && !contradictionFound && !sameNumFound && !tempSolved; i++) {
+                for (let j = 0; j < 9 && !contradictionFound && !sameNumFound && !tempSolved; j++) {
+                    if (intPuzzle[i][j] === 0) {
+                        // count how many options are in this cell and store them
+                        tempCount = 0;
+                        for (let k = 0; k < 9; k++) {
+                            if (possible[i][j][k] === k+1) {
+                                tempOptions[tempCount] = k+1;
+                                tempCount++;
+                            }
+                        }
+                        
+                        if (tempCount === optionCount) {
+                            // set clonePuzzles to zero
+                            resetCloneGames(clonePuzzles);
+
+                            for (let currentOption = 0; currentOption < optionCount && !contradictionFound && !tempSolved; currentOption++) {
+                                // clone the current puzzle
+                                setGameOrBoolEqual(intPuzzle, clonePuzzles[currentOption]);
+                                setPossibleEqual(possible, clonePossible);
+                                setGameOrBoolEqual(Rows, cloneRows);
+                                setGameOrBoolEqual(Columns, cloneColumns);
+                                setGameOrBoolEqual(Groups, cloneGroups);
+
+                                // set the current option as the answer
+                                clonePuzzles[currentOption][i][j] = tempOptions[currentOption];
+                                updateShadowPossible(tempOptions[currentOption], i, j, clonePossible, cloneRows, cloneColumns, cloneGroups, true, isBruteForce);
+
+                                // solve the clone as much as possible using all previous methods
+                                levelZeroMethods(clonePuzzles[currentOption], clonePossible, cloneRows, cloneColumns, cloneGroups, true, isBruteForce);
+                                if (!isSolved(clonePuzzles[currentOption])) {
+                                    levelOneMethods(clonePuzzles[currentOption], clonePossible, cloneRows, cloneColumns, cloneGroups, true, isBruteForce);
+                                    if (!isSolved(clonePuzzles[currentOption])) {
+                                        levelTwoMethods(clonePuzzles[currentOption], clonePossible, cloneRows, cloneColumns, cloneGroups, true, isBruteForce);
+                                    }
+                                }
+
+                                // check to see if this guess solved the puzzle
+                                if (isSolved(clonePuzzles[currentOption])) {
+                                    tempSolved = true;
+                                    for (let k = 0; k < 9; k++) {
+                                        if (possible[i][j][k] !== tempOptions[currentOption] && possible[i][j][k] !== 0) {
+                                            possible[i][j][k] = 0;
+                                            if (!isBruteForce) {
+                                                possibleChangeOrder.push(possibleChangeCount);
+                                                possibleChangeNumber.push(k+1);
+                                                possibleChangeRow.push(i);
+                                                possibleChangeColumn.push(j);
+                                                possibleChangePossibleCount++;
+                                            }
+                                            tempChanges++;
+                                        }
+                                    }
+
+                                    if (!isBruteForce) {
+                                        totalChangeType.push("possible");
+                                        levelThreeChanges++;
+                                        guessAndCheckChanges++;
+                                        possibleChangeCount++;
+                                        totalChangeCount++;
+
+                                        // save data to change log
+                                        possibleChangeMethod.push("Guess and Check - Solved");
+                                        description = "Making row " + (i+1) + ", column " + (j+1) + " the number " + tempOptions[currentOption] + " solved the puzzle." + 
+                                                " Therefore, all possible options besides " + tempOptions[currentOption] + " were removed";
+                                        possibleChangeDescription.push(description);
+                                    }
+                                }
+
+                                // check to see if there are any cells with zero options
+                                if (!tempSolved) {
+                                    for (let x = 0; x < 9 && !contradictionFound; x++) {
+                                        for (let y = 0; y < 9 && !contradictionFound; y++) {
+                                            if (clonePuzzles[currentOption][x][y] === 0) {
+                                                if (countPossibleOptions(x, y, clonePossible) === 0) {
+                                                    // a contradiction has occured that made a cell unfillable
+                                                    // therefore, the current option is not possible and needs to be removed
+                                                    contradictionFound = true;
+                                                }
+                                            }
+                                        }
+                                    }   
+
+                                    // if a contradiction was found, remove the current option as a possible option
+                                    if (contradictionFound) {
+                                        possible[i][j][tempOptions[currentOption]-1] = 0;
+
+                                        // save data to change log
+                                        if (!isBruteForce) {
+                                            possibleChangeMethod.push("Guess and Check - Contradiction");
+                                            description = "Making row " + (i+1) + ", column " + (j+1) + " the number " + tempOptions[currentOption] + " leads to a contradiction. Therefore, it was removed as a possible option";
+                                            possibleChangeDescription.push(description);
+                                            possibleChangeOrder.push(possibleChangeCount);
+                                            possibleChangeNumber.push(tempOptions[currentOption]);
+                                            possibleChangeRow.push(i);
+                                            possibleChangeColumn.push(j);
+                                            possibleChangePossibleCount++;
+                                            totalChangeType.push("possible");
+                                            levelThreeChanges++;
+                                            guessAndCheckChanges++;
+                                            possibleChangeCount++;
+                                            totalChangeCount++;
+                                        }
+                                        tempChanges++;
+                                    }
+                                }
+                            }
+
+                            // check to see if any cells resulted in the same number with all guesses
+                            if (!contradictionFound && !tempSolved) {
+                                for (let x = 0; x < 9; x++) {
+                                    for (let y = 0; y < 9; y++) {
+                                        if (intPuzzle[x][y] === 0) {
+                                            let num = clonePuzzles[0][x][y];
+                                            let diffFlag = false;
+                                            for (let currentOption = 1; currentOption < optionCount; currentOption++) {
+                                                if (clonePuzzles[currentOption][x][y] !== num) {
+                                                    diffFlag = true;
+                                                }
+                                            }
+                                            if (!diffFlag && num !== 0) {
+                                                // the value at row x column y must be num
+                                                // in order to let the level zero methods place the number in the grid, remove all possible options except num
+                                                sameNumFound = true;
+                                                for (let k = 0; k < 9; k++) {
+                                                    if (possible[x][y][k] !== num && possible[x][y][k] !== 0) {
+                                                        possible[x][y][k] = 0;
+                                                        if (!isBruteForce) {
+                                                            possibleChangeOrder.push(possibleChangeCount);
+                                                            possibleChangeNumber.push(k+1);
+                                                            possibleChangeRow.push(x);
+                                                            possibleChangeColumn.push(y);
+                                                            possibleChangePossibleCount++;
+                                                        }
+                                                        tempChanges++;
+                                                    }
+                                                }
+                                                if (!isBruteForce) {
+                                                    totalChangeType.push("possible");
+                                                    levelThreeChanges++;
+                                                    guessAndCheckChanges++;
+                                                    possibleChangeCount++;
+                                                    totalChangeCount++;
+
+                                                    // save data to change log
+                                                    possibleChangeMethod.push("Guess and Check - Same Number");
+                                                    description = "Making row " + (i+1) + ", column " + (j+1) + " all possible options leads to row " + (x+1) + ", column " + (y+1) + " being number " + num + " for each option." + 
+                                                            " Therefore, all possible options besides " + num + " were removed";
+                                                    possibleChangeDescription.push(description);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Run previous methods to see if the puzzle can be solved
+        tempChanges += levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, false, isBruteForce);
+        if (!solved) {
+            tempChanges += levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, false, isBruteForce);
+            if (!solved) {
+                tempChanges += levelTwoMethods(intPuzzle, possible, Rows, Columns, Groups, false, isBruteForce);
+            }
+        }
+        changes += tempChanges;
+    } while (tempChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function bruteForce(intPuzzle, possible, Rows, Columns, Groups) {
+    let clonePuzzle = new Array(9).fill().map(() => new Array(9).fill(0));
+    let clonePossible = new Array(9).fill().map(() => new Array(9).fill(0).map(() => new Array(9).fill(0)));
+    
+    for (let optionCount = 2; optionCount < 10; optionCount++) {
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                if (intPuzzle[i][j] === 0) {
+                    // count how many options are in this cell and store them
+                    let tempCount = 0;
+                    let tempOptions = new Array(9).fill(0);
+                    for (let k = 0; k < 9; k++) {
+                        if (possible[i][j][k] === k+1) {
+                            tempOptions[tempCount] = k+1;
+                            tempCount++;
+                        }
+                    }
+                    if (tempCount === optionCount) {
+                        for (let currentOption = 0; currentOption < optionCount; currentOption++) {
+                            setGameOrBoolEqual(intPuzzle, clonePuzzle);
+                            setPossibleEqual(possible, clonePossible);
+                            intPuzzle[i][j] = tempOptions[currentOption];
+                            updateShadowPossible(tempOptions[currentOption], i, j, possible, Rows, Columns, Groups, false, true);
+
+                            // solve the puzzle as much as possible using previous methods
+                            levelZeroMethods(intPuzzle, possible, Rows, Columns, Groups, false, true);
+                            if (!isSolved(intPuzzle)) {
+                                levelOneMethods(intPuzzle, possible, Rows, Columns, Groups, false, true);
+                                if (!isSolved(intPuzzle)) {
+                                    levelTwoMethods(intPuzzle, possible, Rows, Columns, Groups, false, true);
+                                    if (!isSolved(intPuzzle)) {
+                                        guessAndCheck(intPuzzle, possible, Rows, Columns, Groups, true);
+                                    }
+                                }
+                            }
+
+                            // check if the puzzle is solved
+                            if (isSolved(intPuzzle)) {
+                                bruteForceSolved = true;
+                                // reset the game to only have the digits needed to solve the puzzle with previous methods, and return
+                                setGameOrBoolEqual(clonePuzzle, intPuzzle);
+                                intPuzzle[i][j] = tempOptions[currentOption];
+                                return;
+                            }
+
+                            // if the puzzle wasn't solved, check if it's still valid
+                            if (isValid(intPuzzle, possible)) {
+                                // puzzle is still valid, continue with the recursion
+                                bruteForce(intPuzzle, possible, Rows, Columns, Groups);
+                                // return if the subsequent recursions have solved the puzzle
+                                if (bruteForceSolved) {
+                                    return;
+                                }
+                            } else {
+                                // puzzle is invalid, reset game and possible, try the next option
+                                setGameOrBoolEqual(clonePuzzle, intPuzzle);
+                                setPossibleEqual(clonePossible, possible);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+function resetCloneGames(clonePuzzles) {
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            clonePuzzles[i][j].fill(0);
+        }
+    }
+}
+
+function setGameOrBoolEqual(intPuzzle, clonePuzzles) {
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            clonePuzzles[i][j] = intPuzzle[i][j];
+        }
+    }
+}
+
+function setPossibleEqual(possible, clonePossible) {
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            for (let k = 0; k < 9; k++) {
+                clonePossible[i][j][k] = possible[i][j][k];
+            }
+        }
+    }
+}
+
+function countPossibleOptions(row, column, possible) {
+    let options = 0;
+
+    for (let k = 0; k < 9; k++) {
+        if (possible[row][column][k] === k+1) {
+            options++;
+        }
+    }
+    
+    return options;
+}
+
+function isValid(intPuzzle, possible) {
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            if (intPuzzle[i][j] === 0) {
+                if (countPossibleOptions(i, j, possible) === 0) {
+                    // a contradiction has occured that made a cell unfillable
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
