@@ -3,8 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import SudokuGrid from '../components/SudokuGrid';
 import ControlPanel from '../components/ControlPanel';
 import PortfolioButton from '../components/PortfolioButton';
-// import { solvePuzzle } from '../services/SolverService';
-import { solvePuzzle} from '../components/Solver';
+// import { solvePuzzle } from '../services/SolverService'; // API call
+// import { solvePuzzle } from '../components/Solver';
+import { solvePuzzle } from '../components/Solver_v2';
 import './InputPage.css';
 
 const LoadingOverlay = () => (
@@ -132,9 +133,9 @@ const InputPage = () => {
   };
 
   const handleSolve = async () => {
-    if (!validatePuzzle()) {
-      return;
-    }
+    // if (!validatePuzzle()) {
+    //   return;
+    // }
 
     setIsLoading(true);
     setError(null);
@@ -144,10 +145,15 @@ const InputPage = () => {
         row.map(cell => cell === '' ? '0' : cell).join('')
       ).join('');
 
+      const startPuzzle1 = "000705030000040500057000240060300000080000000001009026005400070019070000708002019"
+
       // const response = await solvePuzzle(puzzleInput); // API call
-      const response = solvePuzzle(puzzleInput); // local call
+      // const response = solvePuzzle(puzzleInput); // local call
+
+      const response = solvePuzzle(startPuzzle1);
         
-      console.log("Solving puzzle: ", puzzleInput);
+      // console.log("Solving puzzle: ", puzzleInput);
+      console.log("Solving puzzle: ", startPuzzle1); // TODO: Remove after testing
       console.log("solved: ", response.metrics.solved);
       console.log(`Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
       console.log("response: ", response);
@@ -160,7 +166,14 @@ const InputPage = () => {
       }
       
       // Create deep copy of original grid before setting solution
-      const originalGridCopy = grid.map(row => [...row]);
+      // const originalGridCopy = grid.map(row => [...row]); // TODO: Uncomment after testing
+      
+      // Create test grid for debugging
+      const originalGridCopy = [];
+      for (let i = 0; i < 9; i++) {
+        const row = startPuzzle1.slice(i * 9, (i + 1) * 9).split('').map(num => num === '0' ? '' : num);
+        originalGridCopy.push(row);
+      }
       
       setGrid(solutionGrid);
       setIsSolved(true);
@@ -168,7 +181,8 @@ const InputPage = () => {
       // Store solution data for later use
       setSolutionData({
         originalGrid: originalGridCopy,
-        startingNumbers: startingNumbers.map(row => [...row]),
+        // startingNumbers: startingNumbers.map(row => [...row]), // TODO: Uncomment after testing
+        startingNumbers: originalGridCopy,
         solution: solutionGrid,
         metrics: response.metrics,
         changes: response.changes
