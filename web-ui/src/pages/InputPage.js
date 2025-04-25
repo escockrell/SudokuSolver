@@ -4,8 +4,8 @@ import SudokuGrid from '../components/SudokuGrid';
 import ControlPanel from '../components/ControlPanel';
 import PortfolioButton from '../components/PortfolioButton';
 // import { solvePuzzle } from '../services/SolverService'; // API call
-// import { solvePuzzle } from '../components/Solver';
-import { solvePuzzle } from '../components/Solver_v2';
+import { solvePuzzle } from '../components/Solver';
+import { solvePuzzle as solvePuzzle_v2 } from '../components/Solver_v2';
 import './InputPage.css';
 
 const LoadingOverlay = () => (
@@ -145,23 +145,33 @@ const InputPage = () => {
         row.map(cell => cell === '' ? '0' : cell).join('')
       ).join('');
 
-      const startPuzzle1 = "000705030000040500057000240060300000080000000001009026005400070019070000708002019"
+      // const startPuzzle1 = "000705030000040500057000240060300000080000000001009026005400070019070000708002019";
+      // const startPuzzle1 = "578001600160050003002609001006003000010008365003100924300762000080000030701000000";
+      const startPuzzle1 = "900320050600085000800000060030000900000602003400090020304250000000007301160008000";
 
       // const response = await solvePuzzle(puzzleInput); // API call
       // const response = solvePuzzle(puzzleInput); // local call
 
       const response = solvePuzzle(startPuzzle1);
+      const response_v2 = solvePuzzle_v2(startPuzzle1);
         
       // console.log("Solving puzzle: ", puzzleInput);
       console.log("Solving puzzle: ", startPuzzle1); // TODO: Remove after testing
-      console.log("solved: ", response.metrics.solved);
-      console.log(`Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
-      console.log("response: ", response);
+
+      // console.log("Solver metrics");
+      // console.log("solved: ", response.metrics.solved);
+      // console.log(`Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
+      // console.log("response: ", response);
+      
+      console.log("Solver_v2 metrics");
+      console.log("solved: ", response_v2.metrics.solved);
+      console.log(`Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
+      console.log("response: ", response_v2);
 
       // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];
       for (let i = 0; i < 9; i++) {
-        const row = response.solution.slice(i * 9, (i + 1) * 9).split('');
+        const row = response_v2.solution.slice(i * 9, (i + 1) * 9).split('');
         solutionGrid.push(row);
       }
       
@@ -184,8 +194,8 @@ const InputPage = () => {
         // startingNumbers: startingNumbers.map(row => [...row]), // TODO: Uncomment after testing
         startingNumbers: originalGridCopy,
         solution: solutionGrid,
-        metrics: response.metrics,
-        changes: response.changes
+        metrics: response_v2.metrics,
+        changes: response_v2.changes
       });
     } catch (error) {
       console.error('Error solving puzzle:', error);
