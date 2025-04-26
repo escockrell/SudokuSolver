@@ -1,5 +1,8 @@
 let solved = false;
 let bruteForceSolved = false;
+let isGuessAndCheck = false;
+let isBruteForce = false;
+
 let levelZeroChanges = 0;
 let oneInARowChanges = 0;
 let oneInAColumnChanges = 0;
@@ -303,22 +306,25 @@ function initializePossible(solvePuzzle) {
 }
 
 function updateShadowPossible(number, changedCell, possible) {
-    changedCell.options.forEach(option => {
-        mainChangePossibleOrder.push(mainChangeCount);
-        mainChangePossibleNumber.push(option);
-        mainChangePossibleRow.push(changedCell.row);
-        mainChangePossibleColumn.push(changedCell.column);
-        mainChangePossibleCount++;
-    });
+    if (!isGuessAndCheck && !isBruteForce) {
+        changedCell.options.forEach(option => {
+            mainChangePossibleOrder.push(mainChangeCount);
+            mainChangePossibleNumber.push(option);
+            mainChangePossibleRow.push(changedCell.row);
+            mainChangePossibleColumn.push(changedCell.column);
+            mainChangePossibleCount++;
+        });
+    }
     
     const updateCells = possible.filter(cell => (cell.row === changedCell.row || cell.column === changedCell.column || cell.group === changedCell.group) && cell.options.includes(number));
     updateCells.forEach(cell => {
-        mainChangePossibleOrder.push(mainChangeCount);
-        mainChangePossibleNumber.push(number);
-        mainChangePossibleRow.push(cell.row);
-        mainChangePossibleColumn.push(cell.column);
-        mainChangePossibleCount++;
-
+        if (!isGuessAndCheck && !isBruteForce) {
+            mainChangePossibleOrder.push(mainChangeCount);
+            mainChangePossibleNumber.push(number);
+            mainChangePossibleRow.push(cell.row);
+            mainChangePossibleColumn.push(cell.column);
+            mainChangePossibleCount++;
+        }
         const index = possible.findIndex(p => p.row === cell.row && p.column === cell.column);
         possible[index].options = possible[index].options.filter(n => n !== number);
     });
@@ -416,22 +422,23 @@ function oneInARowPossibleCheck(intPuzzle, possible) {
                     possible.splice(possible.findIndex(p => p.row === cell.row && p.column === cell.column), 1);
                     
                     // Log the change
-                    mainChangeNumber.push(String(num));
-                    mainChangeMethod.push("One in a Row");
-                    mainChangeDescription.push("The number " + num + " is only possible in row " + 
-                            (cell.row + 1) + ", column " + (cell.column + 1));
-                    mainChangeRow.push(cell.row);
-                    mainChangeColumn.push(cell.column);
-                    totalChangeType.push("main");
-                    totalChangeMethod.push("One in a Row");
-                    levelZeroChanges++;
-                    oneInARowChanges++;
-                    mainChangeCount++;
-                    totalChangeCount++;
-                    tempChanges++;
+                    if (!isGuessAndCheck && !isBruteForce) {
+                        mainChangeNumber.push(String(num));
+                        mainChangeMethod.push("One in a Row");
+                        mainChangeDescription.push("The number " + num + " is only possible in row " + 
+                                (cell.row + 1) + ", column " + (cell.column + 1));
+                        mainChangeRow.push(cell.row);
+                        mainChangeColumn.push(cell.column);
+                        totalChangeType.push("main");
+                        totalChangeMethod.push("One in a Row");
+                        levelZeroChanges++;
+                        oneInARowChanges++;
+                        mainChangeCount++;
+                        totalChangeCount++;
+                    }
 
                     updateShadowPossible(num, cell, possible);
-                    updateSolved(intPuzzle);
+                    tempChanges++;
                 }
             }
         }
@@ -457,22 +464,24 @@ function oneInAColumnPossibleCheck(intPuzzle, possible) {
                     possible.splice(possible.findIndex(p => p.row === cell.row && p.column === cell.column), 1);
 
                     // Log the change
-                    mainChangeNumber.push(String(num));
-                    mainChangeMethod.push("One in a Column");
-                    mainChangeDescription.push("The number " + num + " is only possible in column " + 
-                            (cell.column + 1) + ", row " + (cell.row + 1));
-                    mainChangeRow.push(cell.row);
-                    mainChangeColumn.push(cell.column);
-                    totalChangeType.push("main");
-                    totalChangeMethod.push("One in a Column");
-                    levelZeroChanges++;
-                    oneInAColumnChanges++;
-                    mainChangeCount++;
-                    totalChangeCount++;
-                    tempChanges++;
+                    if (!isGuessAndCheck && !isBruteForce) {
+                        mainChangeNumber.push(String(num));
+                        mainChangeMethod.push("One in a Column");
+                        mainChangeDescription.push("The number " + num + " is only possible in column " + 
+                                (cell.column + 1) + ", row " + (cell.row + 1));
+                        mainChangeRow.push(cell.row);
+                        mainChangeColumn.push(cell.column);
+                        totalChangeType.push("main");
+                        totalChangeMethod.push("One in a Column");
+                        levelZeroChanges++;
+                        oneInAColumnChanges++;
+                        mainChangeCount++;
+                        totalChangeCount++;
+                        updateSolved(intPuzzle);
+                    }
 
                     updateShadowPossible(num, cell, possible);
-                    updateSolved(intPuzzle);
+                    tempChanges++;
                 }
             }
         }
@@ -498,22 +507,24 @@ function oneInAGroupPossibleCheck(intPuzzle, possible) {
                     possible.splice(possible.findIndex(p => p.row === cell.row && p.column === cell.column), 1);
 
                     // Log the change
-                    mainChangeNumber.push(String(num));
-                    mainChangeMethod.push("One in a Group");
-                    mainChangeDescription.push("The number " + num + " is only possible in row " + 
-                        (cell.row + 1) + ", column " + (cell.column + 1) + " in group " + (cell.group + 1));
-                    mainChangeRow.push(cell.row);
-                    mainChangeColumn.push(cell.column);
-                    totalChangeType.push("main");
-                    totalChangeMethod.push("One in a Group");
-                    levelZeroChanges++;
-                    oneInAGroupChanges++;
-                    mainChangeCount++;
-                    totalChangeCount++;
-                    tempChanges++;
+                    if (!isGuessAndCheck && !isBruteForce) {
+                        mainChangeNumber.push(String(num));
+                        mainChangeMethod.push("One in a Group");
+                        mainChangeDescription.push("The number " + num + " is only possible in row " + 
+                            (cell.row + 1) + ", column " + (cell.column + 1) + " in group " + (cell.group + 1));
+                        mainChangeRow.push(cell.row);
+                        mainChangeColumn.push(cell.column);
+                        totalChangeType.push("main");
+                        totalChangeMethod.push("One in a Group");
+                        levelZeroChanges++;
+                        oneInAGroupChanges++;
+                        mainChangeCount++;
+                        totalChangeCount++;
+                        updateSolved(intPuzzle);
+                    }
 
                     updateShadowPossible(num, cell, possible);
-                    updateSolved(intPuzzle);
+                    tempChanges++;
                 }
             }
         }
@@ -535,22 +546,25 @@ function oneInACellPossibleCheck(intPuzzle, possible) {
             possible.splice(possible.findIndex(p => p.row === cell.row && p.column === cell.column), 1);
             
             // Log the change
-            mainChangeNumber.push(String(cell.options[0]));
-            mainChangeMethod.push("One in a Cell");
-            mainChangeDescription.push("The number " + cell.options[0] + " is the only possible option for cell " + 
-                    (cell.row + 1) + ", column " + (cell.column + 1));
-            mainChangeRow.push(cell.row);
-            mainChangeColumn.push(cell.column);
-            totalChangeType.push("main");
-            totalChangeMethod.push("One in a Cell");
-            levelZeroChanges++;
-            oneInACellChanges++;
-            mainChangeCount++;
-            totalChangeCount++;
-            tempChanges++;
+            if (!isGuessAndCheck && !isBruteForce) {
+                mainChangeNumber.push(String(cell.options[0]));
+                mainChangeMethod.push("One in a Cell");
+                mainChangeDescription.push("The number " + cell.options[0] + " is the only possible option for cell " + 
+                        (cell.row + 1) + ", column " + (cell.column + 1));
+                mainChangeRow.push(cell.row);
+                mainChangeColumn.push(cell.column);
+                totalChangeType.push("main");
+                totalChangeMethod.push("One in a Cell");
+                levelZeroChanges++;
+                oneInACellChanges++;
+                mainChangeCount++;
+                totalChangeCount++;
+                tempChanges++;
+                updateSolved(intPuzzle);
+            }
 
             updateShadowPossible(cell.options[0], cell, possible);
-            updateSolved(intPuzzle);
+            tempChanges++;
         });
         changes += tempChanges;
     } while (tempChanges !== 0 && !solved);
@@ -564,7 +578,7 @@ function levelOneMethods(intPuzzle, possible) {
     do {
         changes = 0;
         changes += phantomChecks(intPuzzle, possible);
-        // changes += nakedPairChecks(intPuzzle, possible);
+        changes += nakedPairChecks(intPuzzle, possible);
         // changes += hiddenPairChecks(intPuzzle, possible);
         tempLevelOneChanges += changes;
     } while (changes !== 0 && !solved);
@@ -592,13 +606,13 @@ function rowPhantomCheck(intPuzzle, possible) {
         tempRowPhantomChanges = 0;
         
         // For each group
-        for (let group = 0; group < 9; group++) {
+        for (let group = 0; group < 9 && !solved; group++) {
             
             // Get all possible cells in this group
             const groupCells = possible.filter(cell => cell.group === group);
             
             // For each number 1-9
-            for (let num = 1; num <= 9; num++) {
+            for (let num = 1; num <= 9 && !solved; num++) {
                 // Find cells in group that could contain this number
                 const cellsWithNum = groupCells.filter(cell => cell.options.includes(num));
                 
@@ -613,7 +627,7 @@ function rowPhantomCheck(intPuzzle, possible) {
                         const cellsToChange = possible.filter(cell => cell.row === phantomRow && cell.group !== group && cell.options.includes(num));
                         
                         if (cellsToChange.length > 0) {
-                            possibleChangeMethod.push("Phantom - Row");
+                            
                             let description = "Since the number " + num + " only appears in row " + 
                                 (phantomRow + 1) + " in group " + (group + 1) + ", it was removed as a possible option in the below cells:";
 
@@ -623,24 +637,29 @@ function rowPhantomCheck(intPuzzle, possible) {
                                 cell.options.splice(index, 1);
                                 
                                 description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
-                                possibleChangeOrder.push(possibleChangeCount);
-                                possibleChangeNumber.push(num);
-                                possibleChangeRow.push(cell.row);
-                                possibleChangeColumn.push(cell.column);
-                                possibleChangePossibleCount++;
+                                if (!isGuessAndCheck && !isBruteForce) {
+                                    possibleChangeOrder.push(possibleChangeCount);
+                                    possibleChangeNumber.push(num);
+                                    possibleChangeRow.push(cell.row);
+                                    possibleChangeColumn.push(cell.column);
+                                    possibleChangePossibleCount++;
+                                }
                             });
 
-                            possibleChangeDescription.push(description);
-                            totalChangeType.push("possible");
-                            totalChangeMethod.push("Phantom - Row");
-                            levelOneChanges++;
-                            phantomRowChanges++;
-                            possibleChangeCount++;
-                            totalChangeCount++;
+                            if (!isGuessAndCheck && !isBruteForce) {
+                                possibleChangeMethod.push("Phantom - Row");
+                                possibleChangeDescription.push(description);
+                                totalChangeType.push("possible");
+                                totalChangeMethod.push("Phantom - Row");
+                                levelOneChanges++;
+                                phantomRowChanges++;
+                                possibleChangeCount++;
+                                totalChangeCount++;
+                            }
                             tempRowPhantomChanges++;
 
                             // Run previous methods to see if the puzzle can be solved
-                            tempRowPhantomChanges += levelZeroMethods(intPuzzle, possible);
+                            tempRowPhantomChanges += levelZeroMethods(intPuzzle, possible, isGuessAndCheck, isBruteForce);
                         }
                     }
                 }
@@ -660,13 +679,13 @@ function columnPhantomCheck(intPuzzle, possible) {
         tempColumnPhantomChanges = 0;
         
         // For each group
-        for (let group = 0; group < 9; group++) {
+        for (let group = 0; group < 9 && !solved; group++) {
             
             // Get all possible cells in this group
             const groupCells = possible.filter(cell => cell.group === group);
             
             // For each number 1-9
-            for (let num = 1; num <= 9; num++) {
+            for (let num = 1; num <= 9 && !solved; num++) {
                 // Find cells in group that could contain this number
                 const cellsWithNum = groupCells.filter(cell => cell.options.includes(num));
                 
@@ -681,7 +700,7 @@ function columnPhantomCheck(intPuzzle, possible) {
                         const cellsToChange = possible.filter(cell => cell.column === phantomColumn && cell.group !== group && cell.options.includes(num));
                         
                         if (cellsToChange.length > 0) {
-                            possibleChangeMethod.push("Phantom - Column");
+                            
                             let description = "Since the number " + num + " only appears in column " + 
                                 (phantomColumn + 1) + " in group " + (group + 1) + ", it was removed as a possible option in the below cells:";
 
@@ -691,24 +710,29 @@ function columnPhantomCheck(intPuzzle, possible) {
                                 cell.options.splice(index, 1);
                                 
                                 description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
-                                possibleChangeOrder.push(possibleChangeCount);
-                                possibleChangeNumber.push(num);
-                                possibleChangeRow.push(cell.row);
-                                possibleChangeColumn.push(cell.column);
-                                possibleChangePossibleCount++;
+                                if (!isGuessAndCheck && !isBruteForce) {
+                                    possibleChangeOrder.push(possibleChangeCount);
+                                    possibleChangeNumber.push(num);
+                                    possibleChangeRow.push(cell.row);
+                                    possibleChangeColumn.push(cell.column);
+                                    possibleChangePossibleCount++;
+                                }
                             });
 
-                            possibleChangeDescription.push(description);
-                            totalChangeType.push("possible");
-                            totalChangeMethod.push("Phantom - Column");
-                            levelOneChanges++;
-                            phantomColumnChanges++;
-                            possibleChangeCount++;
-                            totalChangeCount++;
+                            if (!isGuessAndCheck && !isBruteForce) {
+                                possibleChangeMethod.push("Phantom - Column");
+                                possibleChangeDescription.push(description);
+                                totalChangeType.push("possible");
+                                totalChangeMethod.push("Phantom - Column");
+                                levelOneChanges++;
+                                phantomColumnChanges++;
+                                possibleChangeCount++;
+                                totalChangeCount++;
+                            }
                             tempColumnPhantomChanges++;
 
                             // Run previous methods to see if the puzzle can be solved
-                            tempColumnPhantomChanges += levelZeroMethods(intPuzzle, possible);
+                            tempColumnPhantomChanges += levelZeroMethods(intPuzzle, possible, isGuessAndCheck, isBruteForce);
                         }
                     }
                 }
@@ -728,7 +752,7 @@ function groupPhantomCheck(intPuzzle, possible) {
         tempGroupPhantomChanges = 0;
         
         // For each row and column
-        for (let rowColumn = 0; rowColumn < 9; rowColumn++) {
+        for (let rowColumn = 0; rowColumn < 9 && !solved; rowColumn++) {
             
             // Get all possible cells in this row
             const rowCells = possible.filter(cell => cell.row === rowColumn);
@@ -737,7 +761,7 @@ function groupPhantomCheck(intPuzzle, possible) {
             const columnCells = possible.filter(cell => cell.column === rowColumn);
             
             // For each number 1-9
-            for (let num = 1; num <= 9; num++) {
+            for (let num = 1; num <= 9 && !solved; num++) {
                 // Find cells in row that could contain this number
                 const rowCellsWithNum = rowCells.filter(cell => cell.options.includes(num));
 
@@ -758,7 +782,7 @@ function groupPhantomCheck(intPuzzle, possible) {
                         const rowCellsToChange = possible.filter(cell => cell.group === phantomRowGroup && cell.row !== rowColumn && cell.options.includes(num));
 
                         if (rowCellsToChange.length > 0) {
-                            possibleChangeMethod.push("Phantom - Group");
+                            
                             let description = "Since the number " + num + " only appears in group " + 
                                 (phantomRowGroup + 1) + " in row " + (rowColumn + 1) + ", it was removed as a possible option in the below cells:";
 
@@ -768,20 +792,25 @@ function groupPhantomCheck(intPuzzle, possible) {
                                 cell.options.splice(index, 1);
                                 
                                 description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
-                                possibleChangeOrder.push(possibleChangeCount);
-                                possibleChangeNumber.push(num);
-                                possibleChangeRow.push(cell.row);
-                                possibleChangeColumn.push(cell.column);
-                                possibleChangePossibleCount++;
+                                if (!isGuessAndCheck && !isBruteForce) {
+                                    possibleChangeOrder.push(possibleChangeCount);
+                                    possibleChangeNumber.push(num);
+                                    possibleChangeRow.push(cell.row);
+                                    possibleChangeColumn.push(cell.column);
+                                    possibleChangePossibleCount++;
+                                }
                             });
 
-                            possibleChangeDescription.push(description);
-                            totalChangeType.push("possible");
-                            totalChangeMethod.push("Phantom - Group");
-                            levelOneChanges++;
-                            phantomGroupChanges++;
-                            possibleChangeCount++;
-                            totalChangeCount++;
+                            if (!isGuessAndCheck && !isBruteForce) {
+                                possibleChangeMethod.push("Phantom - Group");
+                                possibleChangeDescription.push(description);
+                                totalChangeType.push("possible");
+                                totalChangeMethod.push("Phantom - Group");
+                                levelOneChanges++;
+                                phantomGroupChanges++;
+                                possibleChangeCount++;
+                                totalChangeCount++;
+                            }
                             tempGroupPhantomChanges++;
 
                             // Run previous methods to see if the puzzle can be solved
@@ -796,7 +825,7 @@ function groupPhantomCheck(intPuzzle, possible) {
                         const columnCellsToChange = possible.filter(cell => cell.group === phantomColumnGroup && cell.column !== rowColumn && cell.options.includes(num));
 
                         if (columnCellsToChange.length > 0) {
-                            possibleChangeMethod.push("Phantom - Group");
+                            
                             let description = "Since the number " + num + " only appears in group " + 
                                 (phantomColumnGroup + 1) + " in column " + (rowColumn + 1) + ", it was removed as a possible option in the below cells:";
 
@@ -806,20 +835,25 @@ function groupPhantomCheck(intPuzzle, possible) {
                                 cell.options.splice(index, 1);
                                 
                                 description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
-                                possibleChangeOrder.push(possibleChangeCount);
-                                possibleChangeNumber.push(num);
-                                possibleChangeRow.push(cell.row);
-                                possibleChangeColumn.push(cell.column);
-                                possibleChangePossibleCount++;
+                                if (!isGuessAndCheck && !isBruteForce) {
+                                    possibleChangeOrder.push(possibleChangeCount);
+                                    possibleChangeNumber.push(num);
+                                    possibleChangeRow.push(cell.row);
+                                    possibleChangeColumn.push(cell.column);
+                                    possibleChangePossibleCount++;
+                                }
                             });
 
-                            possibleChangeDescription.push(description);
-                            totalChangeType.push("possible");
-                            totalChangeMethod.push("Phantom - Group");
-                            levelOneChanges++;
-                            phantomGroupChanges++;
-                            possibleChangeCount++;
-                            totalChangeCount++;
+                            if (!isGuessAndCheck && !isBruteForce) {
+                                possibleChangeMethod.push("Phantom - Group");
+                                possibleChangeDescription.push(description);
+                                totalChangeType.push("possible");
+                                totalChangeMethod.push("Phantom - Group");
+                                levelOneChanges++;
+                                phantomGroupChanges++;
+                                possibleChangeCount++;
+                                totalChangeCount++;
+                            }
                             tempGroupPhantomChanges++;
 
                             // Run previous methods to see if the puzzle can be solved
@@ -831,6 +865,109 @@ function groupPhantomCheck(intPuzzle, possible) {
         }
         changes += tempGroupPhantomChanges;
     } while (tempGroupPhantomChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function nakedPairChecks(intPuzzle, possible) {
+    let changes = 0;
+    let tempNakedPairChanges = 0;
+    do {
+        changes = 0;
+        changes += nakedPairCheck(intPuzzle, possible, "row");
+        changes += nakedPairCheck(intPuzzle, possible, "column");
+        changes += nakedPairCheck(intPuzzle, possible, "group");
+        tempNakedPairChanges += changes;
+    } while (changes !== 0 && !solved);
+
+    return tempNakedPairChanges;
+}
+
+function nakedPairCheck(intPuzzle, possible, checkType) {
+    let changes = 0;
+    let tempNakedPairChanges = 0;
+
+    do {
+        tempNakedPairChanges = 0;
+        
+        // For each row, column, or group
+        for (let rowColGroup = 0; rowColGroup < 9 && !solved; rowColGroup++) {
+            // Get all possible cells in this row, column, or group with exactly 2 options
+            const rowColGroupCells = possible.filter(cell => cell[checkType] === rowColGroup && cell.options.length === 2);
+            
+            // Check for pairs of cells with identical options
+            for (let i = 0; i < rowColGroupCells.length - 1 && !solved; i++) {
+                for (let j = i + 1; j < rowColGroupCells.length && !solved; j++) {
+                    const cell1 = rowColGroupCells[i];
+                    const cell2 = rowColGroupCells[j];
+                    
+                    // Check if both cells have the same two options using array methods
+                    if (cell1.options.every(num => cell2.options.includes(num))) {
+                        // These two numbers must be in these two cells, so remove them from other cells in the row
+                        const numbersToRemove = cell1.options;
+                        
+                        // Get all other cells in the row that aren't part of the naked pair
+                        const cellsToChange = possible.filter(cell => 
+                            cell[checkType] === rowColGroup && 
+                            cell !== cell1 && cell !== cell2 && 
+                            cell.options.some(num => numbersToRemove.includes(num))
+                        );
+                        
+                        if (cellsToChange.length > 0) {
+                            let description = "Since the numbers " + numbersToRemove[0] + " and " + numbersToRemove[1] +
+                                " form a naked pair in the cells (" + (cell1.row+1) + "," + (cell1.column+1) + ") and (" +
+                                (cell2.row+1) + "," + (cell2.column+1) + "), the below numbers were removed as possible options:";
+                            
+                            // Remove these numbers from other cells in the row
+                            cellsToChange.forEach(cell => {
+                                const removedNumbers = numbersToRemove.filter(num => cell.options.includes(num));
+                                removedNumbers.forEach(num => {
+                                    const index = cell.options.indexOf(num);
+                                    cell.options.splice(index, 1);  
+
+                                    description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + num;
+                                    if (!isGuessAndCheck && !isBruteForce) {
+                                        possibleChangeOrder.push(possibleChangeCount);
+                                        possibleChangeNumber.push(num);
+                                        possibleChangeRow.push(cell.row);
+                                        possibleChangeColumn.push(cell.column);
+                                        possibleChangePossibleCount++;
+                                    }
+                                });
+                            });
+                            
+                            if (!isGuessAndCheck && !isBruteForce) {
+                                possibleChangeMethod.push("Naked Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1));
+                                possibleChangeDescription.push(description);
+                                totalChangeType.push("possible");
+                                totalChangeMethod.push("Naked Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1));
+                                levelOneChanges++;
+                                switch (checkType) {
+                                    case "row":
+                                        nakedPairRowChanges++;
+                                        break;
+                                    case "column":
+                                        nakedPairColumnChanges++;
+                                        break;
+                                    case "group":
+                                        nakedPairGroupChanges++;
+                                        break;
+                                }
+                                possibleChangeCount++;
+                                totalChangeCount++;
+                            }
+                            tempNakedPairChanges++;
+                            
+                            // Run previous methods to see if the puzzle can be solved
+                            tempNakedPairChanges += levelZeroMethods(intPuzzle, possible);
+                        }
+                    }
+                }
+            }
+        }
+        
+        changes += tempNakedPairChanges;
+    } while (tempNakedPairChanges !== 0 && !solved);
 
     return changes;
 }
