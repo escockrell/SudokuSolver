@@ -158,15 +158,15 @@ const InputPage = () => {
 
       const startPuzzles = [
         startPuzzle1, 
-        startPuzzle2, 
-        startPuzzle3, 
-        startPuzzle4, 
-        startPuzzle5,
-        startPuzzle6,
-        startPuzzle7,
-        startPuzzle8,
-        startPuzzle9,
-        startPuzzle10
+        // startPuzzle2, 
+        // startPuzzle3, 
+        // startPuzzle4, 
+        // startPuzzle5,
+        // startPuzzle6,
+        // startPuzzle7,
+        // startPuzzle8,
+        // startPuzzle9,
+        // startPuzzle10
       ];
 
       // const response = await solvePuzzle(puzzleInput); // API call
@@ -185,12 +185,12 @@ const InputPage = () => {
         // console.log("Solver metrics");
         // console.log("solved: ", response.metrics.solved);
         console.log(`Solver: Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
-        // console.log("response: ", response);
+        console.log("response: ", response);
         
         // console.log("Solver_v2 metrics");
         // console.log("solved: ", response_v2.metrics.solved);
         console.log(`Solver_v2: Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
-        // console.log("response: ", response_v2);
+        console.log("response_v2: ", response_v2);
 
         const timeDiff = Math.abs(response_v2.metrics.solveTime - response.metrics.solveTime);
         const winner = response_v2.metrics.solveTime < response.metrics.solveTime ? "Solver_v2" : "Solver";

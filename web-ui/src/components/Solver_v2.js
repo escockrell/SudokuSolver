@@ -36,37 +36,37 @@ let yWingRowColumnChanges = 0;
 let levelThreeChanges = 0;
 let guessAndCheckChanges = 0;
 let bruteForceChanges = 0;
-let mainChangeCount = 0;
-let possibleChangeCount = 0;
-let possibleChangePossibleCount = 0;
-let mainChangePossibleCount = 0;
-let totalChangeCount = 0;
+
+// let mainChangeCount = 0;
+// let possibleChangeCount = 0;
+// let mainChangePossibleCount = 0;
+// let totalChangeCount = 0;
 
 // Arrays to track changes
 let mainChanges = []; // For actual number placements
 let possibleChanges = []; // For possible number removals
 let mainPossibleChanges = []; // For possible number updates after main changes
 
-let mainChangeMethod = [];
-let mainChangeDescription = [];
-let mainChangeNumber = [];
-let mainChangeRow = [];
-let mainChangeColumn = [];
+// let mainChangeMethod = [];
+// let mainChangeDescription = [];
+// let mainChangeNumber = [];
+// let mainChangeRow = [];
+// let mainChangeColumn = [];
 
-let mainChangePossibleOrder = [];
-let mainChangePossibleNumber = [];
-let mainChangePossibleRow = [];
-let mainChangePossibleColumn = [];
+// let mainChangePossibleOrder = [];
+// let mainChangePossibleNumber = [];
+// let mainChangePossibleRow = [];
+// let mainChangePossibleColumn = [];
 
-let possibleChangeMethod = [];
-let possibleChangeDescription = [];
-let possibleChangeOrder = [];
-let possibleChangeNumber = [];
-let possibleChangeRow = [];
-let possibleChangeColumn = [];
+// let possibleChangeMethod = [];
+// let possibleChangeDescription = [];
+// let possibleChangeOrder = [];
+// let possibleChangeNumber = [];
+// let possibleChangeRow = [];
+// let possibleChangeColumn = [];
 
-let totalChangeType = [];
-let totalChangeMethod = [];
+// let totalChangeType = [];
+// let totalChangeMethod = [];
 
 export function solvePuzzle(startPuzzleString) {
     const startTime = performance.now();
@@ -78,7 +78,7 @@ export function solvePuzzle(startPuzzleString) {
     if (check(solvePuzzle)) {
         levelZeroMethods(solvePuzzle, solvePossible);
         if(!solved) {
-            levelOneMethods(solvePuzzle, solvePossible);
+            // levelOneMethods(solvePuzzle, solvePossible);
             // if(!solved) {
             //     levelTwoMethods(solvePuzzle, solvePossible);
             //     if(!solved) {
@@ -94,6 +94,9 @@ export function solvePuzzle(startPuzzleString) {
 
     // Convert the solution array to a string
     const solutionString = solvePuzzle.join('');
+
+    // Convert changes to metrics format
+    const convertedChanges = convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibleChanges);
 
     // Create metrics object
     const metrics = {
@@ -137,11 +140,7 @@ export function solvePuzzle(startPuzzleString) {
         guessAndCheckChanges,
         bruteForceChanges,
 
-        changes: {
-            main: mainChanges,
-            possible: possibleChanges,
-            mainPossible: mainPossibleChanges
-        }
+        ...convertedChanges
     };
 
     return {
@@ -194,6 +193,88 @@ function resetMetrics() {
     mainChanges = [];
     possibleChanges = [];
     mainPossibleChanges = [];
+}
+
+function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibleChanges) {
+    // Initialize arrays for tracking changes
+    const mainChangeMethod = [];
+    const mainChangeDescription = [];
+    const mainChangeNumber = [];
+    const mainChangeRow = [];
+    const mainChangeColumn = [];
+
+    const mainChangePossibleOrder = [];
+    const mainChangePossibleNumber = [];
+    const mainChangePossibleRow = [];
+    const mainChangePossibleColumn = [];
+
+    const possibleChangeMethod = [];
+    const possibleChangeDescription = [];
+    const possibleChangeOrder = [];
+    const possibleChangeNumber = [];
+    const possibleChangeRow = [];
+    const possibleChangeColumn = [];
+
+    const totalChangeType = [];
+    const totalChangeMethod = [];
+
+    // Process main changes
+    mainChanges.forEach(change => {
+        mainChangeMethod.push(change.method);
+        mainChangeDescription.push(change.description);
+        mainChangeNumber.push(change.number);
+        mainChangeRow.push(change.row);
+        mainChangeColumn.push(change.column);
+        totalChangeType.push('main');
+        totalChangeMethod.push(change.method);
+    });
+
+    // Process possible changes
+    possibleChanges.forEach(change => {
+        possibleChangeMethod.push(change.method);
+        possibleChangeDescription.push(change.description);
+        possibleChangeOrder.push(change.order);
+        possibleChangeNumber.push(change.number);
+        possibleChangeRow.push(change.row);
+        possibleChangeColumn.push(change.column);
+        totalChangeType.push('possible');
+        totalChangeMethod.push(change.method);
+    });
+
+    // Process main possible changes
+    mainPossibleChanges.forEach(change => {
+        // For each option that was removed, create a separate entry
+        change.options.forEach(option => {
+            mainChangePossibleOrder.push(change.order);
+            mainChangePossibleNumber.push(option);
+            mainChangePossibleRow.push(change.row);
+            mainChangePossibleColumn.push(change.column);
+        });
+    });
+
+    return {
+        mainChangeMethod,
+        mainChangeDescription,
+        mainChangeNumber,
+        mainChangeRow,
+        mainChangeColumn,
+        mainChangePossibleOrder,
+        mainChangePossibleNumber,
+        mainChangePossibleRow,
+        mainChangePossibleColumn,
+        possibleChangeMethod,
+        possibleChangeDescription,
+        possibleChangeOrder,
+        possibleChangeNumber,
+        possibleChangeRow,
+        possibleChangeColumn,
+        totalChangeType,
+        totalChangeMethod,
+        mainChangeCount: mainChanges.length,
+        possibleChangeCount: possibleChanges.length,
+        mainChangePossibleCount: mainChangePossibleOrder.length,
+        totalChangeCount: mainChanges.length + possibleChanges.length
+    };
 }
 
 function convertPuzzleToIntArray(startPuzzleString) {
@@ -272,7 +353,6 @@ function updateShadowPossible(number, changedCell, possible) {
         // Track the original cell's possible options
         mainPossibleChanges.push({
             order: mainChanges.length,
-            number: number,
             row: changedCell.row,
             column: changedCell.column,
             options: [...changedCell.options]
@@ -290,10 +370,9 @@ function updateShadowPossible(number, changedCell, possible) {
         if (!isGuessAndCheck && !isBruteForce) {
             mainPossibleChanges.push({
                 order: mainChanges.length,
-                number: number,
                 row: cell.row,
                 column: cell.column,
-                options: [...cell.options]
+                options: [number]
             });
         }
         const index = possible.findIndex(p => p.row === cell.row && p.column === cell.column);
@@ -394,18 +473,15 @@ function oneInARowPossibleCheck(intPuzzle, possible) {
                     
                     // Log the change
                     if (!isGuessAndCheck && !isBruteForce) {
-                        mainChangeNumber.push(String(num));
-                        mainChangeMethod.push("One in a Row");
-                        mainChangeDescription.push("The number " + num + " is only possible in row " + 
-                                (cell.row + 1) + ", column " + (cell.column + 1));
-                        mainChangeRow.push(cell.row);
-                        mainChangeColumn.push(cell.column);
-                        totalChangeType.push("main");
-                        totalChangeMethod.push("One in a Row");
-                        levelZeroChanges++;
-                        oneInARowChanges++;
-                        mainChangeCount++;
-                        totalChangeCount++;
+                        mainChanges.push({
+                            method: "One in a Row",
+                            description: "The number " + num + " is only possible in row " + 
+                                (cell.row + 1) + ", column " + (cell.column + 1),
+                            number: String(num),
+                            row: cell.row,
+                            column: cell.column
+                        });
+                        updateSolved(intPuzzle);
                     }
 
                     updateShadowPossible(num, cell, possible);
@@ -436,18 +512,14 @@ function oneInAColumnPossibleCheck(intPuzzle, possible) {
 
                     // Log the change
                     if (!isGuessAndCheck && !isBruteForce) {
-                        mainChangeNumber.push(String(num));
-                        mainChangeMethod.push("One in a Column");
-                        mainChangeDescription.push("The number " + num + " is only possible in column " + 
-                                (cell.column + 1) + ", row " + (cell.row + 1));
-                        mainChangeRow.push(cell.row);
-                        mainChangeColumn.push(cell.column);
-                        totalChangeType.push("main");
-                        totalChangeMethod.push("One in a Column");
-                        levelZeroChanges++;
-                        oneInAColumnChanges++;
-                        mainChangeCount++;
-                        totalChangeCount++;
+                        mainChanges.push({
+                            method: "One in a Column",
+                            description: "The number " + num + " is only possible in column " + 
+                                (cell.column + 1) + ", row " + (cell.row + 1),
+                            number: String(num),
+                            row: cell.row,
+                            column: cell.column
+                        });
                         updateSolved(intPuzzle);
                     }
 
@@ -479,18 +551,14 @@ function oneInAGroupPossibleCheck(intPuzzle, possible) {
 
                     // Log the change
                     if (!isGuessAndCheck && !isBruteForce) {
-                        mainChangeNumber.push(String(num));
-                        mainChangeMethod.push("One in a Group");
-                        mainChangeDescription.push("The number " + num + " is only possible in row " + 
-                            (cell.row + 1) + ", column " + (cell.column + 1) + " in group " + (cell.group + 1));
-                        mainChangeRow.push(cell.row);
-                        mainChangeColumn.push(cell.column);
-                        totalChangeType.push("main");
-                        totalChangeMethod.push("One in a Group");
-                        levelZeroChanges++;
-                        oneInAGroupChanges++;
-                        mainChangeCount++;
-                        totalChangeCount++;
+                        mainChanges.push({
+                            method: "One in a Group",
+                            description: "The number " + num + " is only possible in row " + 
+                                (cell.row + 1) + ", column " + (cell.column + 1) + " in group " + (cell.group + 1),
+                            number: String(num),
+                            row: cell.row,
+                            column: cell.column
+                        });
                         updateSolved(intPuzzle);
                     }
 
@@ -518,19 +586,14 @@ function oneInACellPossibleCheck(intPuzzle, possible) {
             
             // Log the change
             if (!isGuessAndCheck && !isBruteForce) {
-                mainChangeNumber.push(String(cell.options[0]));
-                mainChangeMethod.push("One in a Cell");
-                mainChangeDescription.push("The number " + cell.options[0] + " is the only possible option for cell " + 
-                        (cell.row + 1) + ", column " + (cell.column + 1));
-                mainChangeRow.push(cell.row);
-                mainChangeColumn.push(cell.column);
-                totalChangeType.push("main");
-                totalChangeMethod.push("One in a Cell");
-                levelZeroChanges++;
-                oneInACellChanges++;
-                mainChangeCount++;
-                totalChangeCount++;
-                tempChanges++;
+                mainChanges.push({
+                    method: "One in a Cell",
+                    description: "The number " + cell.options[0] + " is the only possible option for cell " + 
+                        (cell.row + 1) + ", column " + (cell.column + 1),
+                    number: String(cell.options[0]),
+                    row: cell.row,
+                    column: cell.column
+                });
                 updateSolved(intPuzzle);
             }
 
@@ -542,7 +605,7 @@ function oneInACellPossibleCheck(intPuzzle, possible) {
     
     return changes;
 }
-
+/*
 function levelOneMethods(intPuzzle, possible) {
     let changes;
     let tempLevelOneChanges = 0;
@@ -1053,3 +1116,5 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
 
     return changes;
 }
+
+*/
