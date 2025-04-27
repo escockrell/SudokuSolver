@@ -145,28 +145,57 @@ const InputPage = () => {
         row.map(cell => cell === '' ? '0' : cell).join('')
       ).join('');
 
-      // const startPuzzle1 = "578001600160050003002609001006003000010008365003100924300762000080000030701000000";
-      // const startPuzzle1 = "900320050600085000800000060030000900000602003400090020304250000000007301160008000";
-      const startPuzzle1 = "000705030000040500057000240060300000080000000001009026005400070019070000708002019";
+      const startPuzzle1 = "578001600160050003002609001006003000010008365003100924300762000080000030701000000";
+      const startPuzzle2 = "900320050600085000800000060030000900000602003400090020304250000000007301160008000";
+      const startPuzzle3 = "000705030000040500057000240060300000080000000001009026005400070019070000708002019";
+      const startPuzzle4 = "000200005004705030000001270037500002000300640901020000800004300300800000005900806";
+      const startPuzzle5 = "020708450058040207640259010000000100000567040004801000000000001209005080036900000";
+      const startPuzzle6 = "200000630063000000450630200600180000300007905000900004901500000006001000080000140";
+      const startPuzzle7 = "030600000007040000940080050000908500008003902000400083073050060209000010010204005";
+      const startPuzzle8 = "200080000000070600497602001030100206140000009009000015060900100000005900005010708";
+      const startPuzzle9 = "938701025250006103000003000570009000680015007010007508020100090145000300000000000";
+      const startPuzzle10 = "140060000209040700500000040400080070900650003080020005002000507004008310000203000";
+
+      const startPuzzles = [
+        startPuzzle1, 
+        startPuzzle2, 
+        startPuzzle3, 
+        startPuzzle4, 
+        startPuzzle5,
+        startPuzzle6,
+        startPuzzle7,
+        startPuzzle8,
+        startPuzzle9,
+        startPuzzle10
+      ];
 
       // const response = await solvePuzzle(puzzleInput); // API call
       // const response = solvePuzzle(puzzleInput); // local call
 
-      const response = solvePuzzle(startPuzzle1);
-      const response_v2 = solvePuzzle_v2(startPuzzle1);
-        
-      // console.log("Solving puzzle: ", puzzleInput);
-      console.log("Solving puzzle: ", startPuzzle1); // TODO: Remove after testing
+      let response;
+      let response_v2;
 
-      // console.log("Solver metrics");
-      // console.log("solved: ", response.metrics.solved);
-      // console.log(`Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
-      // console.log("response: ", response);
-      
-      console.log("Solver_v2 metrics");
-      console.log("solved: ", response_v2.metrics.solved);
-      console.log(`Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
-      console.log("response: ", response_v2);
+      startPuzzles.forEach(puzzle => {
+        response = solvePuzzle(puzzle);
+        response_v2 = solvePuzzle_v2(puzzle);
+        
+        // console.log("Solving puzzle: ", puzzleInput);
+        console.log("Solving puzzle: ", puzzle); // TODO: Remove after testing
+
+        // console.log("Solver metrics");
+        // console.log("solved: ", response.metrics.solved);
+        console.log(`Solver: Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
+        // console.log("response: ", response);
+        
+        // console.log("Solver_v2 metrics");
+        // console.log("solved: ", response_v2.metrics.solved);
+        console.log(`Solver_v2: Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
+        // console.log("response: ", response_v2);
+
+        const timeDiff = Math.abs(response_v2.metrics.solveTime - response.metrics.solveTime);
+        const winner = response_v2.metrics.solveTime < response.metrics.solveTime ? "Solver_v2" : "Solver";
+        console.log(`${winner} wins by ${timeDiff.toFixed(2)} milliseconds`);
+      });
 
       // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];

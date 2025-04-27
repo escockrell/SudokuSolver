@@ -42,6 +42,11 @@ let possibleChangePossibleCount = 0;
 let mainChangePossibleCount = 0;
 let totalChangeCount = 0;
 
+// Arrays to track changes
+let mainChanges = []; // For actual number placements
+let possibleChanges = []; // For possible number removals
+let mainPossibleChanges = []; // For possible number updates after main changes
+
 let mainChangeMethod = [];
 let mainChangeDescription = [];
 let mainChangeNumber = [];
@@ -132,35 +137,13 @@ export function solvePuzzle(startPuzzleString) {
         guessAndCheckChanges,
         bruteForceChanges,
 
-        mainChangeMethod,
-        mainChangeDescription,
-        mainChangeNumber,
-        mainChangeRow,
-        mainChangeColumn,
-
-        possibleChangeMethod,
-        possibleChangeDescription,
-        possibleChangeOrder,
-        possibleChangeNumber,
-        possibleChangeRow,
-        possibleChangeColumn,
-
-        mainChangePossibleOrder,
-        mainChangePossibleNumber,
-        mainChangePossibleRow,
-        mainChangePossibleColumn,
-        
-        totalChangeType,
-        totalChangeMethod,
-
-        mainChangeCount,
-        possibleChangeCount,
-        possibleChangePossibleCount,
-        mainChangePossibleCount,
-        totalChangeCount
+        changes: {
+            main: mainChanges,
+            possible: possibleChanges,
+            mainPossible: mainPossibleChanges
+        }
     };
 
-    // Return the formatted response object
     return {
         metrics,
         solution: solutionString,
@@ -170,13 +153,14 @@ export function solvePuzzle(startPuzzleString) {
 function resetMetrics() {
     solved = false;
     bruteForceSolved = false;
+    isGuessAndCheck = false;
+    isBruteForce = false;
 
     levelZeroChanges = 0;
     oneInARowChanges = 0;
     oneInAColumnChanges = 0;
     oneInAGroupChanges = 0;
     oneInACellChanges = 0;
-    
     levelOneChanges = 0;
     phantomRowChanges = 0;
     phantomColumnChanges = 0;
@@ -187,7 +171,6 @@ function resetMetrics() {
     hiddenPairRowChanges = 0;
     hiddenPairColumnChanges = 0;
     hiddenPairGroupChanges = 0;
-    
     levelTwoChanges = 0;
     nakedTripleRowChanges = 0;
     nakedTripleColumnChanges = 0;
@@ -203,35 +186,14 @@ function resetMetrics() {
     yWingRowGroupChanges = 0;
     yWingColumnGroupChanges = 0;
     yWingRowColumnChanges = 0;
-
     levelThreeChanges = 0;
     guessAndCheckChanges = 0;
     bruteForceChanges = 0;
 
-    mainChangeNumber = [];
-    mainChangeMethod = [];
-    mainChangeDescription = [];
-    mainChangeRow = [];
-    mainChangeColumn = [];
-    possibleChangeMethod = [];
-    possibleChangeDescription = [];
-    possibleChangeOrder = [];
-    possibleChangeNumber = [];
-    possibleChangeRow = [];
-    possibleChangeColumn = [];
-    mainChangePossibleOrder = [];
-    mainChangePossibleNumber = [];
-    mainChangePossibleRow = [];
-    mainChangePossibleColumn = [];
-    totalChangeType = [];
-    totalChangeMethod = [];
-
-    mainChangeCount = 0;
-    possibleChangeCount = 0;
-    possibleChangePossibleCount = 0;
-    mainChangePossibleCount = 0;
-    totalChangeCount = 0;
-    
+    // Reset change tracking arrays
+    mainChanges = [];
+    possibleChanges = [];
+    mainPossibleChanges = [];
 }
 
 function convertPuzzleToIntArray(startPuzzleString) {
@@ -307,23 +269,32 @@ function initializePossible(solvePuzzle) {
 
 function updateShadowPossible(number, changedCell, possible) {
     if (!isGuessAndCheck && !isBruteForce) {
-        changedCell.options.forEach(option => {
-            mainChangePossibleOrder.push(mainChangeCount);
-            mainChangePossibleNumber.push(option);
-            mainChangePossibleRow.push(changedCell.row);
-            mainChangePossibleColumn.push(changedCell.column);
-            mainChangePossibleCount++;
+        // Track the original cell's possible options
+        mainPossibleChanges.push({
+            order: mainChanges.length,
+            number: number,
+            row: changedCell.row,
+            column: changedCell.column,
+            options: [...changedCell.options]
         });
     }
     
-    const updateCells = possible.filter(cell => (cell.row === changedCell.row || cell.column === changedCell.column || cell.group === changedCell.group) && cell.options.includes(number));
+    const updateCells = possible.filter(cell => 
+        (cell.row === changedCell.row || 
+         cell.column === changedCell.column || 
+         cell.group === changedCell.group) && 
+        cell.options.includes(number)
+    );
+    
     updateCells.forEach(cell => {
         if (!isGuessAndCheck && !isBruteForce) {
-            mainChangePossibleOrder.push(mainChangeCount);
-            mainChangePossibleNumber.push(number);
-            mainChangePossibleRow.push(cell.row);
-            mainChangePossibleColumn.push(cell.column);
-            mainChangePossibleCount++;
+            mainPossibleChanges.push({
+                order: mainChanges.length,
+                number: number,
+                row: cell.row,
+                column: cell.column,
+                options: [...cell.options]
+            });
         }
         const index = possible.findIndex(p => p.row === cell.row && p.column === cell.column);
         possible[index].options = possible[index].options.filter(n => n !== number);
@@ -579,7 +550,7 @@ function levelOneMethods(intPuzzle, possible) {
         changes = 0;
         changes += phantomChecks(intPuzzle, possible);
         changes += nakedPairChecks(intPuzzle, possible);
-        // changes += hiddenPairChecks(intPuzzle, possible);
+        changes += hiddenPairChecks(intPuzzle, possible);
         tempLevelOneChanges += changes;
     } while (changes !== 0 && !solved);
     return tempLevelOneChanges;
@@ -952,6 +923,8 @@ function nakedPairCheck(intPuzzle, possible, checkType) {
                                     case "group":
                                         nakedPairGroupChanges++;
                                         break;
+                                    default:
+                                        break;
                                 }
                                 possibleChangeCount++;
                                 totalChangeCount++;
@@ -968,6 +941,115 @@ function nakedPairCheck(intPuzzle, possible, checkType) {
         
         changes += tempNakedPairChanges;
     } while (tempNakedPairChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function hiddenPairChecks(intPuzzle, possible) {
+    let changes = 0;
+    let tempHiddenPairChanges = 0;
+    do {
+        changes = 0;
+        changes += hiddenPairCheck(intPuzzle, possible, "row");
+        changes += hiddenPairCheck(intPuzzle, possible, "column");
+        changes += hiddenPairCheck(intPuzzle, possible, "group");
+        tempHiddenPairChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempHiddenPairChanges;
+}
+
+function hiddenPairCheck(intPuzzle, possible, checkType) {
+    let changes = 0;
+    let tempHiddenPairChanges = 0;
+
+    do {
+        tempHiddenPairChanges = 0;
+
+        // For each row, column, or group
+        for (let rowColGroup = 0; rowColGroup < 9 && !solved; rowColGroup++) {
+            // Get all cells in this row, column, or group
+            const rowColGroupCells = possible.filter(cell => cell[checkType] === rowColGroup);
+            
+            // Get an array of all numbers
+            const allNumbers = rowColGroupCells.flatMap(cell => cell.options);
+
+            // Get an array of all unique numbers
+            const numbersInRowColGroup = new Set(allNumbers);
+
+            // Create an array of all numbers that appear in exactly two cells
+            const twoCellNumbers = Array.from(numbersInRowColGroup).filter(num => allNumbers.filter(n => n === num).length === 2).sort((a, b) => a - b);
+            
+            // Check for pairs of numbers that appear in exactly the same two cells
+            for (let i = 0; i < twoCellNumbers.length - 1; i++) {
+                for (let j = i + 1; j < twoCellNumbers.length; j++) {
+                    const cellsForNum1 = rowColGroupCells.filter(cell => cell.options.includes(twoCellNumbers[i]));
+                    const cellsForNum2 = rowColGroupCells.filter(cell => cell.options.includes(twoCellNumbers[j]));
+                    
+                    // Check if they appear in exactly the same two cells
+                    const sameCells = cellsForNum1[0] === cellsForNum2[0] && cellsForNum1[1] === cellsForNum2[1] ||
+                                    cellsForNum1[0] === cellsForNum2[1] && cellsForNum1[1] === cellsForNum2[0];
+                        
+                    if (sameCells) {
+                        let description = "Since the numbers " + twoCellNumbers[i] + " and " + twoCellNumbers[j] +
+                            " form a hidden pair in the cells (" + (cellsForNum1[0].row+1) + "," + (cellsForNum1[0].column+1) + ") and (" +
+                            (cellsForNum1[1].row+1) + "," + (cellsForNum1[1].column+1) + "), the below numbers were removed as possible options:";
+                        let changesFound = false;
+                        cellsForNum1.forEach(cell => {
+                            const numbersToRemove = cell.options.filter(num => num !== twoCellNumbers[i] && num !== twoCellNumbers[j]);
+                            
+                            if (numbersToRemove.length > 0) {
+                                cell.options = [twoCellNumbers[i], twoCellNumbers[j]];
+                                changesFound = true;
+
+                                if (!isGuessAndCheck && !isBruteForce) {
+                                    numbersToRemove.forEach(num => {
+                                        description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
+                                        possibleChangeOrder.push(possibleChangeCount);
+                                        possibleChangeNumber.push(num);
+                                        possibleChangeRow.push(cell.row);
+                                        possibleChangeColumn.push(cell.column);
+                                        possibleChangePossibleCount++;
+                                    });
+                                }
+                            }
+                            
+                        });
+                        
+                        // Finish logging the change
+                        if (changesFound) {
+                            if (!isGuessAndCheck && !isBruteForce) {
+                                possibleChangeMethod.push("Hidden Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1));
+                                possibleChangeDescription.push(description);
+                                totalChangeType.push("possible");
+                                totalChangeMethod.push("Hidden Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1));
+                                levelOneChanges++;
+                                switch (checkType) {
+                                    case "row":
+                                        hiddenPairRowChanges++;
+                                        break;
+                                    case "column":
+                                        hiddenPairColumnChanges++;
+                                        break;
+                                    case "group":
+                                        hiddenPairGroupChanges++;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                possibleChangeCount++;
+                                totalChangeCount++;
+                            }
+                            tempHiddenPairChanges++;
+
+                            // Run previous methods to see if the puzzle can be solved
+                            tempHiddenPairChanges += levelZeroMethods(intPuzzle, possible);
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempHiddenPairChanges;
+    } while (tempHiddenPairChanges !== 0 && !solved);
 
     return changes;
 }
