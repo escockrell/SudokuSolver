@@ -3,70 +3,11 @@ let bruteForceSolved = false;
 let isGuessAndCheck = false;
 let isBruteForce = false;
 
-let levelZeroChanges = 0;
-let oneInARowChanges = 0;
-let oneInAColumnChanges = 0;
-let oneInAGroupChanges = 0;
-let oneInACellChanges = 0;
-let levelOneChanges = 0;
-let phantomRowChanges = 0;
-let phantomColumnChanges = 0;
-let phantomGroupChanges = 0;
-let nakedPairRowChanges = 0;
-let nakedPairColumnChanges = 0;
-let nakedPairGroupChanges = 0;
-let hiddenPairRowChanges = 0;
-let hiddenPairColumnChanges = 0;
-let hiddenPairGroupChanges = 0;
-let levelTwoChanges = 0;
-let nakedTripleRowChanges = 0;
-let nakedTripleColumnChanges = 0;
-let nakedTripleGroupChanges = 0;
-let hiddenTripleRowChanges = 0;
-let hiddenTripleColumnChanges = 0;
-let hiddenTripleGroupChanges = 0;
-let nakedQuadRowChanges = 0;
-let nakedQuadColumnChanges = 0;
-let nakedQuadGroupChanges = 0;
-let xWingRowChanges = 0;
-let xWingColumnChanges = 0;
-let yWingRowGroupChanges = 0;
-let yWingColumnGroupChanges = 0;
-let yWingRowColumnChanges = 0;
-let levelThreeChanges = 0;
-let guessAndCheckChanges = 0;
-let bruteForceChanges = 0;
-
-// let mainChangeCount = 0;
-// let possibleChangeCount = 0;
-// let mainChangePossibleCount = 0;
-// let totalChangeCount = 0;
-
 // Arrays to track changes
 let mainChanges = []; // For actual number placements
 let possibleChanges = []; // For possible number removals
 let mainPossibleChanges = []; // For possible number updates after main changes
-
-// let mainChangeMethod = [];
-// let mainChangeDescription = [];
-// let mainChangeNumber = [];
-// let mainChangeRow = [];
-// let mainChangeColumn = [];
-
-// let mainChangePossibleOrder = [];
-// let mainChangePossibleNumber = [];
-// let mainChangePossibleRow = [];
-// let mainChangePossibleColumn = [];
-
-// let possibleChangeMethod = [];
-// let possibleChangeDescription = [];
-// let possibleChangeOrder = [];
-// let possibleChangeNumber = [];
-// let possibleChangeRow = [];
-// let possibleChangeColumn = [];
-
-// let totalChangeType = [];
-// let totalChangeMethod = [];
+let totalChanges = []; // For all changes
 
 export function solvePuzzle(startPuzzleString) {
     const startTime = performance.now();
@@ -78,7 +19,7 @@ export function solvePuzzle(startPuzzleString) {
     if (check(solvePuzzle)) {
         levelZeroMethods(solvePuzzle, solvePossible);
         if(!solved) {
-            // levelOneMethods(solvePuzzle, solvePossible);
+            levelOneMethods(solvePuzzle, solvePossible);
             // if(!solved) {
             //     levelTwoMethods(solvePuzzle, solvePossible);
             //     if(!solved) {
@@ -96,49 +37,12 @@ export function solvePuzzle(startPuzzleString) {
     const solutionString = solvePuzzle.join('');
 
     // Convert changes to metrics format
-    const convertedChanges = convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibleChanges);
+    const convertedChanges = convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibleChanges, totalChanges);
 
     // Create metrics object
     const metrics = {
         solved,
         solveTime,
-
-        levelZeroChanges,
-        oneInARowChanges,
-        oneInAColumnChanges,
-        oneInAGroupChanges,
-        oneInACellChanges,
-        
-        levelOneChanges,
-        phantomRowChanges,
-        phantomColumnChanges,
-        phantomGroupChanges,
-        nakedPairRowChanges,
-        nakedPairColumnChanges,
-        nakedPairGroupChanges,
-        hiddenPairRowChanges,
-        hiddenPairColumnChanges,
-        hiddenPairGroupChanges,
-
-        levelTwoChanges,
-        nakedTripleRowChanges,
-        nakedTripleColumnChanges,
-        nakedTripleGroupChanges,
-        hiddenTripleRowChanges,
-        hiddenTripleColumnChanges,
-        hiddenTripleGroupChanges,
-        nakedQuadRowChanges,
-        nakedQuadColumnChanges,
-        nakedQuadGroupChanges,
-        xWingRowChanges,
-        xWingColumnChanges,
-        yWingRowGroupChanges,
-        yWingColumnGroupChanges,
-        yWingRowColumnChanges,
-
-        levelThreeChanges,
-        guessAndCheckChanges,
-        bruteForceChanges,
 
         ...convertedChanges
     };
@@ -155,47 +59,14 @@ function resetMetrics() {
     isGuessAndCheck = false;
     isBruteForce = false;
 
-    levelZeroChanges = 0;
-    oneInARowChanges = 0;
-    oneInAColumnChanges = 0;
-    oneInAGroupChanges = 0;
-    oneInACellChanges = 0;
-    levelOneChanges = 0;
-    phantomRowChanges = 0;
-    phantomColumnChanges = 0;
-    phantomGroupChanges = 0;
-    nakedPairRowChanges = 0;
-    nakedPairColumnChanges = 0;
-    nakedPairGroupChanges = 0;
-    hiddenPairRowChanges = 0;
-    hiddenPairColumnChanges = 0;
-    hiddenPairGroupChanges = 0;
-    levelTwoChanges = 0;
-    nakedTripleRowChanges = 0;
-    nakedTripleColumnChanges = 0;
-    nakedTripleGroupChanges = 0;
-    hiddenTripleRowChanges = 0;
-    hiddenTripleColumnChanges = 0;
-    hiddenTripleGroupChanges = 0;
-    nakedQuadRowChanges = 0;
-    nakedQuadColumnChanges = 0;
-    nakedQuadGroupChanges = 0;
-    xWingRowChanges = 0;
-    xWingColumnChanges = 0;
-    yWingRowGroupChanges = 0;
-    yWingColumnGroupChanges = 0;
-    yWingRowColumnChanges = 0;
-    levelThreeChanges = 0;
-    guessAndCheckChanges = 0;
-    bruteForceChanges = 0;
-
     // Reset change tracking arrays
     mainChanges = [];
     possibleChanges = [];
     mainPossibleChanges = [];
+    totalChanges = [];
 }
 
-function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibleChanges) {
+function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibleChanges, totalChanges) {
     // Initialize arrays for tracking changes
     const mainChangeMethod = [];
     const mainChangeDescription = [];
@@ -218,6 +89,40 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
     const totalChangeType = [];
     const totalChangeMethod = [];
 
+    // Initialize counters for each method
+    let oneInARowChanges = 0;
+    let oneInAColumnChanges = 0;
+    let oneInAGroupChanges = 0;
+    let oneInACellChanges = 0;
+
+    let phantomRowChanges = 0;
+    let phantomColumnChanges = 0;
+    let phantomGroupChanges = 0;
+    let nakedPairRowChanges = 0;
+    let nakedPairColumnChanges = 0;
+    let nakedPairGroupChanges = 0;
+    let hiddenPairRowChanges = 0;
+    let hiddenPairColumnChanges = 0;
+    let hiddenPairGroupChanges = 0;
+
+    let nakedTripleRowChanges = 0;
+    let nakedTripleColumnChanges = 0;
+    let nakedTripleGroupChanges = 0;
+    let hiddenTripleRowChanges = 0;
+    let hiddenTripleColumnChanges = 0;
+    let hiddenTripleGroupChanges = 0;
+    let nakedQuadRowChanges = 0;
+    let nakedQuadColumnChanges = 0;
+    let nakedQuadGroupChanges = 0;
+    let xWingRowChanges = 0;
+    let xWingColumnChanges = 0;
+    let yWingRowGroupChanges = 0;
+    let yWingColumnGroupChanges = 0;
+    let yWingRowColumnChanges = 0;
+
+    let guessAndCheckChanges = 0;
+    let bruteForceChanges = 0;
+
     // Process main changes
     mainChanges.forEach(change => {
         mainChangeMethod.push(change.method);
@@ -225,20 +130,113 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
         mainChangeNumber.push(change.number);
         mainChangeRow.push(change.row);
         mainChangeColumn.push(change.column);
-        totalChangeType.push('main');
-        totalChangeMethod.push(change.method);
+
+        // Update method counters based on the method name
+        switch (change.method) {
+            case "One in a Row":
+                oneInARowChanges++;
+                break;
+            case "One in a Column":
+                oneInAColumnChanges++;
+                break;
+            case "One in a Group":
+                oneInAGroupChanges++;
+                break;
+            case "One in a Cell":
+                oneInACellChanges++;
+                break;
+        }
     });
 
     // Process possible changes
     possibleChanges.forEach(change => {
         possibleChangeMethod.push(change.method);
         possibleChangeDescription.push(change.description);
-        possibleChangeOrder.push(change.order);
-        possibleChangeNumber.push(change.number);
-        possibleChangeRow.push(change.row);
-        possibleChangeColumn.push(change.column);
-        totalChangeType.push('possible');
-        totalChangeMethod.push(change.method);
+        change.options.forEach((option, index) => {
+            possibleChangeOrder.push(change.order);
+            possibleChangeNumber.push(option);
+            possibleChangeRow.push(change.rows[index]);
+            possibleChangeColumn.push(change.columns[index]);
+        });
+
+        // Update method counters for possible changes
+        switch (change.method) {
+            case "Phantom - Row":
+                phantomRowChanges++;
+                break;
+            case "Phantom - Column":
+                phantomColumnChanges++;
+                break;
+            case "Phantom - Group":
+                phantomGroupChanges++;
+                break;
+            case "Naked Pair - Row":
+                nakedPairRowChanges++;
+                break;
+            case "Naked Pair - Column":
+                nakedPairColumnChanges++;
+                break;
+            case "Naked Pair - Group":
+                nakedPairGroupChanges++;
+                break;
+            case "Hidden Pair - Row":
+                hiddenPairRowChanges++;
+                break;
+            case "Hidden Pair - Column":
+                hiddenPairColumnChanges++;
+                break;
+            case "Hidden Pair - Group":
+                hiddenPairGroupChanges++;
+                break;
+            case "Naked Triple - Row":
+                nakedTripleRowChanges++;
+                break;
+            case "Naked Triple - Column":
+                nakedTripleColumnChanges++;
+                break;
+            case "Naked Triple - Group":
+                nakedTripleGroupChanges++;
+                break;
+            case "Hidden Triple - Row":
+                hiddenTripleRowChanges++;
+                break;
+            case "Hidden Triple - Column":
+                hiddenTripleColumnChanges++;
+                break;
+            case "Hidden Triple - Group":
+                hiddenTripleGroupChanges++;
+                break;
+            case "Naked Quad - Row":
+                nakedQuadRowChanges++;
+                break;
+            case "Naked Quad - Column":
+                nakedQuadColumnChanges++;
+                break;
+            case "Naked Quad - Group":
+                nakedQuadGroupChanges++;
+                break;
+            case "X-Wing - Row":
+                xWingRowChanges++;
+                break;
+            case "X-Wing - Column":
+                xWingColumnChanges++;
+                break;
+            case "Y-Wing - Row/Group":
+                yWingRowGroupChanges++;
+                break;
+            case "Y-Wing - Column/Group":
+                yWingColumnGroupChanges++;
+                break;
+            case "Y-Wing - Row/Column":
+                yWingRowColumnChanges++;
+                break;
+            case "Guess and Check":
+                guessAndCheckChanges++;
+                break;
+            case "Brute Force":
+                bruteForceChanges++;
+                break;
+        }
     });
 
     // Process main possible changes
@@ -251,6 +249,24 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
             mainChangePossibleColumn.push(change.column);
         });
     });
+
+    // Process total changes
+    totalChanges.forEach(change => {
+        totalChangeType.push(change.type);
+        totalChangeMethod.push(change.method);
+    });
+
+    // Calculate level totals
+    const levelZeroChanges = oneInARowChanges + oneInAColumnChanges + oneInAGroupChanges + oneInACellChanges;
+    const levelOneChanges = phantomRowChanges + phantomColumnChanges + phantomGroupChanges +
+                          nakedPairRowChanges + nakedPairColumnChanges + nakedPairGroupChanges +
+                          hiddenPairRowChanges + hiddenPairColumnChanges + hiddenPairGroupChanges;
+    const levelTwoChanges = nakedTripleRowChanges + nakedTripleColumnChanges + nakedTripleGroupChanges +
+                          hiddenTripleRowChanges + hiddenTripleColumnChanges + hiddenTripleGroupChanges +
+                          nakedQuadRowChanges + nakedQuadColumnChanges + nakedQuadGroupChanges +
+                          xWingRowChanges + xWingColumnChanges +
+                          yWingRowGroupChanges + yWingColumnGroupChanges + yWingRowColumnChanges;
+    const levelThreeChanges = guessAndCheckChanges + bruteForceChanges;
 
     return {
         mainChangeMethod,
@@ -273,7 +289,42 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
         mainChangeCount: mainChanges.length,
         possibleChangeCount: possibleChanges.length,
         mainChangePossibleCount: mainChangePossibleOrder.length,
-        totalChangeCount: mainChanges.length + possibleChanges.length
+        totalChangeCount: totalChanges.length,
+        // Level totals
+        levelZeroChanges,
+        levelOneChanges,
+        levelTwoChanges,
+        levelThreeChanges,
+        // Individual method counts
+        oneInARowChanges,
+        oneInAColumnChanges,
+        oneInAGroupChanges,
+        oneInACellChanges,
+        phantomRowChanges,
+        phantomColumnChanges,
+        phantomGroupChanges,
+        nakedPairRowChanges,
+        nakedPairColumnChanges,
+        nakedPairGroupChanges,
+        hiddenPairRowChanges,
+        hiddenPairColumnChanges,
+        hiddenPairGroupChanges,
+        nakedTripleRowChanges,
+        nakedTripleColumnChanges,
+        nakedTripleGroupChanges,
+        hiddenTripleRowChanges,
+        hiddenTripleColumnChanges,
+        hiddenTripleGroupChanges,
+        nakedQuadRowChanges,
+        nakedQuadColumnChanges,
+        nakedQuadGroupChanges,
+        xWingRowChanges,
+        xWingColumnChanges,
+        yWingRowGroupChanges,
+        yWingColumnGroupChanges,
+        yWingRowColumnChanges,
+        guessAndCheckChanges,
+        bruteForceChanges
     };
 }
 
@@ -481,6 +532,10 @@ function oneInARowPossibleCheck(intPuzzle, possible) {
                             row: cell.row,
                             column: cell.column
                         });
+                        totalChanges.push({
+                            type: "main",
+                            method: "One in a Row"  
+                        });
                         updateSolved(intPuzzle);
                     }
 
@@ -519,6 +574,10 @@ function oneInAColumnPossibleCheck(intPuzzle, possible) {
                             number: String(num),
                             row: cell.row,
                             column: cell.column
+                        });
+                        totalChanges.push({
+                            type: "main",
+                            method: "One in a Column"
                         });
                         updateSolved(intPuzzle);
                     }
@@ -559,6 +618,10 @@ function oneInAGroupPossibleCheck(intPuzzle, possible) {
                             row: cell.row,
                             column: cell.column
                         });
+                        totalChanges.push({
+                            type: "main",
+                            method: "One in a Group"
+                        });
                         updateSolved(intPuzzle);
                     }
 
@@ -580,24 +643,29 @@ function oneInACellPossibleCheck(intPuzzle, possible) {
     do {
         tempChanges = 0;
         const oneOptionCells = possible.filter(cell => cell.options.length === 1);
-        oneOptionCells.forEach(cell => {
-            intPuzzle[cell.row * 9 + cell.column] = cell.options[0];
+        oneOptionCells.forEach((cell) => {
+            const cellValue = cell.options[0];
+            intPuzzle[cell.row * 9 + cell.column] = cellValue;
             possible.splice(possible.findIndex(p => p.row === cell.row && p.column === cell.column), 1);
             
             // Log the change
             if (!isGuessAndCheck && !isBruteForce) {
                 mainChanges.push({
                     method: "One in a Cell",
-                    description: "The number " + cell.options[0] + " is the only possible option for cell " + 
+                    description: "The number " + cellValue + " is the only possible option for cell " + 
                         (cell.row + 1) + ", column " + (cell.column + 1),
-                    number: String(cell.options[0]),
+                    number: String(cellValue),
                     row: cell.row,
                     column: cell.column
+                });
+                totalChanges.push({
+                    type: "main",
+                    method: "One in a Cell"
                 });
                 updateSolved(intPuzzle);
             }
 
-            updateShadowPossible(cell.options[0], cell, possible);
+            updateShadowPossible(cellValue, cell, possible);
             tempChanges++;
         });
         changes += tempChanges;
@@ -605,7 +673,7 @@ function oneInACellPossibleCheck(intPuzzle, possible) {
     
     return changes;
 }
-/*
+
 function levelOneMethods(intPuzzle, possible) {
     let changes;
     let tempLevelOneChanges = 0;
@@ -664,36 +732,38 @@ function rowPhantomCheck(intPuzzle, possible) {
                             
                             let description = "Since the number " + num + " only appears in row " + 
                                 (phantomRow + 1) + " in group " + (group + 1) + ", it was removed as a possible option in the below cells:";
+                            let removedNumbers = [];
+                            let removedRows = [];
+                            let removedColumns = [];
 
                             // Remove the number from options in these cells
                             cellsToChange.forEach(cell => {
                                 const index = cell.options.indexOf(num);
                                 cell.options.splice(index, 1);
-                                
+                                removedNumbers.push(num);
+                                removedRows.push(cell.row);
+                                removedColumns.push(cell.column);
                                 description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
-                                if (!isGuessAndCheck && !isBruteForce) {
-                                    possibleChangeOrder.push(possibleChangeCount);
-                                    possibleChangeNumber.push(num);
-                                    possibleChangeRow.push(cell.row);
-                                    possibleChangeColumn.push(cell.column);
-                                    possibleChangePossibleCount++;
-                                }
                             });
 
                             if (!isGuessAndCheck && !isBruteForce) {
-                                possibleChangeMethod.push("Phantom - Row");
-                                possibleChangeDescription.push(description);
-                                totalChangeType.push("possible");
-                                totalChangeMethod.push("Phantom - Row");
-                                levelOneChanges++;
-                                phantomRowChanges++;
-                                possibleChangeCount++;
-                                totalChangeCount++;
+                                possibleChanges.push({
+                                    method: "Phantom - Row",
+                                    order: possibleChanges.length,
+                                    description: description,
+                                    options: removedNumbers,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
+                                totalChanges.push({
+                                    type: "possible",
+                                    method: "Phantom - Row"
+                                });
                             }
                             tempRowPhantomChanges++;
 
                             // Run previous methods to see if the puzzle can be solved
-                            tempRowPhantomChanges += levelZeroMethods(intPuzzle, possible, isGuessAndCheck, isBruteForce);
+                            tempRowPhantomChanges += levelZeroMethods(intPuzzle, possible);
                         }
                     }
                 }
@@ -737,36 +807,39 @@ function columnPhantomCheck(intPuzzle, possible) {
                             
                             let description = "Since the number " + num + " only appears in column " + 
                                 (phantomColumn + 1) + " in group " + (group + 1) + ", it was removed as a possible option in the below cells:";
+                            let removedNumbers = [];
+                            let removedRows = [];
+                            let removedColumns = [];
+
 
                             // Remove the number from options in these cells
                             cellsToChange.forEach(cell => {
                                 const index = cell.options.indexOf(num);
                                 cell.options.splice(index, 1);
-                                
+                                removedNumbers.push(num);
+                                removedRows.push(cell.row);
+                                removedColumns.push(cell.column);
                                 description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
-                                if (!isGuessAndCheck && !isBruteForce) {
-                                    possibleChangeOrder.push(possibleChangeCount);
-                                    possibleChangeNumber.push(num);
-                                    possibleChangeRow.push(cell.row);
-                                    possibleChangeColumn.push(cell.column);
-                                    possibleChangePossibleCount++;
-                                }
                             });
 
                             if (!isGuessAndCheck && !isBruteForce) {
-                                possibleChangeMethod.push("Phantom - Column");
-                                possibleChangeDescription.push(description);
-                                totalChangeType.push("possible");
-                                totalChangeMethod.push("Phantom - Column");
-                                levelOneChanges++;
-                                phantomColumnChanges++;
-                                possibleChangeCount++;
-                                totalChangeCount++;
+                                possibleChanges.push({
+                                    method: "Phantom - Column",
+                                    order: possibleChanges.length,
+                                    description: description,
+                                    options: removedNumbers,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
+                                totalChanges.push({
+                                    type: "possible",
+                                    method: "Phantom - Column"
+                                });
                             }
                             tempColumnPhantomChanges++;
 
                             // Run previous methods to see if the puzzle can be solved
-                            tempColumnPhantomChanges += levelZeroMethods(intPuzzle, possible, isGuessAndCheck, isBruteForce);
+                            tempColumnPhantomChanges += levelZeroMethods(intPuzzle, possible);
                         }
                     }
                 }
@@ -819,31 +892,33 @@ function groupPhantomCheck(intPuzzle, possible) {
                             
                             let description = "Since the number " + num + " only appears in group " + 
                                 (phantomRowGroup + 1) + " in row " + (rowColumn + 1) + ", it was removed as a possible option in the below cells:";
+                            let removedNumbers = [];
+                            let removedRows = [];
+                            let removedColumns = [];
 
                             // Remove the number from options in these cells
                             rowCellsToChange.forEach(cell => {
                                 const index = cell.options.indexOf(num);
                                 cell.options.splice(index, 1);
-                                
+                                removedNumbers.push(num);   
+                                removedRows.push(cell.row);
+                                removedColumns.push(cell.column);
                                 description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
-                                if (!isGuessAndCheck && !isBruteForce) {
-                                    possibleChangeOrder.push(possibleChangeCount);
-                                    possibleChangeNumber.push(num);
-                                    possibleChangeRow.push(cell.row);
-                                    possibleChangeColumn.push(cell.column);
-                                    possibleChangePossibleCount++;
-                                }
                             });
 
                             if (!isGuessAndCheck && !isBruteForce) {
-                                possibleChangeMethod.push("Phantom - Group");
-                                possibleChangeDescription.push(description);
-                                totalChangeType.push("possible");
-                                totalChangeMethod.push("Phantom - Group");
-                                levelOneChanges++;
-                                phantomGroupChanges++;
-                                possibleChangeCount++;
-                                totalChangeCount++;
+                                possibleChanges.push({
+                                    method: "Phantom - Group",
+                                    order: possibleChanges.length,
+                                    description: description,
+                                    options: removedNumbers,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
+                                totalChanges.push({
+                                    type: "possible",
+                                    method: "Phantom - Group"
+                                });
                             }
                             tempGroupPhantomChanges++;
 
@@ -862,31 +937,33 @@ function groupPhantomCheck(intPuzzle, possible) {
                             
                             let description = "Since the number " + num + " only appears in group " + 
                                 (phantomColumnGroup + 1) + " in column " + (rowColumn + 1) + ", it was removed as a possible option in the below cells:";
+                            let removedNumbers = [];
+                            let removedRows = [];
+                            let removedColumns = [];
 
                             // Remove the number from options in these cells
                             columnCellsToChange.forEach(cell => {
                                 const index = cell.options.indexOf(num);
                                 cell.options.splice(index, 1);
-                                
+                                removedNumbers.push(num);
+                                removedRows.push(cell.row);
+                                removedColumns.push(cell.column);
                                 description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
-                                if (!isGuessAndCheck && !isBruteForce) {
-                                    possibleChangeOrder.push(possibleChangeCount);
-                                    possibleChangeNumber.push(num);
-                                    possibleChangeRow.push(cell.row);
-                                    possibleChangeColumn.push(cell.column);
-                                    possibleChangePossibleCount++;
-                                }
                             });
 
                             if (!isGuessAndCheck && !isBruteForce) {
-                                possibleChangeMethod.push("Phantom - Group");
-                                possibleChangeDescription.push(description);
-                                totalChangeType.push("possible");
-                                totalChangeMethod.push("Phantom - Group");
-                                levelOneChanges++;
-                                phantomGroupChanges++;
-                                possibleChangeCount++;
-                                totalChangeCount++;
+                                possibleChanges.push({
+                                    method: "Phantom - Group",
+                                    order: possibleChanges.length,
+                                    description: description,
+                                    options: removedNumbers,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
+                                totalChanges.push({
+                                    type: "possible",
+                                    method: "Phantom - Group"
+                                });
                             }
                             tempGroupPhantomChanges++;
 
@@ -951,6 +1028,9 @@ function nakedPairCheck(intPuzzle, possible, checkType) {
                             let description = "Since the numbers " + numbersToRemove[0] + " and " + numbersToRemove[1] +
                                 " form a naked pair in the cells (" + (cell1.row+1) + "," + (cell1.column+1) + ") and (" +
                                 (cell2.row+1) + "," + (cell2.column+1) + "), the below numbers were removed as possible options:";
+                            let removedOptions = [];
+                            let removedRows = [];
+                            let removedColumns = [];
                             
                             // Remove these numbers from other cells in the row
                             cellsToChange.forEach(cell => {
@@ -958,39 +1038,26 @@ function nakedPairCheck(intPuzzle, possible, checkType) {
                                 removedNumbers.forEach(num => {
                                     const index = cell.options.indexOf(num);
                                     cell.options.splice(index, 1);  
-
+                                    removedOptions.push(num);
+                                    removedRows.push(cell.row);
+                                    removedColumns.push(cell.column);
                                     description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + num;
-                                    if (!isGuessAndCheck && !isBruteForce) {
-                                        possibleChangeOrder.push(possibleChangeCount);
-                                        possibleChangeNumber.push(num);
-                                        possibleChangeRow.push(cell.row);
-                                        possibleChangeColumn.push(cell.column);
-                                        possibleChangePossibleCount++;
-                                    }
                                 });
                             });
                             
                             if (!isGuessAndCheck && !isBruteForce) {
-                                possibleChangeMethod.push("Naked Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1));
-                                possibleChangeDescription.push(description);
-                                totalChangeType.push("possible");
-                                totalChangeMethod.push("Naked Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1));
-                                levelOneChanges++;
-                                switch (checkType) {
-                                    case "row":
-                                        nakedPairRowChanges++;
-                                        break;
-                                    case "column":
-                                        nakedPairColumnChanges++;
-                                        break;
-                                    case "group":
-                                        nakedPairGroupChanges++;
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                possibleChangeCount++;
-                                totalChangeCount++;
+                                possibleChanges.push({
+                                    method: "Naked Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                    order: possibleChanges.length,
+                                    description: description,
+                                    options: removedOptions,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
+                                totalChanges.push({
+                                    type: "possible",
+                                    method: "Naked Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
+                                });
                             }
                             tempNakedPairChanges++;
                             
@@ -1056,6 +1123,9 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
                         let description = "Since the numbers " + twoCellNumbers[i] + " and " + twoCellNumbers[j] +
                             " form a hidden pair in the cells (" + (cellsForNum1[0].row+1) + "," + (cellsForNum1[0].column+1) + ") and (" +
                             (cellsForNum1[1].row+1) + "," + (cellsForNum1[1].column+1) + "), the below numbers were removed as possible options:";
+                        let removedOptions = [];
+                        let removedRows = [];
+                        let removedColumns = [];
                         let changesFound = false;
                         cellsForNum1.forEach(cell => {
                             const numbersToRemove = cell.options.filter(num => num !== twoCellNumbers[i] && num !== twoCellNumbers[j]);
@@ -1067,11 +1137,9 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
                                 if (!isGuessAndCheck && !isBruteForce) {
                                     numbersToRemove.forEach(num => {
                                         description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
-                                        possibleChangeOrder.push(possibleChangeCount);
-                                        possibleChangeNumber.push(num);
-                                        possibleChangeRow.push(cell.row);
-                                        possibleChangeColumn.push(cell.column);
-                                        possibleChangePossibleCount++;
+                                        removedOptions.push(num);
+                                        removedRows.push(cell.row);
+                                        removedColumns.push(cell.column);
                                     });
                                 }
                             }
@@ -1081,26 +1149,14 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
                         // Finish logging the change
                         if (changesFound) {
                             if (!isGuessAndCheck && !isBruteForce) {
-                                possibleChangeMethod.push("Hidden Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1));
-                                possibleChangeDescription.push(description);
-                                totalChangeType.push("possible");
-                                totalChangeMethod.push("Hidden Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1));
-                                levelOneChanges++;
-                                switch (checkType) {
-                                    case "row":
-                                        hiddenPairRowChanges++;
-                                        break;
-                                    case "column":
-                                        hiddenPairColumnChanges++;
-                                        break;
-                                    case "group":
-                                        hiddenPairGroupChanges++;
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                possibleChangeCount++;
-                                totalChangeCount++;
+                                possibleChanges.push({
+                                    method: "Hidden Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                    order: possibleChanges.length,
+                                    description: description,
+                                    options: removedOptions,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
                             }
                             tempHiddenPairChanges++;
 
@@ -1116,5 +1172,3 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
 
     return changes;
 }
-
-*/

@@ -146,8 +146,8 @@ const InputPage = () => {
       ).join('');
 
       const startPuzzle1 = "578001600160050003002609001006003000010008365003100924300762000080000030701000000";
-      const startPuzzle2 = "900320050600085000800000060030000900000602003400090020304250000000007301160008000";
-      const startPuzzle3 = "000705030000040500057000240060300000080000000001009026005400070019070000708002019";
+      const startPuzzle2 = "900320050600085000800000060030000900000602003400090020304250000000007301160008000"; // phantom row, column, group | naked pair row, group | hidden pair row
+      const startPuzzle3 = "000705030000040500057000240060300000080000000001009026005400070019070000708002019"; // phantom row, column, group | naked pair row, column, group | hidden pair column
       const startPuzzle4 = "000200005004705030000001270037500002000300640901020000800004300300800000005900806";
       const startPuzzle5 = "020708450058040207640259010000000100000567040004801000000000001209005080036900000";
       const startPuzzle6 = "200000630063000000450630200600180000300007905000900004901500000006001000080000140";
@@ -155,18 +155,22 @@ const InputPage = () => {
       const startPuzzle8 = "200080000000070600497602001030100206140000009009000015060900100000005900005010708";
       const startPuzzle9 = "938701025250006103000003000570009000680015007010007508020100090145000300000000000";
       const startPuzzle10 = "140060000209040700500000040400080070900650003080020005002000507004008310000203000";
+      const startPuzzle11 = "805010200700894030000000100000068050000400801008030002053009700490603000200500300";
+      const startPuzzle12 = "806000070100006809790000060000000002015807040000091000600309504004050000009400003";
 
       const startPuzzles = [
-        startPuzzle1, 
+        // startPuzzle1, 
         // startPuzzle2, 
         // startPuzzle3, 
-        // startPuzzle4, 
+        startPuzzle4, 
         // startPuzzle5,
         // startPuzzle6,
         // startPuzzle7,
         // startPuzzle8,
         // startPuzzle9,
-        // startPuzzle10
+        // startPuzzle10,
+        // startPuzzle11,
+        // startPuzzle12
       ];
 
       // const response = await solvePuzzle(puzzleInput); // API call
@@ -210,7 +214,7 @@ const InputPage = () => {
       // Create test grid for debugging
       const originalGridCopy = [];
       for (let i = 0; i < 9; i++) {
-        const row = startPuzzle1.slice(i * 9, (i + 1) * 9).split('').map(num => num === '0' ? '' : num);
+        const row = startPuzzles[startPuzzles.length - 1].slice(i * 9, (i + 1) * 9).split('').map(num => num === '0' ? '' : num);
         originalGridCopy.push(row);
       }
       
