@@ -20,12 +20,12 @@ export function solvePuzzle(startPuzzleString) {
         levelZeroMethods(solvePuzzle, solvePossible);
         if(!solved) {
             levelOneMethods(solvePuzzle, solvePossible);
-            // if(!solved) {
-            //     levelTwoMethods(solvePuzzle, solvePossible);
-            //     if(!solved) {
-            //         levelThreeMethods(solvePuzzle, solvePossible);
-            //     }
-            // }
+            if(!solved) {
+                levelTwoMethods(solvePuzzle, solvePossible);
+                // if(!solved) {
+                //     levelThreeMethods(solvePuzzle, solvePossible);
+                // }
+            }
         }
     }
 
@@ -1006,6 +1006,10 @@ function nakedPairCheck(intPuzzle, possible, checkType) {
             // Get all possible cells in this row, column, or group with exactly 2 options
             const rowColGroupCells = possible.filter(cell => cell[checkType] === rowColGroup && cell.options.length === 2);
             
+            if (rowColGroupCells.length < 2) {
+                continue;
+            }
+
             // Check for pairs of cells with identical options
             for (let i = 0; i < rowColGroupCells.length - 1 && !solved; i++) {
                 for (let j = i + 1; j < rowColGroupCells.length && !solved; j++) {
@@ -1109,9 +1113,13 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
             // Create an array of all numbers that appear in exactly two cells
             const twoCellNumbers = Array.from(numbersInRowColGroup).filter(num => allNumbers.filter(n => n === num).length === 2).sort((a, b) => a - b);
             
+            if (twoCellNumbers.length < 2) {
+                continue;
+            }
+
             // Check for pairs of numbers that appear in exactly the same two cells
-            for (let i = 0; i < twoCellNumbers.length - 1; i++) {
-                for (let j = i + 1; j < twoCellNumbers.length; j++) {
+            for (let i = 0; i < twoCellNumbers.length - 1 && !solved; i++) {
+                for (let j = i + 1; j < twoCellNumbers.length && !solved; j++) {
                     const cellsForNum1 = rowColGroupCells.filter(cell => cell.options.includes(twoCellNumbers[i]));
                     const cellsForNum2 = rowColGroupCells.filter(cell => cell.options.includes(twoCellNumbers[j]));
                     
@@ -1157,6 +1165,10 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
                                     rows: removedRows,
                                     columns: removedColumns
                                 });
+                                totalChanges.push({
+                                    type: "possible",
+                                    method: "Hidden Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
+                                });
                             }
                             tempHiddenPairChanges++;
 
@@ -1169,6 +1181,234 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
         }
         changes += tempHiddenPairChanges;
     } while (tempHiddenPairChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function levelTwoMethods(intPuzzle, possible) {
+    let changes = 0;
+    let tempLevelTwoChanges = 0;
+    do {
+        changes = 0;
+        changes += nakedTripleChecks(intPuzzle, possible);
+        changes += hiddenTripleChecks(intPuzzle, possible);
+        // changes += nakedQuadChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        // changes += xWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        // changes += yWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        tempLevelTwoChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempLevelTwoChanges;
+}
+
+function nakedTripleChecks(intPuzzle, possible) {
+    let changes = 0;
+    let tempNakedTripleChanges = 0;
+    do {
+        changes = 0;
+        changes += nakedTripleCheck(intPuzzle, possible, "row");
+        changes += nakedTripleCheck(intPuzzle, possible, "column");
+        changes += nakedTripleCheck(intPuzzle, possible, "group");
+        tempNakedTripleChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempNakedTripleChanges;
+}
+
+function nakedTripleCheck(intPuzzle, possible, checkType) {
+    let changes = 0;
+    let tempNakedTripleChanges = 0;
+
+    do {
+        tempNakedTripleChanges = 0;
+        
+        // For each row, column, or group
+        for (let rowColGroup = 0; rowColGroup < 9 && !solved; rowColGroup++) {
+            // Get all possible cells in this row, column, or group with 3 or less options
+            const rowColGroupCells = possible.filter(cell => cell[checkType] === rowColGroup && cell.options.length <= 3);
+            
+            if (rowColGroupCells.length < 3) {
+                continue;
+            }
+
+            // Check for triples of cells with identical options
+            for (let i = 0; i < rowColGroupCells.length - 2 && !solved; i++) {
+                for (let j = i + 1; j < rowColGroupCells.length - 1 && !solved; j++) {
+                    for (let k = j + 1; k < rowColGroupCells.length && !solved; k++) {
+                        const cell1 = rowColGroupCells[i];
+                        const cell2 = rowColGroupCells[j];
+                        const cell3 = rowColGroupCells[k];
+
+                        const uniqueOptions = new Set([...cell1.options, ...cell2.options, ...cell3.options]);
+                        
+                        // Check if all three cells have the same three options using array methods
+                        if (uniqueOptions.size === 3) {
+                            // The three numbers in uniqueOptions must be in these three cells, so remove them from other cells in the row
+                            const numbersToRemove = Array.from(uniqueOptions).sort((a, b) => a - b);
+                            
+                            // Get all other cells in the row that aren't part of the naked triple
+                            const cellsToChange = possible.filter(cell => 
+                                cell[checkType] === rowColGroup && 
+                                cell !== cell1 && cell !== cell2 && cell !== cell3 && 
+                                cell.options.some(num => numbersToRemove.includes(num))
+                            );
+                        
+                            if (cellsToChange.length > 0) {
+                                let description = "Since the numbers " + numbersToRemove[0] + ", " + numbersToRemove[1] + ", and " + numbersToRemove[2] +
+                                    " form a naked triple in the cells (" + (cell1.row+1) + "," + (cell1.column+1) + "), (" + (cell2.row+1) + "," + (cell2.column+1) + "), and (" +
+                                    (cell3.row+1) + "," + (cell3.column+1) + "), the below numbers were removed as possible options:";
+                                let removedOptions = [];
+                                let removedRows = [];
+                                let removedColumns = [];
+                                
+                                // Remove these numbers from other cells in the row, column, or group
+                                cellsToChange.forEach(cell => {
+                                    const removedNumbers = numbersToRemove.filter(num => cell.options.includes(num));
+                                    removedNumbers.forEach(num => {
+                                        const index = cell.options.indexOf(num);
+                                        cell.options.splice(index, 1);  
+                                        removedOptions.push(num);
+                                        removedRows.push(cell.row);
+                                        removedColumns.push(cell.column);
+                                        description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + num;
+                                    });
+                                });
+                                
+                                if (!isGuessAndCheck && !isBruteForce) {
+                                    possibleChanges.push({
+                                        method: "Naked Triple - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                        order: possibleChanges.length,
+                                        description: description,
+                                        options: removedOptions,
+                                        rows: removedRows,
+                                        columns: removedColumns
+                                    });
+                                    totalChanges.push({
+                                        type: "possible",
+                                        method: "Naked Triple - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
+                                    });
+                                }
+                                tempNakedTripleChanges++;
+                                
+                                // Run previous methods to see if the puzzle can be solved
+                                tempNakedTripleChanges += levelZeroMethods(intPuzzle, possible);
+                                if (!solved) {
+                                    tempNakedTripleChanges += levelOneMethods(intPuzzle, possible);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempNakedTripleChanges;
+    } while (tempNakedTripleChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function hiddenTripleChecks(intPuzzle, possible) {
+    let changes = 0;
+    let tempHiddenTripleChanges = 0;
+    do {
+        changes = 0;
+        changes += hiddenTripleCheck(intPuzzle, possible, "row");
+        changes += hiddenTripleCheck(intPuzzle, possible, "column");
+        changes += hiddenTripleCheck(intPuzzle, possible, "group");
+        tempHiddenTripleChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempHiddenTripleChanges;
+}
+
+function hiddenTripleCheck(intPuzzle, possible, checkType) {
+    let changes = 0;
+    let tempHiddenTripleChanges = 0;
+
+    do {
+        tempHiddenTripleChanges = 0;
+
+        // For each row, column, or group
+        for (let rowColGroup = 0; rowColGroup < 9 && !solved; rowColGroup++) {
+            // Get all cells in this row, column, or group
+            const rowColGroupCells = possible.filter(cell => cell[checkType] === rowColGroup);
+            
+            // Get an array of all numbers
+            const allNumbers = rowColGroupCells.flatMap(cell => cell.options);
+
+            // Get an array of all unique numbers
+            const numbersInRowColGroup = new Set(allNumbers);
+
+            // Create an array of all numbers that appear in exactly two or three cells
+            const twoOrThreeCellNumbers = Array.from(numbersInRowColGroup).filter(num => allNumbers.filter(n => n === num).length === 2 || allNumbers.filter(n => n === num).length === 3).sort((a, b) => a - b);
+            
+            if (twoOrThreeCellNumbers.length < 3) {
+                continue;
+            }
+
+            // Check for pairs of numbers that appear in exactly the same two cells
+            for (let i = 0; i < twoOrThreeCellNumbers.length - 2 && !solved; i++) {
+                for (let j = i + 1; j < twoOrThreeCellNumbers.length - 1 && !solved; j++) {
+                    for (let k = j + 1; k < twoOrThreeCellNumbers.length && !solved; k++) {
+                        const currentNums = [twoOrThreeCellNumbers[i], twoOrThreeCellNumbers[j], twoOrThreeCellNumbers[k]].sort((a, b) => a - b);
+
+                        // Get the cells that contain the numbers
+                        const cellsWithNumbers = rowColGroupCells.filter(cell => cell.options.some(num => currentNums.includes(num)));
+                        if (cellsWithNumbers.length === 3) {
+                            let description = "Since the numbers " + currentNums[0] + ", " + currentNums[1] + ", and " + currentNums[2] +
+                                " form a hidden triple in the cells (" + (cellsWithNumbers[0].row+1) + "," + (cellsWithNumbers[0].column+1) + "), (" + (cellsWithNumbers[1].row+1) + "," + (cellsWithNumbers[1].column+1) + "), and (" +
+                                (cellsWithNumbers[2].row+1) + "," + (cellsWithNumbers[2].column+1) + "), the below numbers were removed as possible options:";
+                            let removedOptions = [];
+                            let removedRows = [];
+                            let removedColumns = [];
+                            let changesFound = false;
+                            cellsWithNumbers.forEach(cell => {
+                                const numbersToRemove = cell.options.filter(num => !currentNums.includes(num));
+                                
+                                if (numbersToRemove.length > 0) {
+                                    cell.options = cell.options.filter(num => currentNums.includes(num));
+                                    changesFound = true;
+
+                                    if (!isGuessAndCheck && !isBruteForce) {
+                                        numbersToRemove.forEach(num => {
+                                            description += "\nRow " + (cell.row+1) + ", Column " + (cell.column+1) + ": " + num;
+                                            removedOptions.push(num);
+                                            removedRows.push(cell.row);
+                                            removedColumns.push(cell.column);
+                                        });
+                                    }
+                                }
+                                
+                            });
+                            
+                            // Finish logging the change
+                            if (changesFound) {
+                                if (!isGuessAndCheck && !isBruteForce) {
+                                    possibleChanges.push({
+                                        method: "Hidden Triple - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                        order: possibleChanges.length,
+                                        description: description,
+                                        options: removedOptions,
+                                        rows: removedRows,
+                                        columns: removedColumns
+                                    });
+                                    totalChanges.push({
+                                        type: "possible",
+                                        method: "Hidden Triple - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
+                                    });
+                                }
+                                tempHiddenTripleChanges++;
+
+                                // Run previous methods to see if the puzzle can be solved
+                                tempHiddenTripleChanges += levelZeroMethods(intPuzzle, possible);
+                                if (!solved) {
+                                    tempHiddenTripleChanges += levelOneMethods(intPuzzle, possible);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempHiddenTripleChanges;
+    } while (tempHiddenTripleChanges !== 0 && !solved);
 
     return changes;
 }

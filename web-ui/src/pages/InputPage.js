@@ -157,12 +157,16 @@ const InputPage = () => {
       const startPuzzle10 = "140060000209040700500000040400080070900650003080020005002000507004008310000203000";
       const startPuzzle11 = "805010200700894030000000100000068050000400801008030002053009700490603000200500300";
       const startPuzzle12 = "806000070100006809790000060000000002015807040000091000600309504004050000009400003";
+      const startPuzzle13 = "607820300005070009000003678000040000950008400000000891003200000720060014000400083";
+      const startPuzzle14 = "305000000080050002204806370070200000008003010030000049000509001800700020106082000";
+      const startPuzzle15 = "008002000000980602010740809604829007120400000709510204091000300000008745807000000";
+      const startPuzzle16 = "000090030304106007020005000043000610105009070000000400037860000096400720012000008";
 
       const startPuzzles = [
         // startPuzzle1, 
         // startPuzzle2, 
         // startPuzzle3, 
-        startPuzzle4, 
+        // startPuzzle4, 
         // startPuzzle5,
         // startPuzzle6,
         // startPuzzle7,
@@ -170,7 +174,11 @@ const InputPage = () => {
         // startPuzzle9,
         // startPuzzle10,
         // startPuzzle11,
-        // startPuzzle12
+        // startPuzzle12,
+        // startPuzzle13,
+        // startPuzzle14,
+        // startPuzzle15,
+        startPuzzle16
       ];
 
       // const response = await solvePuzzle(puzzleInput); // API call
