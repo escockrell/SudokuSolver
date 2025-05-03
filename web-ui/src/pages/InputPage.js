@@ -161,24 +161,30 @@ const InputPage = () => {
       const startPuzzle14 = "305000000080050002204806370070200000008003010030000049000509001800700020106082000";
       const startPuzzle15 = "008002000000980602010740809604829007120400000709510204091000300000008745807000000";
       const startPuzzle16 = "000090030304106007020005000043000610105009070000000400037860000096400720012000008";
+      const startPuzzle17 = "002160500900520016000800090048700000000386700030405100100078030020050000850630000";
+      const startPuzzle18 = "671002940020107006000600217540003009800200375036700480000000702050006100000000800";
+      const startPuzzle19 = "006207000030050080000603000804000000060000053302800460607005100003700900100000020";
 
       const startPuzzles = [
-        // startPuzzle1, 
-        // startPuzzle2, 
-        // startPuzzle3, 
-        // startPuzzle4, 
-        // startPuzzle5,
-        // startPuzzle6,
-        // startPuzzle7,
-        // startPuzzle8,
-        // startPuzzle9,
-        // startPuzzle10,
-        // startPuzzle11,
-        // startPuzzle12,
-        // startPuzzle13,
-        // startPuzzle14,
-        // startPuzzle15,
-        startPuzzle16
+        startPuzzle1, 
+        startPuzzle2, 
+        startPuzzle3, 
+        startPuzzle4, 
+        startPuzzle5,
+        startPuzzle6,
+        startPuzzle7,
+        startPuzzle8,
+        startPuzzle9,
+        startPuzzle10,
+        startPuzzle11,
+        startPuzzle12,
+        startPuzzle13,
+        startPuzzle14,
+        startPuzzle15,
+        startPuzzle16,
+        startPuzzle17,
+        startPuzzle18,  
+        startPuzzle19
       ];
 
       // const response = await solvePuzzle(puzzleInput); // API call
@@ -192,17 +198,17 @@ const InputPage = () => {
         response_v2 = solvePuzzle_v2(puzzle);
         
         // console.log("Solving puzzle: ", puzzleInput);
-        console.log("Solving puzzle: ", puzzle); // TODO: Remove after testing
+        // console.log("Solving puzzle: ", puzzle); // TODO: Remove after testing
 
         // console.log("Solver metrics");
         // console.log("solved: ", response.metrics.solved);
-        console.log(`Solver: Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
-        console.log("response: ", response);
+        // console.log(`Solver: Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
+        // console.log("response: ", response);
         
         // console.log("Solver_v2 metrics");
         // console.log("solved: ", response_v2.metrics.solved);
-        console.log(`Solver_v2: Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
-        console.log("response_v2: ", response_v2);
+        // console.log(`Solver_v2: Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
+        // console.log("response_v2: ", response_v2);
 
         const timeDiff = Math.abs(response_v2.metrics.solveTime - response.metrics.solveTime);
         const winner = response_v2.metrics.solveTime < response.metrics.solveTime ? "Solver_v2" : "Solver";

@@ -1192,8 +1192,8 @@ function levelTwoMethods(intPuzzle, possible) {
         changes = 0;
         changes += nakedTripleChecks(intPuzzle, possible);
         changes += hiddenTripleChecks(intPuzzle, possible);
-        // changes += nakedQuadChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
-        // changes += xWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += nakedQuadChecks(intPuzzle, possible);
+        changes += xWingChecks(intPuzzle, possible);
         // changes += yWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
         tempLevelTwoChanges += changes;
     } while (changes !== 0 && !solved);
@@ -1409,6 +1409,232 @@ function hiddenTripleCheck(intPuzzle, possible, checkType) {
         }
         changes += tempHiddenTripleChanges;
     } while (tempHiddenTripleChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function nakedQuadChecks(intPuzzle, possible) {
+    let changes = 0;
+    let tempNakedQuadChanges = 0;
+    do {
+        changes = 0;
+        changes += nakedQuadCheck(intPuzzle, possible, "row");
+        changes += nakedQuadCheck(intPuzzle, possible, "column");
+        changes += nakedQuadCheck(intPuzzle, possible, "group");
+        tempNakedQuadChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempNakedQuadChanges;
+}
+
+function nakedQuadCheck(intPuzzle, possible, checkType) {
+    let changes = 0;
+    let tempNakedQuadChanges = 0;
+
+    do {
+        tempNakedQuadChanges = 0;
+        
+        // For each row, column, or group
+        for (let rowColGroup = 0; rowColGroup < 9 && !solved; rowColGroup++) {
+            // Get all possible cells in this row, column, or group with 4 or less options
+            const rowColGroupCells = possible.filter(cell => cell[checkType] === rowColGroup && cell.options.length <= 4);
+            
+            if (rowColGroupCells.length < 4) {
+                continue;
+            }
+
+            // Check for triples of cells with identical options
+            for (let i = 0; i < rowColGroupCells.length - 3 && !solved; i++) {
+                for (let j = i + 1; j < rowColGroupCells.length - 2 && !solved; j++) {
+                    for (let k = j + 1; k < rowColGroupCells.length - 1 && !solved; k++) {
+                        for (let l = k + 1; l < rowColGroupCells.length && !solved; l++) {
+                            const cell1 = rowColGroupCells[i];
+                            const cell2 = rowColGroupCells[j];
+                            const cell3 = rowColGroupCells[k];
+                            const cell4 = rowColGroupCells[l];
+
+                            const uniqueOptions = new Set([...cell1.options, ...cell2.options, ...cell3.options, ...cell4.options]);
+                        
+                            // Check if all four cells have the same four options using array methods
+                            if (uniqueOptions.size === 4) {
+                                // The four numbers in uniqueOptions must be in these four cells, so remove them from other cells in the row
+                                const numbersToRemove = Array.from(uniqueOptions).sort((a, b) => a - b);
+                            
+                                // Get all other cells in the row that aren't part of the naked quad
+                                const cellsToChange = possible.filter(cell => 
+                                    cell[checkType] === rowColGroup && 
+                                    cell !== cell1 && cell !== cell2 && cell !== cell3 && cell !== cell4 && 
+                                    cell.options.some(num => numbersToRemove.includes(num))
+                                );
+                        
+                                if (cellsToChange.length > 0) {
+                                    let description = "Since the numbers " + numbersToRemove[0] + ", " + numbersToRemove[1] + ", " + numbersToRemove[2] + ", and " + numbersToRemove[3] +
+                                        " form a naked quad in the cells (" + (cell1.row+1) + "," + (cell1.column+1) + "), (" + (cell2.row+1) + "," + (cell2.column+1) + "), (" + (cell3.row+1) + "," + (cell3.column+1) + "), and (" +
+                                        (cell4.row+1) + "," + (cell4.column+1) + "), the below numbers were removed as possible options:";
+                                    let removedOptions = [];
+                                    let removedRows = [];
+                                    let removedColumns = [];
+                                    
+                                    // Remove these numbers from other cells in the row, column, or group
+                                    cellsToChange.forEach(cell => {
+                                        const removedNumbers = numbersToRemove.filter(num => cell.options.includes(num));
+                                        removedNumbers.forEach(num => {
+                                            const index = cell.options.indexOf(num);
+                                            cell.options.splice(index, 1);  
+                                            removedOptions.push(num);
+                                            removedRows.push(cell.row);
+                                            removedColumns.push(cell.column);
+                                            description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + num;
+                                        });
+                                    });
+                                    
+                                    if (!isGuessAndCheck && !isBruteForce) {
+                                        possibleChanges.push({
+                                            method: "Naked Quad - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                            order: possibleChanges.length,
+                                            description: description,
+                                            options: removedOptions,
+                                            rows: removedRows,
+                                            columns: removedColumns
+                                        });
+                                        totalChanges.push({
+                                            type: "possible",
+                                            method: "Naked Quad - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
+                                        });
+                                    }
+                                    tempNakedQuadChanges++;
+                                    
+                                    // Run previous methods to see if the puzzle can be solved
+                                    tempNakedQuadChanges += levelZeroMethods(intPuzzle, possible);
+                                    if (!solved) {
+                                        tempNakedQuadChanges += levelOneMethods(intPuzzle, possible);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempNakedQuadChanges;
+    } while (tempNakedQuadChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function xWingChecks(intPuzzle, possible) {
+    let changes = 0;
+    let tempXWingChanges = 0;
+    do {
+        changes = 0;
+        changes += xWingCheck(intPuzzle, possible, "row");
+        changes += xWingCheck(intPuzzle, possible, "column");
+        tempXWingChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempXWingChanges;
+}
+
+function xWingCheck(intPuzzle, possible, checkType) {
+    let changes = 0;
+    let tempXWingChanges = 0;
+
+    do {
+        tempXWingChanges = 0;
+        const otherCheckType = checkType === 'row' ? 'column' : 'row';
+
+        // For each number 1-9
+        for (let num = 1; num <= 9 && !solved; num++) {
+            // Track which rows/columns have this number as a possibility
+            const numLocations = [];
+            
+            // For each row/column
+            for (let rowCol = 0; rowCol < 9; rowCol++) {
+                // Get cells in this row/column that could contain the number
+                const cellsWithNum = possible.filter(cell => 
+                    cell[checkType] === rowCol && 
+                    cell.options.includes(num)
+                );
+                
+                if (cellsWithNum.length === 2) {
+                    // Store the row/column and the two positions where the number could be
+                    numLocations.push({
+                        rowCol,
+                        positions: cellsWithNum.map(cell => cell[otherCheckType]).sort((a, b) => a - b)
+                    });
+                }
+            }
+
+            if (numLocations.length < 2) {
+                continue;
+            }
+
+            // Look for pairs of rows/columns that have the number in the same two positions
+            for (let i = 0; i < numLocations.length - 1 && !solved; i++) {
+                for (let j = i + 1; j < numLocations.length && !solved; j++) {
+                    const loc1 = numLocations[i];
+                    const loc2 = numLocations[j];
+
+                    const positionsSet = new Set([...loc1.positions, ...loc2.positions]);
+                    
+                    // Check if the positions match exactly
+                    if (positionsSet.size === 2) {
+                        // We found an X-Wing! Now remove the number from other cells in those positions
+                        const positions = Array.from(positionsSet).sort((a, b) => a - b);
+                        const rowCols = [loc1.rowCol, loc2.rowCol].sort((a, b) => a - b);
+                        
+                        let description = "Since the number " + (num) + ` forms an X Wing in the ${checkType}s ` + 
+                            (rowCols[0]+1) + " and " + (rowCols[1]+1) + `, ${otherCheckType}s ` + (positions[0]+1) + 
+                            " and " + (positions[1]+1) + 
+                            ", it was removed from the below cells as a possible option:";
+                        let removedOptions = [];
+                        let removedRows = [];
+                        let removedColumns = [];
+                        
+                        // Remove the number from other cells in those positions
+                        const cellsToChange = possible.filter(cell => 
+                            !rowCols.includes(cell[checkType]) && 
+                            positions.includes(cell[otherCheckType]) &&
+                            cell.options.includes(num)
+                        );
+
+                        if (cellsToChange.length > 0) {
+                            cellsToChange.forEach(cell => {
+                                const index = cell.options.indexOf(num);
+                                cell.options.splice(index, 1);
+                                
+                                removedOptions.push(num);
+                                removedRows.push(cell.row);
+                                removedColumns.push(cell.column);
+                                description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + num;
+                            });
+
+                            if (!isGuessAndCheck && !isBruteForce) {
+                                possibleChanges.push({
+                                    method: "X Wing - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                    order: possibleChanges.length,
+                                    description: description,
+                                    options: removedOptions,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
+                                totalChanges.push({
+                                    type: "possible",
+                                    method: "X Wing - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
+                                });
+                            }
+                            tempXWingChanges++;
+                            
+                            // Run previous methods to see if the puzzle can be solved
+                            tempXWingChanges += levelZeroMethods(intPuzzle, possible);
+                            if (!solved) {
+                                tempXWingChanges += levelOneMethods(intPuzzle, possible);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempXWingChanges;
+    } while (tempXWingChanges !== 0 && !solved);
 
     return changes;
 }
