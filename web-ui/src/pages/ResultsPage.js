@@ -144,23 +144,23 @@ const ResultsPage = () => {
             },
             {
               name: 'X Wing',
-              value: safeSum(metrics.xwingRowChanges, metrics.xwingColumnChanges),
+              value: safeSum(metrics.xWingRowChanges, metrics.xWingColumnChanges),
               subDetails: [
-                { name: 'Row', value: metrics.xwingRowChanges || 0 },
-                { name: 'Column', value: metrics.xwingColumnChanges || 0 }
+                { name: 'Row', value: metrics.xWingRowChanges || 0 },
+                { name: 'Column', value: metrics.xWingColumnChanges || 0 }
               ]
             },
             {
               name: 'Y Wing',
               value: safeSum(
-                metrics.ywingColumnGroupChanges,
-                metrics.ywingRowGroupChanges,
-                metrics.ywingRowColumnChanges
+                metrics.yWingColumnGroupChanges,
+                metrics.yWingRowGroupChanges,
+                metrics.yWingRowColumnChanges
               ),
               subDetails: [
-                { name: 'Column-Group', value: metrics.ywingColumnGroupChanges || 0 },
-                { name: 'Row-Group', value: metrics.ywingRowGroupChanges || 0 },
-                { name: 'Row-Column', value: metrics.ywingRowColumnChanges || 0 }
+                { name: 'Row + Column', value: metrics.yWingRowColumnChanges || 0 },
+                { name: 'Row + Group', value: metrics.yWingRowGroupChanges || 0 },
+                { name: 'Column + Group', value: metrics.yWingColumnGroupChanges || 0 }
               ]
             }
           ]}

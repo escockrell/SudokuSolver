@@ -4783,6 +4783,7 @@ function rowColumnYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, Co
                                         if (yWingChangesMade) { 
                                             if (!isGuessAndCheck && !isBruteForce) {
                                                 possibleChangeMethod.push("Y Wing - Row + Column");
+                                                totalChangeMethod.push("Y Wing - Row + Column");
 
                                                 // Sort the numbers in ascending order
                                                 const sortedNumbers = [A, B, C].sort((a, b) => a - b);
@@ -4948,6 +4949,8 @@ function rowGroupYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, Col
                                                 if (yWingChangesMade) {
                                                     if (!isGuessAndCheck && !isBruteForce) {
                                                         possibleChangeMethod.push("Y Wing - Row + Group");
+                                                        totalChangeMethod.push("Y Wing - Row + Group");
+
 
                                                         // Sort the numbers in ascending order
                                                         const sortedNumbers = [A, B, C].sort((a, b) => a - b);
@@ -5137,6 +5140,7 @@ function columnGroupYWingCheck(intPuzzle, possible, numbers, isTwoOption, Rows, 
                                             if (yWingChangesMade) {
                                                 if (!isGuessAndCheck && !isBruteForce) {
                                                     possibleChangeMethod.push("Y Wing - Column + Group");
+                                                    totalChangeMethod.push("Y Wing - Column + Group");
 
                                                     // Sort the numbers in ascending order
                                                     const sortedNumbers = [A, B, C].sort((a, b) => a - b);

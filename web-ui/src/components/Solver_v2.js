@@ -215,19 +215,19 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
             case "Naked Quad - Group":
                 nakedQuadGroupChanges++;
                 break;
-            case "X-Wing - Row":
+            case "X Wing - Row":
                 xWingRowChanges++;
                 break;
-            case "X-Wing - Column":
+            case "X Wing - Column":
                 xWingColumnChanges++;
                 break;
-            case "Y-Wing - Row/Group":
+            case "Y Wing - Row + Group":
                 yWingRowGroupChanges++;
                 break;
-            case "Y-Wing - Column/Group":
+            case "Y Wing - Column + Group":
                 yWingColumnGroupChanges++;
                 break;
-            case "Y-Wing - Row/Column":
+            case "Y Wing - Row + Column":
                 yWingRowColumnChanges++;
                 break;
             case "Guess and Check":
@@ -1194,7 +1194,7 @@ function levelTwoMethods(intPuzzle, possible) {
         changes += hiddenTripleChecks(intPuzzle, possible);
         changes += nakedQuadChecks(intPuzzle, possible);
         changes += xWingChecks(intPuzzle, possible);
-        // changes += yWingChecks(intPuzzle, possible, Rows, Columns, Groups, isGuessAndCheck, isBruteForce);
+        changes += yWingChecks(intPuzzle, possible);
         tempLevelTwoChanges += changes;
     } while (changes !== 0 && !solved);
     return tempLevelTwoChanges;
@@ -1635,6 +1635,136 @@ function xWingCheck(intPuzzle, possible, checkType) {
         }
         changes += tempXWingChanges;
     } while (tempXWingChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function yWingChecks(intPuzzle, possible) {
+    let changes = 0;
+    let tempYWingChanges = 0;
+    do {
+        changes = 0;
+        changes += yWingCheck(intPuzzle, possible, "row", "column");
+        changes += yWingCheck(intPuzzle, possible, "row", "group");
+        changes += yWingCheck(intPuzzle, possible, "column", "group");
+        tempYWingChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempYWingChanges;
+}
+
+function yWingCheck(intPuzzle, possible, wing1, wing2) {
+    let changes = 0;
+    let tempYWingChanges = 0;
+
+    do {
+        tempYWingChanges = 0;
+        
+        // Find all cells with exactly two options
+        const twoOptionCells = possible.filter(cell => cell.options.length === 2);
+        
+        if (twoOptionCells.length < 3) continue;
+
+        // Try each two-option cell as the pivot
+        for (const pivot of twoOptionCells) {
+            if (solved) break;
+
+            // Get cells in wing1 that share a row/column/group with pivot and have two options
+            const wing1Cells = twoOptionCells.filter(cell => 
+                cell !== pivot &&
+                cell[wing1] === pivot[wing1]
+            );
+            if (wing1Cells.length < 1) continue;
+
+            // Get cells in wing2 that share a row/column/group with pivot and have two options
+            const wing2Cells = twoOptionCells.filter(cell => 
+                cell !== pivot &&
+                cell[wing2] === pivot[wing2]
+            );
+            if (wing2Cells.length < 1) continue;
+
+            // Try each combination of wing1 and wing2 cells
+            for (const wing1Cell of wing1Cells) {
+                if (solved) break;
+                for (const wing2Cell of wing2Cells) {
+                    if (solved) break;
+                    // Skip if wings are the same cell
+                    if (wing1Cell === wing2Cell) continue;
+                    
+                    // Get the shared number between pivot and each wing
+                    const pivotWing1Shared = pivot.options.filter(num => wing1Cell.options.includes(num));
+                    const pivotWing2Shared = pivot.options.filter(num => wing2Cell.options.includes(num));
+                    
+                    // Skip if pivot doesn't share exactly one number with each wing OR if the shared number is the same as the pivot number
+                    if (pivotWing1Shared.length !== 1 || pivotWing2Shared.length !== 1 || pivotWing1Shared[0] === pivotWing2Shared[0]) continue;
+                    
+                    // Get the shared number between the wings
+                    const wingShared = wing1Cell.options.filter(num => wing2Cell.options.includes(num));
+                    
+                    // Skip if wings don't share exactly one number
+                    if (wingShared.length !== 1) continue;
+                    
+                    const sharedNumber = wingShared[0];
+                    
+                    // Find cells that see both wings and could have the shared number eliminated
+                    const cellsToChange = possible.filter(cell => 
+                        cell !== wing1Cell && 
+                        cell !== wing2Cell && 
+                        cell.options.includes(sharedNumber) &&
+                        (
+                            (cell[wing1] === wing1Cell[wing1] && cell[wing2] === wing2Cell[wing2]) ||
+                            (cell[wing1] === wing2Cell[wing1] && cell[wing2] === wing1Cell[wing2])
+                        )
+                    );
+                    
+                    if (cellsToChange.length > 0) {
+                        const sortedNumbers = [pivot.options[0], pivot.options[1], sharedNumber].sort((a, b) => a - b);
+                        let description = "Since the numbers " + sortedNumbers[0] + ", " + sortedNumbers[1] + ", and " + sortedNumbers[2] +
+                            " form a Y Wing with the pivot at (" + (pivot.row+1) + "," + (pivot.column+1) + `), the ${wing1} wing at (` + 
+                            (wing1Cell.row+1) + "," + (wing1Cell.column+1) + `), and the ${wing2} wing at (` + 
+                            (wing2Cell.row+1) + "," + (wing2Cell.column+1) + `), the number ` + sharedNumber + 
+                            " was removed from the below cells as a possible option:";
+                        let removedOptions = [];
+                        let removedRows = [];
+                        let removedColumns = [];
+                        
+                        // Remove the shared number from the affected cells
+                        cellsToChange.forEach(cell => {
+                            const index = cell.options.indexOf(sharedNumber);
+                            cell.options.splice(index, 1);
+                            
+                            removedOptions.push(sharedNumber);
+                            removedRows.push(cell.row);
+                            removedColumns.push(cell.column);
+                            description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + sharedNumber;
+                        });
+                        
+                        if (!isGuessAndCheck && !isBruteForce) {
+                            possibleChanges.push({
+                                method: "Y Wing - " + wing1.charAt(0).toUpperCase() + wing1.slice(1) + " + " + wing2.charAt(0).toUpperCase() + wing2.slice(1),
+                                order: possibleChanges.length,
+                                description: description,
+                                options: removedOptions,
+                                rows: removedRows,
+                                columns: removedColumns
+                            });
+                            totalChanges.push({
+                                type: "possible",
+                                method: "Y Wing - " + wing1.charAt(0).toUpperCase() + wing1.slice(1) + " + " + wing2.charAt(0).toUpperCase() + wing2.slice(1)
+                            });
+                        }
+                        tempYWingChanges++;
+                        
+                        // Run previous methods to see if the puzzle can be solved
+                        tempYWingChanges += levelZeroMethods(intPuzzle, possible);
+                        if (!solved) {
+                            tempYWingChanges += levelOneMethods(intPuzzle, possible);
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempYWingChanges;
+    } while (tempYWingChanges !== 0 && !solved);
 
     return changes;
 }
