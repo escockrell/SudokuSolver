@@ -22,9 +22,9 @@ export function solvePuzzle(startPuzzleString) {
             levelOneMethods(solvePuzzle, solvePossible);
             if(!solved) {
                 levelTwoMethods(solvePuzzle, solvePossible);
-                // if(!solved) {
-                //     levelThreeMethods(solvePuzzle, solvePossible);
-                // }
+                if(!solved) {
+                    levelThreeMethods(solvePuzzle, solvePossible);
+                }
             }
         }
     }
@@ -120,6 +120,7 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
     let yWingColumnGroupChanges = 0;
     let yWingRowColumnChanges = 0;
 
+    let xyChainChanges = 0;
     let guessAndCheckChanges = 0;
     let bruteForceChanges = 0;
 
@@ -230,6 +231,9 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
             case "Y Wing - Row + Column":
                 yWingRowColumnChanges++;
                 break;
+            case "XY Chain":
+                xyChainChanges++;
+                break;
             case "Guess and Check":
                 guessAndCheckChanges++;
                 break;
@@ -266,7 +270,7 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
                           nakedQuadRowChanges + nakedQuadColumnChanges + nakedQuadGroupChanges +
                           xWingRowChanges + xWingColumnChanges +
                           yWingRowGroupChanges + yWingColumnGroupChanges + yWingRowColumnChanges;
-    const levelThreeChanges = guessAndCheckChanges + bruteForceChanges;
+    const levelThreeChanges = xyChainChanges + guessAndCheckChanges + bruteForceChanges;
 
     return {
         mainChangeMethod,
@@ -323,6 +327,7 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
         yWingRowGroupChanges,
         yWingColumnGroupChanges,
         yWingRowColumnChanges,
+        xyChainChanges,
         guessAndCheckChanges,
         bruteForceChanges
     };
@@ -1767,4 +1772,149 @@ function yWingCheck(intPuzzle, possible, wing1, wing2) {
     } while (tempYWingChanges !== 0 && !solved);
 
     return changes;
+}
+
+function levelThreeMethods(intPuzzle, possible) {
+    let changes = 0;
+    let tempLevelThreeChanges = 0;
+
+    do {
+        tempLevelThreeChanges = 0;
+        changes += xyChainCheck(intPuzzle, possible);
+
+        
+    } while (tempLevelThreeChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function xyChainCheck(intPuzzle, possible) {
+    let changes = 0;
+    let tempXYChainChanges = 0;
+    
+    do {
+        tempXYChainChanges = 0;
+
+        // Find all cells with exactly two options
+        const twoOptionCells = possible.filter(cell => cell.options.length === 2);
+        
+        // Try each two-option cell as the chain start
+        for (const chainStart of twoOptionCells) {
+            if (solved) break;
+            
+            for (const targetNumber of chainStart.options) {
+                if (solved) break;
+                
+                const otherNumber = chainStart.options.find(num => num !== targetNumber);
+
+                const result = xyChain(possible, twoOptionCells, chainStart, [chainStart], targetNumber, otherNumber);
+                
+                if (result) {
+                    const { chain, cellsToChange } = result;
+                    
+                    let description = "Since there is an XY Chain with the path: ";
+                    // Add each cell in the chain to the description
+                    for (let i = 0; i < chain.length - 1; i++) {
+                        description += "(" + (chain[i].row+1) + "," + (chain[i].column+1) + ") -> ";
+                    }
+                    description += "(" + (chain[chain.length-1].row+1) + "," + (chain[chain.length-1].column+1) + 
+                        "), the number " + targetNumber + " was removed from the below cells as a possible option:";
+                    
+                    let removedOptions = [];
+                    let removedRows = [];
+                    let removedColumns = [];
+                    
+                    // Remove the number from the affected cells
+                    cellsToChange.forEach(cell => {
+                        const index = cell.options.indexOf(targetNumber);
+                        cell.options.splice(index, 1);
+                        
+                        removedOptions.push(targetNumber);
+                        removedRows.push(cell.row);
+                        removedColumns.push(cell.column);
+                        description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + targetNumber;
+                    });
+                    
+                    if (!isGuessAndCheck && !isBruteForce) {
+                        possibleChanges.push({
+                            method: "XY Chain",
+                            order: possibleChanges.length,
+                            description: description,
+                            options: removedOptions,
+                            rows: removedRows,
+                            columns: removedColumns
+                        });
+                        totalChanges.push({
+                            type: "possible",
+                            method: "XY Chain"
+                        });
+                    }
+                    tempXYChainChanges++;
+                    
+                    // Run previous methods to see if the puzzle can be solved
+                    tempXYChainChanges += levelZeroMethods(intPuzzle, possible);
+                    if (!solved) {
+                        tempXYChainChanges += levelOneMethods(intPuzzle, possible);
+                        if (!solved) {
+                            tempXYChainChanges += levelTwoMethods(intPuzzle, possible);
+                        }
+                    }
+                }
+            }
+        }
+        
+    } while (tempXYChainChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function xyChain(possible, twoOptionCells, currentCell, chain, targetNumber, otherNumber) {
+    // Get cells that share a row, column, or group with currentCell
+    // and are not already in the chain
+    // and have the other number in their options
+    const cellsWithOtherNumber = twoOptionCells.filter(cell => 
+        !chain.includes(cell) && 
+        (cell.row === currentCell.row || 
+         cell.column === currentCell.column || 
+         cell.group === currentCell.group) &&
+        cell.options.includes(otherNumber)
+    );
+
+    // If there are no cells with the other number, return null
+    if (cellsWithOtherNumber.length === 0) return null;
+
+    // For each connected cell
+    for (const nextCell of cellsWithOtherNumber) {
+        const nextOtherNumber = nextCell.options.find(num => num !== otherNumber);
+
+        // Check if nextOtherNumber is targetNumber
+        if (nextOtherNumber === targetNumber) {
+            // We found a chain! Now check for cells that see both ends
+            const cellsToChange = possible.filter(p => 
+                p !== chain[0] && 
+                p !== nextCell && 
+                p.options.includes(targetNumber) &&
+                (
+                    (p.row === chain[0].row || p.column === chain[0].column || p.group === chain[0].group) &&
+                    (p.row === nextCell.row || p.column === nextCell.column || p.group === nextCell.group)
+                )
+            );
+
+            if (cellsToChange.length > 0) {
+                return {
+                    chain: [...chain, nextCell],
+                    cellsToChange
+                };
+            }
+        }
+
+        // Recursively try to extend the chain
+        const result = xyChain(possible, twoOptionCells, nextCell, [...chain, nextCell], targetNumber, nextOtherNumber);
+        if (result) {
+            return result;
+        }
+    }
+
+    // If we get here, no valid chain was found
+    return null;
 }

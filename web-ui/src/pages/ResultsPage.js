@@ -170,6 +170,10 @@ const ResultsPage = () => {
           value={metrics.levelThreeChanges}
           details={[
             {
+              name: 'XY Chain',
+              value: metrics.xyChainChanges || 0
+            },
+            {
               name: 'Guess and Check',
               value: metrics.guessAndCheckChanges
             },

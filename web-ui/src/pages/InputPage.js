@@ -165,6 +165,17 @@ const InputPage = () => {
       const startPuzzle18 = "671002940020107006000600217540003009800200375036700480000000702050006100000000800";
       const startPuzzle19 = "006207000030050080000603000804000000060000053302800460607005100003700900100000020";
       const startPuzzle20 = "003009740750000000000120003030050009000010078908000500079365000400890000080002000";
+      const startPuzzle21 = "605007801401500007000060050070300549513006782009000103004090005050002400000000070";
+      const startPuzzle22 = "500600000004000621200000075020400700006300100000070008600208000090060000105903000";
+      const startPuzzle23 = "003001800021378405080005000700080040008560370059007200000000004090000053100006700";
+      const startPuzzle24 = "020010584050002006641000000080400000400201070006083400504020067060007000100004903";
+      const startPuzzle25 = "900528000040001890080000500001090003008053100390007080004930008603084000009670340";
+      const startPuzzle26 = "000790005007005800915008070000902000040006003009180060601000007098000030204300008";
+      const startPuzzle27 = "001900300800600900020000081487006500500300000000050007270000006094700100058000079";
+      const startPuzzle28 = "406010209030200000190087000640005900000009020900100003000400090009050002700002510";
+      const startPuzzle29 = "008007031900005708000300060806059000510000080009830400395604802070903000000000390";
+      const startPuzzle30 = "047090060030000000500000107085970020002000009003460008000039080000040073398507006";
+      const startPuzzle31 = "013800020000010080248300006780005009000000800500248007000080072000000690027590008";  
 
       const startPuzzles = [
         // startPuzzle1, 
@@ -186,7 +197,17 @@ const InputPage = () => {
         // startPuzzle17,
         // startPuzzle18,  
         // startPuzzle19,
-        startPuzzle20
+        // startPuzzle20,
+        // startPuzzle21,
+        // startPuzzle22,
+        // startPuzzle23,
+        // startPuzzle24,
+        startPuzzle25,
+        startPuzzle26,
+        startPuzzle27,
+        startPuzzle28,
+        startPuzzle29,
+        startPuzzle30
       ];
 
       // const response = await solvePuzzle(puzzleInput); // API call
@@ -196,12 +217,12 @@ const InputPage = () => {
       let response_v2;
 
       startPuzzles.forEach(puzzle => {
+        console.log("Solving puzzle: ", puzzle); // TODO: Remove after testing
         response = solvePuzzle(puzzle);
         response_v2 = solvePuzzle_v2(puzzle);
         
         // console.log("Solving puzzle: ", puzzleInput);
-        console.log("Solving puzzle: ", puzzle); // TODO: Remove after testing
-
+        
         console.log("Solver metrics");
         console.log("solved: ", response.metrics.solved);
         console.log(`Solver: Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
