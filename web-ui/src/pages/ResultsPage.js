@@ -174,6 +174,10 @@ const ResultsPage = () => {
               value: metrics.xyChainChanges || 0
             },
             {
+              name: 'Rectangle',
+              value: metrics.rectangleChanges || 0
+            },
+            {
               name: 'Guess and Check',
               value: metrics.guessAndCheckChanges
             },

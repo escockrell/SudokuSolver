@@ -121,6 +121,7 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
     let yWingRowColumnChanges = 0;
 
     let xyChainChanges = 0;
+    let rectangleChanges = 0;
     let guessAndCheckChanges = 0;
     let bruteForceChanges = 0;
 
@@ -234,6 +235,9 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
             case "XY Chain":
                 xyChainChanges++;
                 break;
+            case "Rectangle":
+                rectangleChanges++;
+                break;
             case "Guess and Check":
                 guessAndCheckChanges++;
                 break;
@@ -270,7 +274,7 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
                           nakedQuadRowChanges + nakedQuadColumnChanges + nakedQuadGroupChanges +
                           xWingRowChanges + xWingColumnChanges +
                           yWingRowGroupChanges + yWingColumnGroupChanges + yWingRowColumnChanges;
-    const levelThreeChanges = xyChainChanges + guessAndCheckChanges + bruteForceChanges;
+    const levelThreeChanges = xyChainChanges + rectangleChanges + guessAndCheckChanges + bruteForceChanges;
 
     return {
         mainChangeMethod,
@@ -1781,7 +1785,7 @@ function levelThreeMethods(intPuzzle, possible) {
     do {
         tempLevelThreeChanges = 0;
         changes += xyChainCheck(intPuzzle, possible);
-
+        changes += rectangleCheck(intPuzzle, possible);
         
     } while (tempLevelThreeChanges !== 0 && !solved);
 
@@ -1918,3 +1922,127 @@ function xyChain(possible, twoOptionCells, currentCell, chain, targetNumber, oth
     // If we get here, no valid chain was found
     return null;
 }
+
+function rectangleCheck(intPuzzle, possible) {
+    let changes = 0;
+    let tempRectangleChanges = 0;
+
+    do {
+        tempRectangleChanges = 0;
+
+        const groupCombinations = [
+            [0, 1, 3, 4],
+            [0, 1, 6, 7],
+            [0, 2, 3, 5],
+            [0, 2, 6, 8],
+            [1, 2, 4, 5],
+            [3, 4, 6, 7],
+            [4, 5, 7, 8],
+            [0, 2, 3, 5],
+            [3, 5, 6, 8]
+        ];
+
+        // For each group combination
+        for (const groups of groupCombinations) {
+            if (solved) break;
+            // For each number 1-9
+            for (let num = 1; num <= 9 && !solved; num++) {
+                // Get all cells containing this number and are in the groups
+                const cellsWithNum = possible.filter(cell => cell.options.includes(num) && groups.includes(cell.group));
+
+                // Skip if not enough cells to form a rectangle
+                if (cellsWithNum.length < 4) continue;
+                
+                // Get the groups that these cells are in
+                const uniqueGroups = [...new Set(cellsWithNum.map(cell => cell.group))].sort((a, b) => a - b);
+
+                // Skip if not exactly 4 unique groups
+                if (uniqueGroups.length !== 4) continue;
+
+                // Count cells in each row and column
+                const rowCounts = new Array(9).fill(0);
+                const colCounts = new Array(9).fill(0);
+                cellsWithNum.forEach(cell => {
+                    rowCounts[cell.row]++;
+                    colCounts[cell.column]++;
+                });
+
+                // Find rows and columns with multiple cells
+                const rowsWithMultiple = rowCounts
+                    .map((count, index) => ({ count, index }))
+                    .filter(({ count }) => count > 1)
+                    .map(({ index }) => index)
+                    .sort((a, b) => a - b);
+
+                const colsWithMultiple = colCounts
+                    .map((count, index) => ({ count, index }))
+                    .filter(({ count }) => count > 1)
+                    .map(({ index }) => index)
+                    .sort((a, b) => a - b);
+
+                // Skip if we don't have exactly 2 rows and 2 columns with multiple cells
+                if (rowsWithMultiple.length !== 2 || colsWithMultiple.length !== 2) continue;
+
+                // Find cells that are in the corners of the rectangle
+                const cellsToChange = cellsWithNum.filter(cell => 
+                    rowsWithMultiple.includes(cell.row) && 
+                    colsWithMultiple.includes(cell.column)
+                );
+
+                if (cellsToChange.length > 0) {
+                    console.log("** Rectangle found **");
+                    let description = "Since the number " + num + " forms a rectangle in groups " + 
+                        (groups[0] + 1) + ", " + (groups[1] + 1) + ", " + (groups[2] + 1) + ", and " + (groups[3] + 1) +
+                        " across rows " + (rowsWithMultiple[0] + 1) + " through " + (rowsWithMultiple[rowsWithMultiple.length-1] + 1) + 
+                        ", columns " + (colsWithMultiple[0] + 1) + " through " + (colsWithMultiple[colsWithMultiple.length-1] + 1) +
+                        ", it was removed from the below cells as a possible option:";
+                    let removedOptions = [];
+                    let removedRows = [];
+                    let removedColumns = [];
+
+                    // Remove the number from the affected cells
+                    cellsToChange.forEach(cell => {
+                        const index = cell.options.indexOf(num);
+                        cell.options.splice(index, 1);
+                        
+                        removedOptions.push(num);
+                        removedRows.push(cell.row);
+                        removedColumns.push(cell.column);
+                        description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + num;
+                    });
+
+                    if (!isGuessAndCheck && !isBruteForce) {
+                        possibleChanges.push({
+                            method: "Rectangle",
+                            order: possibleChanges.length,
+                            description: description,
+                            options: removedOptions,
+                            rows: removedRows,
+                            columns: removedColumns
+                        });
+                        totalChanges.push({
+                            type: "possible",
+                            method: "Rectangle"
+                        });
+                    }
+                    tempRectangleChanges++;
+
+                    // Run previous methods to see if the puzzle can be solved
+                    tempRectangleChanges += levelZeroMethods(intPuzzle, possible);
+                    if (!solved) {
+                        tempRectangleChanges += levelOneMethods(intPuzzle, possible);
+                        if (!solved) {
+                            tempRectangleChanges += levelTwoMethods(intPuzzle, possible);
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempRectangleChanges;
+    } while (tempRectangleChanges !== 0 && !solved);
+
+    return changes;
+}
+
+
+
