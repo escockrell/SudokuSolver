@@ -5292,6 +5292,7 @@ function levelThreeMethods(intPuzzle, possible, Rows, Columns, Groups) {
 
         // save data to change log
         possibleChangeMethod.push("Brute Force");
+        totalChangeMethod.push("Brute Force");
         let description = "Eliminating the highlighted possible options makes the puzzle solvable using previous methods";
         possibleChangeDescription.push(description);
 
@@ -5396,6 +5397,7 @@ function guessAndCheck(intPuzzle, possible, Rows, Columns, Groups, isBruteForce)
 
                                         // save data to change log
                                         possibleChangeMethod.push("Guess and Check - Solved");
+                                        totalChangeMethod.push("Guess and Check - Solved");
                                         description = "Making row " + (i+1) + ", column " + (j+1) + " the number " + tempOptions[currentOption] + " solved the puzzle." + 
                                                 " Therefore, all possible options besides " + tempOptions[currentOption] + " were removed";
                                         possibleChangeDescription.push(description);
@@ -5423,6 +5425,7 @@ function guessAndCheck(intPuzzle, possible, Rows, Columns, Groups, isBruteForce)
                                         // save data to change log
                                         if (!isBruteForce) {
                                             possibleChangeMethod.push("Guess and Check - Contradiction");
+                                            totalChangeMethod.push("Guess and Check - Contradiction");
                                             description = "Making row " + (i+1) + ", column " + (j+1) + " the number " + tempOptions[currentOption] + " leads to a contradiction. Therefore, it was removed as a possible option";
                                             possibleChangeDescription.push(description);
                                             possibleChangeOrder.push(possibleChangeCount);
@@ -5479,6 +5482,7 @@ function guessAndCheck(intPuzzle, possible, Rows, Columns, Groups, isBruteForce)
 
                                                     // save data to change log
                                                     possibleChangeMethod.push("Guess and Check - Same Number");
+                                                    totalChangeMethod.push("Guess and Check - Same Number");
                                                     description = "Making row " + (i+1) + ", column " + (j+1) + " all possible options leads to row " + (x+1) + ", column " + (y+1) + " being number " + num + " for each option." + 
                                                             " Therefore, all possible options besides " + num + " were removed";
                                                     possibleChangeDescription.push(description);

@@ -1959,6 +1959,8 @@ function rectangleCheck(intPuzzle, possible) {
                 // Skip if not exactly 4 unique groups
                 if (uniqueGroups.length !== 4) continue;
 
+                
+
                 // Count cells in each row and column
                 const rowCounts = new Array(9).fill(0);
                 const colCounts = new Array(9).fill(0);
@@ -1982,6 +1984,33 @@ function rectangleCheck(intPuzzle, possible) {
 
                 // Skip if we don't have exactly 2 rows and 2 columns with multiple cells
                 if (rowsWithMultiple.length !== 2 || colsWithMultiple.length !== 2) continue;
+
+                // Check if the rows and columns with multiple cells are the outer most rows and columns
+                const smallestRow = rowCounts.findIndex(count => count > 0);
+                const largestRow = rowCounts.length - 1 - [...rowCounts].reverse().findIndex(count => count > 0);
+                const smallestCol = colCounts.findIndex(count => count > 0);
+                const largestCol = colCounts.length - 1 - [...colCounts].reverse().findIndex(count => count > 0);
+
+                if (rowsWithMultiple[0] !== smallestRow || rowsWithMultiple[1] !== largestRow ||
+                    colsWithMultiple[0] !== smallestCol || colsWithMultiple[1] !== largestCol) continue;
+
+                // Check that each group has at least 2 unique rows and 2 unique columns and they all appear in the outer most rows and columns
+                const groupsValid = uniqueGroups.every(group => {
+                    const groupCells = cellsWithNum.filter(cell => cell.group === group);
+                    const uniqueRows = new Set(groupCells.map(cell => cell.row));
+                    const uniqueCols = new Set(groupCells.map(cell => cell.column));
+                    
+                    // Check for minimum unique rows and columns
+                    if (uniqueRows.size < 2 || uniqueCols.size < 2) return false;
+                    
+                    // Check that all cells in this group fall within the outer rows and columns
+                    return groupCells.every(cell => 
+                        (cell.row === smallestRow || cell.row === largestRow) &&
+                        (cell.column === smallestCol || cell.column === largestCol)
+                    );
+                });
+
+                if (!groupsValid) continue;
 
                 // Find cells that are in the corners of the rectangle
                 const cellsToChange = cellsWithNum.filter(cell => 

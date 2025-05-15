@@ -144,7 +144,7 @@ const InputPage = () => {
       const puzzleInput = grid.map(row => 
         row.map(cell => cell === '' ? '0' : cell).join('')
       ).join('');
-      //console.log("puzzleInput: ", puzzleInput);
+      console.log("puzzleInput: ", puzzleInput);
 
       const startPuzzle1 = "578001600160050003002609001006003000010008365003100924300762000080000030701000000";
       const startPuzzle2 = "900320050600085000800000060030000900000602003400090020304250000000007301160008000"; // phantom row, column, group | naked pair row, group | hidden pair row
@@ -334,9 +334,12 @@ const InputPage = () => {
       const startPuzzle185 = "000000072530200080000080415743000000050302000200050793370600024020030500806020000";
       const startPuzzle186 = "240000000050060002806009040070001050004200100000407900605010070700600000403702010";
       const startPuzzle187 = "070048030002600400800001920000900010001000054050802000007000000020006040006409100";
-
+      const startPuzzle188 = "600405000004090060000623004060800130053070800007000600380010906070500401040060053";
+      const startPuzzle189 = "093561084060070300500230060007420600600000079089600000802706040906300000000010090";
+      const startPuzzle190 = "004120000000600000000000300530000007200080001600000094001000000000005000000073600";
 
       const startPuzzles = [
+        startPuzzle190,
         // startPuzzle1, 
         // startPuzzle2, 
         // startPuzzle3, 
@@ -488,42 +491,44 @@ const InputPage = () => {
         // startPuzzle149,
         // startPuzzle150,
         // startPuzzle151,
-        startPuzzle152,
-        startPuzzle153,
-        startPuzzle154,
-        startPuzzle155,
-        startPuzzle156,
-        startPuzzle157,
-        startPuzzle158,
-        startPuzzle159,
-        startPuzzle160,
-        startPuzzle161,
-        startPuzzle162,
-        startPuzzle163,
-        startPuzzle164,
-        startPuzzle165,
-        startPuzzle166,
-        startPuzzle167,
-        startPuzzle168,
-        startPuzzle169,
-        startPuzzle170,
-        startPuzzle171,
-        startPuzzle172,
-        startPuzzle173,
-        startPuzzle174,
-        startPuzzle175,
-        startPuzzle176,
-        startPuzzle177,
-        startPuzzle178,
-        startPuzzle179,
-        startPuzzle180,
-        startPuzzle181,
-        startPuzzle182,
-        startPuzzle183,
-        startPuzzle184,
-        startPuzzle185,
-        startPuzzle186,
-        startPuzzle187,
+        // startPuzzle152,
+        // startPuzzle153,
+        // startPuzzle154,
+        // startPuzzle155,
+        // startPuzzle156,
+        // startPuzzle157,
+        // startPuzzle158,
+        // startPuzzle159,
+        // startPuzzle160,
+        // startPuzzle161,
+        // startPuzzle162,
+        // startPuzzle163,
+        // startPuzzle164,
+        // startPuzzle165,
+        // startPuzzle166,
+        // startPuzzle167,
+        // startPuzzle168,
+        // startPuzzle169,
+        // startPuzzle170,
+        // startPuzzle171,
+        // startPuzzle172,
+        // startPuzzle173,
+        // startPuzzle174,
+        // startPuzzle175,
+        // startPuzzle176,
+        // startPuzzle177,
+        // startPuzzle178,
+        // startPuzzle179,
+        // startPuzzle180,
+        // startPuzzle181,
+        // startPuzzle182,
+        // startPuzzle183,
+        // startPuzzle184,
+        // startPuzzle185,
+        // startPuzzle186,
+        // startPuzzle187,
+        // startPuzzle188,
+        // startPuzzle189,
       ];
 
       // const response = await solvePuzzle(puzzleInput); // API call
@@ -539,19 +544,19 @@ const InputPage = () => {
         
         // console.log("Solving puzzle: ", puzzleInput);
         
-        // console.log("Solver metrics");
-        // console.log("solved: ", response.metrics.solved);
-        // console.log(`Solver: Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
-        // console.log("response: ", response);
+        console.log("Solver metrics");
+        console.log("solved: ", response.metrics.solved);
+        console.log(`Solver: Puzzle solved in ${response.metrics.solveTime.toFixed(2)} milliseconds`);
+        console.log("response: ", response);
         
-        // console.log("Solver_v2 metrics");
-        // console.log("solved: ", response_v2.metrics.solved);
-        // console.log(`Solver_v2: Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
-        // console.log("response_v2: ", response_v2);
+        console.log("Solver_v2 metrics");
+        console.log("solved: ", response_v2.metrics.solved);
+        console.log(`Solver_v2: Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
+        console.log("response_v2: ", response_v2);
 
-        // const timeDiff = Math.abs(response_v2.metrics.solveTime - response.metrics.solveTime);
-        // const winner = response_v2.metrics.solveTime < response.metrics.solveTime ? "Solver_v2" : "Solver";
-        // console.log(`${winner} wins by ${timeDiff.toFixed(2)} milliseconds`);
+        const timeDiff = Math.abs(response_v2.metrics.solveTime - response.metrics.solveTime);
+        const winner = response_v2.metrics.solveTime < response.metrics.solveTime ? "Solver_v2" : "Solver";
+        console.log(`${winner} wins by ${timeDiff.toFixed(2)} milliseconds`);
       });
 
       // Convert solution string to grid by splitting into chunks of 9
