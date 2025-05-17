@@ -332,6 +332,7 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
         yWingColumnGroupChanges,
         yWingRowColumnChanges,
         xyChainChanges,
+        rectangleChanges,
         guessAndCheckChanges,
         bruteForceChanges
     };
@@ -1947,83 +1948,58 @@ function rectangleCheck(intPuzzle, possible) {
             if (solved) break;
             // For each number 1-9
             for (let num = 1; num <= 9 && !solved; num++) {
+                if (solved) break;
                 // Get all cells containing this number and are in the groups
                 const cellsWithNum = possible.filter(cell => cell.options.includes(num) && groups.includes(cell.group));
+                if (cellsWithNum.length < 8) continue;
 
-                // Skip if not enough cells to form a rectangle
-                if (cellsWithNum.length < 4) continue;
-                
-                // Get the groups that these cells are in
-                const uniqueGroups = [...new Set(cellsWithNum.map(cell => cell.group))].sort((a, b) => a - b);
+                const tCells = getTCells(groups, cellsWithNum);
+                // If there tCells is null, or there are less than 3 groups with tCells, continue
+                if (!tCells || Object.keys(tCells).filter(group => tCells[group].length > 0).length < 3) continue;
 
-                // Skip if not exactly 4 unique groups
-                if (uniqueGroups.length !== 4) continue;
+                let cellsToChange = [];
+                let rectangleRows = [];
+                let rectangleCols = [];
 
-                
-
-                // Count cells in each row and column
-                const rowCounts = new Array(9).fill(0);
-                const colCounts = new Array(9).fill(0);
-                cellsWithNum.forEach(cell => {
-                    rowCounts[cell.row]++;
-                    colCounts[cell.column]++;
-                });
-
-                // Find rows and columns with multiple cells
-                const rowsWithMultiple = rowCounts
-                    .map((count, index) => ({ count, index }))
-                    .filter(({ count }) => count > 1)
-                    .map(({ index }) => index)
-                    .sort((a, b) => a - b);
-
-                const colsWithMultiple = colCounts
-                    .map((count, index) => ({ count, index }))
-                    .filter(({ count }) => count > 1)
-                    .map(({ index }) => index)
-                    .sort((a, b) => a - b);
-
-                // Skip if we don't have exactly 2 rows and 2 columns with multiple cells
-                if (rowsWithMultiple.length !== 2 || colsWithMultiple.length !== 2) continue;
-
-                // Check if the rows and columns with multiple cells are the outer most rows and columns
-                const smallestRow = rowCounts.findIndex(count => count > 0);
-                const largestRow = rowCounts.length - 1 - [...rowCounts].reverse().findIndex(count => count > 0);
-                const smallestCol = colCounts.findIndex(count => count > 0);
-                const largestCol = colCounts.length - 1 - [...colCounts].reverse().findIndex(count => count > 0);
-
-                if (rowsWithMultiple[0] !== smallestRow || rowsWithMultiple[1] !== largestRow ||
-                    colsWithMultiple[0] !== smallestCol || colsWithMultiple[1] !== largestCol) continue;
-
-                // Check that each group has at least 2 unique rows and 2 unique columns and they all appear in the outer most rows and columns
-                const groupsValid = uniqueGroups.every(group => {
-                    const groupCells = cellsWithNum.filter(cell => cell.group === group);
-                    const uniqueRows = new Set(groupCells.map(cell => cell.row));
-                    const uniqueCols = new Set(groupCells.map(cell => cell.column));
-                    
-                    // Check for minimum unique rows and columns
-                    if (uniqueRows.size < 2 || uniqueCols.size < 2) return false;
-                    
-                    // Check that all cells in this group fall within the outer rows and columns
-                    return groupCells.every(cell => 
-                        (cell.row === smallestRow || cell.row === largestRow) &&
-                        (cell.column === smallestCol || cell.column === largestCol)
+                // Check if a perfect rectangle can be formed
+                const perfectRectangle = checkForPerfectRectangle(tCells);
+                if (perfectRectangle) {
+                    // Check if the number can be removed from the corners of the rectangle
+                    cellsToChange = cellsWithNum.filter(cell => 
+                        perfectRectangle.rows.includes(cell.row) && 
+                        perfectRectangle.cols.includes(cell.column) 
                     );
-                });
 
-                if (!groupsValid) continue;
+                    if (cellsToChange.length > 0) {
+                        rectangleRows = perfectRectangle.rows;
+                        rectangleCols = perfectRectangle.cols;
+                    }
+                }
 
-                // Find cells that are in the corners of the rectangle
-                const cellsToChange = cellsWithNum.filter(cell => 
-                    rowsWithMultiple.includes(cell.row) && 
-                    colsWithMultiple.includes(cell.column)
-                );
+                if (cellsToChange.length === 0) {
+                    // Check if there is a pseudo-rectangle
+                    const pseudoRectangle = checkForPseudoRectangle(tCells);
+                    if (pseudoRectangle) {
+                        // Check if the number can be removed from the corner of the rectangle in the 4th group
+                        cellsToChange = cellsWithNum.filter(cell => 
+                            pseudoRectangle.rows.includes(cell.row) && 
+                            pseudoRectangle.cols.includes(cell.column) &&
+                            !pseudoRectangle.groups.includes(cell.group)
+                        );
+
+                        if (cellsToChange.length > 0) {
+                            rectangleRows = pseudoRectangle.rows;
+                            rectangleCols = pseudoRectangle.cols;
+                        }
+                    }
+                }
 
                 if (cellsToChange.length > 0) {
                     console.log("** Rectangle found **");
                     let description = "Since the number " + num + " forms a rectangle in groups " + 
                         (groups[0] + 1) + ", " + (groups[1] + 1) + ", " + (groups[2] + 1) + ", and " + (groups[3] + 1) +
-                        " across rows " + (rowsWithMultiple[0] + 1) + " through " + (rowsWithMultiple[rowsWithMultiple.length-1] + 1) + 
-                        ", columns " + (colsWithMultiple[0] + 1) + " through " + (colsWithMultiple[colsWithMultiple.length-1] + 1) +
+                        " across rows " + (rectangleRows[0] + 1) + " through " + (rectangleRows[1] + 1) + 
+                        ", columns " + (rectangleCols[0] + 1) + " through " + (rectangleCols[1] + 1) +
                         ", it was removed from the below cells as a possible option:";
                     let removedOptions = [];
                     let removedRows = [];
@@ -2073,5 +2049,152 @@ function rectangleCheck(intPuzzle, possible) {
     return changes;
 }
 
+function getTCells(groups, cellsWithNum) {
+    let tCells = {
+        [groups[0]]: [],
+        [groups[1]]: [],
+        [groups[2]]: [],
+        [groups[3]]: []
+    };
 
+    groups.forEach(group => {
+        const groupCells = cellsWithNum.filter(cell => cell.group === group);
+        if (groupCells.length < 2) return null;
+        
+        // Check if there are only 2 cells in the group
+        if (groupCells.length === 2) {
+            tCells[group].push({
+                row: groupCells[1].row,
+                col: groupCells[0].column,
+            });
+            tCells[group].push({
+                row: groupCells[0].row,
+                col: groupCells[1].column,
+            });
+        } else {
+            // Check if there is exactly one row or one column with multiple cells
+            const rowCounts = new Array(9).fill(0);
+            const colCounts = new Array(9).fill(0);
+            groupCells.forEach(cell => {
+                rowCounts[cell.row]++;
+                colCounts[cell.column]++;
+            });
 
+            const rowsWithMultiple = rowCounts
+                .map((count, index) => ({ count, index }))
+                .filter(({ count }) => count > 1)
+                .map(({ index }) => index)
+                .sort((a, b) => a - b);
+
+            const colsWithMultiple = colCounts
+                .map((count, index) => ({ count, index }))
+                .filter(({ count }) => count > 1)
+                .map(({ index }) => index)
+                .sort((a, b) => a - b);
+                
+            if (rowsWithMultiple.length === 1) {
+                // Check if the cells not in the row are in the same column
+                const otherCells = groupCells.filter(cell => cell.row !== rowsWithMultiple[0]);
+                if(otherCells.length < 1) return null; // Should be caught by Phantom Checks
+
+                const sameColumn = otherCells.every(cell => cell.column === otherCells[0].column);
+                if (sameColumn) {
+                    tCells[group].push({
+                        row: rowsWithMultiple[0],
+                        col: otherCells[0].column,
+                    });
+                }
+            } else if (colsWithMultiple.length === 1) {
+                // Check if the cells not in the column are in the same row
+                const otherCells = groupCells.filter(cell => cell.column !== colsWithMultiple[0]);
+                if(otherCells.length < 1) return null; // Should be caught by Phantom Checks
+                
+                const sameRow = otherCells.every(cell => cell.row === otherCells[0].row);
+                if (sameRow) {
+                    tCells[group].push({
+                        row: otherCells[0].row,
+                        col: colsWithMultiple[0],
+                    });
+                }
+            }
+        }
+    });
+
+    return tCells;
+}
+
+function checkForPerfectRectangle(tCells) {
+    // Get the groups
+    const groups = Object.keys(tCells);
+
+    // Check which groups have at least 1 tCell
+    const groupsWithTCells = groups.filter(group => tCells[group].length > 0);
+    if (groupsWithTCells.length < 4) return null;
+
+    // Loop through every combination of 4 tCells and check if they only have 2 unique rows and 2 unique columns
+    for (const tCell1 of tCells[groups[0]]) {
+        for (const tCell2 of tCells[groups[1]]) {
+            for (const tCell3 of tCells[groups[2]]) {
+                for (const tCell4 of tCells[groups[3]]) {
+                    // Get a Set of the rows and columns of the tCells
+                    const uniqueRows = new Set([tCell1.row, tCell2.row, tCell3.row, tCell4.row]);
+                    const uniqueColumns = new Set([tCell1.col, tCell2.col, tCell3.col, tCell4.col]);
+
+                    // Check if there are exactly 2 unique rows and 2 unique columns
+                    if (uniqueRows.size === 2 && uniqueColumns.size === 2) {
+                        // A perfect rectangle has been found
+                        return {
+                            rows: Array.from(uniqueRows),
+                            cols: Array.from(uniqueColumns),
+                        };
+                    }
+                }
+            }
+        }
+    }
+
+    return null;
+}
+
+function checkForPseudoRectangle(tCells) {
+    // Get the groups
+    const groups = Object.keys(tCells);
+
+    // Check which groups have at least 1 tCell
+    const groupsWithTCells = groups.filter(group => tCells[group].length > 0);
+    if (groupsWithTCells.length < 3) return null;
+
+    // Generate all possible combinations of 3 groups
+    for (let i = 0; i < groupsWithTCells.length - 2; i++) {
+        for (let j = i + 1; j < groupsWithTCells.length - 1; j++) {
+            for (let k = j + 1; k < groupsWithTCells.length; k++) {
+                const group1 = groupsWithTCells[i];
+                const group2 = groupsWithTCells[j];
+                const group3 = groupsWithTCells[k];
+
+                // Loop through every combination of tCells from these 3 groups
+                for (const tCell1 of tCells[group1]) {
+                    for (const tCell2 of tCells[group2]) {
+                        for (const tCell3 of tCells[group3]) {
+                            // Get a Set of the rows and columns of the tCells
+                            const uniqueRows = new Set([tCell1.row, tCell2.row, tCell3.row]);
+                            const uniqueColumns = new Set([tCell1.col, tCell2.col, tCell3.col]);
+
+                            // Check if there are exactly 2 unique rows and 2 unique columns
+                            if (uniqueRows.size === 2 && uniqueColumns.size === 2) {
+                                // A pseudo-rectangle has been found
+                                return {
+                                    rows: Array.from(uniqueRows),
+                                    cols: Array.from(uniqueColumns),
+                                    groups: [Number(group1), Number(group2), Number(group3)],
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return null;
+}

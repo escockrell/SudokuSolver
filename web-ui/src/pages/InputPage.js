@@ -339,7 +339,8 @@ const InputPage = () => {
       const startPuzzle190 = "004120000000600000000000300530000007200080001600000094001000000000005000000073600";
 
       const startPuzzles = [
-        startPuzzle190,
+        startPuzzle186,
+        // startPuzzle190,
         // startPuzzle1, 
         // startPuzzle2, 
         // startPuzzle3, 
