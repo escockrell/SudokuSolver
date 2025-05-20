@@ -122,6 +122,11 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
 
     let xyChainChanges = 0;
     let rectangleChanges = 0;
+    let swordfishRowChanges = 0;
+    let swordfishColumnChanges = 0;
+    let jellyfishRowChanges = 0;
+    let jellyfishColumnChanges = 0;
+
     let guessAndCheckChanges = 0;
     let bruteForceChanges = 0;
 
@@ -238,6 +243,18 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
             case "Rectangle":
                 rectangleChanges++;
                 break;
+            case "Swordfish - Row":
+                swordfishRowChanges++;
+                break;
+            case "Swordfish - Column":
+                swordfishColumnChanges++;
+                break;
+            case "Jellyfish - Row":
+                jellyfishRowChanges++;
+                break;
+            case "Jellyfish - Column":
+                jellyfishColumnChanges++;
+                break;
             case "Guess and Check":
                 guessAndCheckChanges++;
                 break;
@@ -274,7 +291,9 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
                           nakedQuadRowChanges + nakedQuadColumnChanges + nakedQuadGroupChanges +
                           xWingRowChanges + xWingColumnChanges +
                           yWingRowGroupChanges + yWingColumnGroupChanges + yWingRowColumnChanges;
-    const levelThreeChanges = xyChainChanges + rectangleChanges + guessAndCheckChanges + bruteForceChanges;
+    const levelThreeChanges = xyChainChanges + rectangleChanges + swordfishRowChanges + swordfishColumnChanges +
+                             jellyfishRowChanges + jellyfishColumnChanges;
+    const levelFourChanges = guessAndCheckChanges + bruteForceChanges;
 
     return {
         mainChangeMethod,
@@ -303,6 +322,7 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
         levelOneChanges,
         levelTwoChanges,
         levelThreeChanges,
+        levelFourChanges,
         // Individual method counts
         oneInARowChanges,
         oneInAColumnChanges,
@@ -333,6 +353,10 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
         yWingRowColumnChanges,
         xyChainChanges,
         rectangleChanges,
+        swordfishRowChanges,
+        swordfishColumnChanges,
+        jellyfishRowChanges,
+        jellyfishColumnChanges,
         guessAndCheckChanges,
         bruteForceChanges
     };
@@ -1782,15 +1806,15 @@ function yWingCheck(intPuzzle, possible, wing1, wing2) {
 function levelThreeMethods(intPuzzle, possible) {
     let changes = 0;
     let tempLevelThreeChanges = 0;
-
     do {
-        tempLevelThreeChanges = 0;
+        changes = 0;
         changes += xyChainCheck(intPuzzle, possible);
         changes += rectangleCheck(intPuzzle, possible);
-        
-    } while (tempLevelThreeChanges !== 0 && !solved);
-
-    return changes;
+        changes += swordfishChecks(intPuzzle, possible);
+        changes += jellyfishChecks(intPuzzle, possible);
+        tempLevelThreeChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempLevelThreeChanges;
 }
 
 function xyChainCheck(intPuzzle, possible) {
@@ -1995,7 +2019,6 @@ function rectangleCheck(intPuzzle, possible) {
                 }
 
                 if (cellsToChange.length > 0) {
-                    console.log("** Rectangle found **");
                     let description = "Since the number " + num + " forms a rectangle in groups " + 
                         (groups[0] + 1) + ", " + (groups[1] + 1) + ", " + (groups[2] + 1) + ", and " + (groups[3] + 1) +
                         " across rows " + (rectangleRows[0] + 1) + " through " + (rectangleRows[1] + 1) + 
@@ -2197,4 +2220,277 @@ function checkForPseudoRectangle(tCells) {
     }
 
     return null;
+}
+
+function swordfishChecks(intPuzzle, possible) {
+    let changes = 0;
+    let tempSwordfishChanges = 0;
+    do {
+        changes = 0;
+        changes += swordfishCheck(intPuzzle, possible, "row");
+        changes += swordfishCheck(intPuzzle, possible, "column");
+        tempSwordfishChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempSwordfishChanges;
+}
+
+function swordfishCheck(intPuzzle, possible, checkType) {
+    let changes = 0;
+    let tempSwordfishChanges = 0;
+
+    do {
+        tempSwordfishChanges = 0;
+        const otherCheckType = checkType === 'row' ? 'column' : 'row';
+
+        // For each number 1-9
+        for (let num = 1; num <= 9 && !solved; num++) {
+            // Track which rows/columns have this number as a possibility
+            const numLocations = [];
+            
+            // For each row/column
+            for (let rowCol = 0; rowCol < 9; rowCol++) {
+                // Get cells in this row/column that could contain the number
+                const cellsWithNum = possible.filter(cell => 
+                    cell[checkType] === rowCol && 
+                    cell.options.includes(num)
+                );
+                
+                // Only consider rows/columns with exactly 2 or 3 cells containing the number
+                if (cellsWithNum.length === 2 || cellsWithNum.length === 3) {
+                    // Store the row/column and the positions where the number could be
+                    numLocations.push({
+                        rowCol,
+                        positions: cellsWithNum.map(cell => cell[otherCheckType]).sort((a, b) => a - b),
+                        cellCount: cellsWithNum.length
+                    });
+                }
+            }
+
+            if (numLocations.length < 3) continue;
+
+            // Look for triplets of rows/columns that have the number in the same three columns/rows
+            for (let i = 0; i < numLocations.length - 2 && !solved; i++) {
+                for (let j = i + 1; j < numLocations.length - 1 && !solved; j++) {
+                    for (let k = j + 1; k < numLocations.length && !solved; k++) {
+                        const loc1 = numLocations[i];
+                        const loc2 = numLocations[j];
+                        const loc3 = numLocations[k];
+
+                        // Get all unique positions across the three rows/columns
+                        const positionsSet = new Set([...loc1.positions, ...loc2.positions, ...loc3.positions]);
+                        
+                        // Check if there are exactly 3 unique positions
+                        if (positionsSet.size === 3) {
+                            const positions = Array.from(positionsSet).sort((a, b) => a - b);
+                            
+                            // Verify that each position appears in at least 2 of the rows/columns
+                            const positionCounts = positions.map(pos => {
+                                let count = 0;
+                                if (loc1.positions.includes(pos)) count++;
+                                if (loc2.positions.includes(pos)) count++;
+                                if (loc3.positions.includes(pos)) count++;
+                                return count;
+                            });
+
+                            // A valid swordfish requires each position to appear in at least 2 rows/columns
+                            if (positionCounts.every(count => count >= 2)) {
+                                const rowCols = [loc1.rowCol, loc2.rowCol, loc3.rowCol].sort((a, b) => a - b);
+                                
+                                let description = "Since the number " + (num) + ` forms a Swordfish in the ${checkType}s ` + 
+                                    (rowCols[0]+1) + ", " + (rowCols[1]+1) + ", and " + (rowCols[2]+1) + `, ${otherCheckType}s ` + (positions[0]+1) + 
+                                    ", " + (positions[1]+1) + ", and " + (positions[2]+1) + 
+                                    ", it was removed from the below cells as a possible option:";
+                                let removedOptions = [];
+                                let removedRows = [];
+                                let removedColumns = [];
+                                
+                                // Remove the number from other cells in those positions
+                                const cellsToChange = possible.filter(cell => 
+                                    !rowCols.includes(cell[checkType]) && 
+                                    positions.includes(cell[otherCheckType]) &&
+                                    cell.options.includes(num)
+                                );
+
+                                if (cellsToChange.length > 0) {
+                                    cellsToChange.forEach(cell => {
+                                        const index = cell.options.indexOf(num);
+                                        cell.options.splice(index, 1);
+                                        
+                                        removedOptions.push(num);
+                                        removedRows.push(cell.row);
+                                        removedColumns.push(cell.column);
+                                        description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + num;
+                                    });
+
+                                    if (!isGuessAndCheck && !isBruteForce) {
+                                        possibleChanges.push({
+                                            method: "Swordfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                            order: possibleChanges.length,
+                                            description: description,
+                                            options: removedOptions,
+                                            rows: removedRows,
+                                            columns: removedColumns
+                                        });
+                                        totalChanges.push({
+                                            type: "possible",
+                                            method: "Swordfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
+                                        });
+                                    }
+                                    tempSwordfishChanges++;
+                                    
+                                    // Run previous methods to see if the puzzle can be solved
+                                    tempSwordfishChanges += levelZeroMethods(intPuzzle, possible);
+                                    if (!solved) {
+                                        tempSwordfishChanges += levelOneMethods(intPuzzle, possible);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempSwordfishChanges;
+    } while (tempSwordfishChanges !== 0 && !solved);
+
+    return changes;
+}
+
+function jellyfishChecks(intPuzzle, possible) {
+    let changes = 0;
+    let tempJellyfishChanges = 0;
+    do {
+        changes = 0;
+        changes += jellyfishCheck(intPuzzle, possible, "row");
+        changes += jellyfishCheck(intPuzzle, possible, "column");
+        tempJellyfishChanges += changes;
+    } while (changes !== 0 && !solved);
+    return tempJellyfishChanges;
+}
+
+function jellyfishCheck(intPuzzle, possible, checkType) {
+    let changes = 0;
+    let tempJellyfishChanges = 0;
+
+    do {
+        tempJellyfishChanges = 0;
+        const otherCheckType = checkType === 'row' ? 'column' : 'row';
+
+        // For each number 1-9
+        for (let num = 1; num <= 9 && !solved; num++) {
+            // Track which rows/columns have this number as a possibility
+            const numLocations = [];
+            
+            // For each row/column
+            for (let rowCol = 0; rowCol < 9; rowCol++) {
+                // Get cells in this row/column that could contain the number
+                const cellsWithNum = possible.filter(cell => 
+                    cell[checkType] === rowCol && 
+                    cell.options.includes(num)
+                );
+                
+                // Only consider rows/columns with exactly 2, 3, or 4 cells containing the number
+                if (cellsWithNum.length === 2 || cellsWithNum.length === 3 || cellsWithNum.length === 4) {
+                    // Store the row/column and the positions where the number could be
+                    numLocations.push({
+                        rowCol,
+                        positions: cellsWithNum.map(cell => cell[otherCheckType]).sort((a, b) => a - b),
+                        cellCount: cellsWithNum.length
+                    });
+                }
+            }
+
+            if (numLocations.length < 4) continue;
+
+            // Look for quadruplets of rows/columns that have the number in the same four columns/rows
+            for (let i = 0; i < numLocations.length - 3 && !solved; i++) {
+                for (let j = i + 1; j < numLocations.length - 2 && !solved; j++) {
+                    for (let k = j + 1; k < numLocations.length - 1 && !solved; k++) {
+                        for (let l = k + 1; l < numLocations.length && !solved; l++) {
+                            const loc1 = numLocations[i];
+                            const loc2 = numLocations[j];
+                            const loc3 = numLocations[k];
+                            const loc4 = numLocations[l];
+
+                            // Get all unique positions across the four rows/columns
+                            const positionsSet = new Set([...loc1.positions, ...loc2.positions, ...loc3.positions, ...loc4.positions]);
+                            
+                            // Check if there are exactly 4 unique positions
+                            if (positionsSet.size === 4) {
+                                const positions = Array.from(positionsSet).sort((a, b) => a - b);
+                                
+                                // Verify that each position appears in at least 2 of the rows/columns
+                                const positionCounts = positions.map(pos => {
+                                    let count = 0;
+                                    if (loc1.positions.includes(pos)) count++;
+                                    if (loc2.positions.includes(pos)) count++;
+                                    if (loc3.positions.includes(pos)) count++;
+                                    if (loc4.positions.includes(pos)) count++;
+                                    return count;
+                                });
+
+                                // A valid jellyfish requires each position to appear in at least 2 rows/columns
+                                // and at least one position must appear in 3 or 4 rows/columns
+                                if (positionCounts.every(count => count >= 2) && positionCounts.some(count => count >= 3)) {
+                                    const rowCols = [loc1.rowCol, loc2.rowCol, loc3.rowCol, loc4.rowCol].sort((a, b) => a - b);
+                                    
+                                    let description = "Since the number " + (num) + ` forms a Jellyfish in the ${checkType}s ` + 
+                                        (rowCols[0]+1) + ", " + (rowCols[1]+1) + ", " + (rowCols[2]+1) + ", and " + (rowCols[3]+1) + `, ${otherCheckType}s ` + (positions[0]+1) + 
+                                        ", " + (positions[1]+1) + ", " + (positions[2]+1) + ", and " + (positions[3]+1) + 
+                                        ", it was removed from the below cells as a possible option:";
+                                    let removedOptions = [];
+                                    let removedRows = [];
+                                    let removedColumns = [];
+                                    
+                                    // Remove the number from other cells in those positions
+                                    const cellsToChange = possible.filter(cell => 
+                                        !rowCols.includes(cell[checkType]) && 
+                                        positions.includes(cell[otherCheckType]) &&
+                                        cell.options.includes(num)
+                                    );
+
+                                    if (cellsToChange.length > 0) {
+                                        cellsToChange.forEach(cell => {
+                                            const index = cell.options.indexOf(num);
+                                            cell.options.splice(index, 1);
+                                            
+                                            removedOptions.push(num);
+                                            removedRows.push(cell.row);
+                                            removedColumns.push(cell.column);
+                                            description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + num;
+                                        });
+
+                                        if (!isGuessAndCheck && !isBruteForce) {
+                                            possibleChanges.push({
+                                                method: "Jellyfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                                order: possibleChanges.length,
+                                                description: description,
+                                                options: removedOptions,
+                                                rows: removedRows,
+                                                columns: removedColumns
+                                            });
+                                            totalChanges.push({
+                                                type: "possible",
+                                                method: "Jellyfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
+                                            });
+                                        }
+                                        tempJellyfishChanges++;
+                                        
+                                        // Run previous methods to see if the puzzle can be solved
+                                        tempJellyfishChanges += levelZeroMethods(intPuzzle, possible);
+                                        if (!solved) {
+                                            tempJellyfishChanges += levelOneMethods(intPuzzle, possible);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changes += tempJellyfishChanges;
+    } while (tempJellyfishChanges !== 0 && !solved);
+
+    return changes;
 }

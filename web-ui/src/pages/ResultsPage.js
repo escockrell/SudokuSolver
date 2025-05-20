@@ -178,6 +178,34 @@ const ResultsPage = () => {
               value: metrics.rectangleChanges || 0
             },
             {
+              name: 'Swordfish',
+              value: safeSum(
+                metrics.swordfishRowChanges,
+                metrics.swordfishColumnChanges
+              ),
+              subDetails: [
+                { name: 'Row', value: metrics.swordfishRowChanges || 0 },
+                { name: 'Column', value: metrics.swordfishColumnChanges || 0 }
+              ]
+            },
+            {
+              name: 'Jellyfish',
+              value: safeSum(
+                metrics.jellyfishRowChanges,
+                metrics.jellyfishColumnChanges
+              ),
+              subDetails: [
+                { name: 'Row', value: metrics.jellyfishRowChanges || 0 },
+                { name: 'Column', value: metrics.jellyfishColumnChanges || 0 }
+              ]
+            }
+          ]}
+        />
+        <MetricCard 
+          title="Level 4 Changes"
+          value={metrics.levelFourChanges}
+          details={[
+            {
               name: 'Guess and Check',
               value: metrics.guessAndCheckChanges
             },
