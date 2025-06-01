@@ -9,6 +9,9 @@ let possibleChanges = []; // For possible number removals
 let mainPossibleChanges = []; // For possible number updates after main changes
 let totalChanges = []; // For all changes
 
+// Array to track guessAndCheck changes
+let guessAndCheckTotalChanges = [];
+
 export function solvePuzzle(startPuzzleString) {
     const startTime = performance.now();
     resetMetrics();
@@ -24,6 +27,9 @@ export function solvePuzzle(startPuzzleString) {
                 levelTwoMethods(solvePuzzle, solvePossible);
                 if(!solved) {
                     levelThreeMethods(solvePuzzle, solvePossible);
+                    if (!solved) {
+                        levelFourMethods(solvePuzzle, solvePossible);
+                    }
                 }
             }
         }
@@ -64,6 +70,10 @@ function resetMetrics() {
     possibleChanges = [];
     mainPossibleChanges = [];
     totalChanges = [];
+}
+
+function resetGuessAndCheckMetrics() {
+    guessAndCheckTotalChanges = [];
 }
 
 function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibleChanges, totalChanges) {
@@ -255,7 +265,9 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
             case "Jellyfish - Column":
                 jellyfishColumnChanges++;
                 break;
-            case "Guess and Check":
+            case "Guess and Check - Solved":
+            case "Guess and Check - Contradiction":
+            case "Guess and Check - Same Number":
                 guessAndCheckChanges++;
                 break;
             case "Brute Force":
@@ -523,6 +535,9 @@ function isSolved(intPuzzle) {
     return count === 81 && check(intPuzzle);
 }
 
+function isValid(possible) {
+    return possible.every(cell => cell.options.length > 0);
+}
 function updateSolved(intPuzzle) {
     solved = isSolved(intPuzzle);
 }
@@ -530,22 +545,22 @@ function updateSolved(intPuzzle) {
 function levelZeroMethods(intPuzzle, possible) {
     let changes;
     let tempLevelZeroChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += oneInARowPossibleCheck(intPuzzle, possible);
         changes += oneInAColumnPossibleCheck(intPuzzle, possible);
         changes += oneInAGroupPossibleCheck(intPuzzle, possible);
         changes += oneInACellPossibleCheck(intPuzzle, possible);
         tempLevelZeroChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempLevelZeroChanges;
 }
 
 function oneInARowPossibleCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempChanges = 0;
+    let tempChanges;
 
-    do {
+    while (tempChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempChanges = 0;
         for (let row = 0; row < 9; row++) {
             const rowCells = possible.filter(cell => cell.row === row);
@@ -571,6 +586,15 @@ function oneInARowPossibleCheck(intPuzzle, possible) {
                             method: "One in a Row"  
                         });
                         updateSolved(intPuzzle);
+                    } else if (isGuessAndCheck) {
+                        guessAndCheckTotalChanges.push({
+                            method: "One in a Row",
+                            description: "The number " + num + " is only possible in row " + 
+                                (cell.row + 1) + ", column " + (cell.column + 1),
+                            options: [String(num)],
+                            rows: [cell.row],
+                            columns: [cell.column]
+                        });
                     }
 
                     updateShadowPossible(num, cell, possible);
@@ -579,16 +603,16 @@ function oneInARowPossibleCheck(intPuzzle, possible) {
             }
         }
         changes += tempChanges;
-    } while (tempChanges !== 0 && !solved);
+    }
     
     return changes;
 }
 
 function oneInAColumnPossibleCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempChanges = 0;
+    let tempChanges;
 
-    do {
+    while (tempChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempChanges = 0;
         for (let column = 0; column < 9; column++) {
             const columnCells = possible.filter(cell => cell.column === column);
@@ -614,6 +638,15 @@ function oneInAColumnPossibleCheck(intPuzzle, possible) {
                             method: "One in a Column"
                         });
                         updateSolved(intPuzzle);
+                    } else if (isGuessAndCheck) {
+                        guessAndCheckTotalChanges.push({
+                            method: "One in a Column",
+                            description: "The number " + num + " is only possible in column " + 
+                                (cell.column + 1) + ", row " + (cell.row + 1),
+                            options: [String(num)],
+                            rows: [cell.row],
+                            columns: [cell.column]
+                        });
                     }
 
                     updateShadowPossible(num, cell, possible);
@@ -622,16 +655,16 @@ function oneInAColumnPossibleCheck(intPuzzle, possible) {
             }
         }
         changes += tempChanges;
-    } while (tempChanges !== 0 && !solved);
+    }
     
     return changes;
 }
 
 function oneInAGroupPossibleCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempChanges = 0;
+    let tempChanges;
 
-    do {
+    while (tempChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempChanges = 0;
         for (let group = 0; group < 9; group++) {
             const groupCells = possible.filter(cell => cell.group === group);
@@ -657,6 +690,15 @@ function oneInAGroupPossibleCheck(intPuzzle, possible) {
                             method: "One in a Group"
                         });
                         updateSolved(intPuzzle);
+                    } else if (isGuessAndCheck) {
+                        guessAndCheckTotalChanges.push({
+                            method: "One in a Group",
+                            description: "The number " + num + " is only possible in row " + 
+                                (cell.row + 1) + ", column " + (cell.column + 1) + " in group " + (cell.group + 1),
+                            options: [String(num)],
+                            rows: [cell.row],
+                            columns: [cell.column]
+                        });
                     }
 
                     updateShadowPossible(num, cell, possible);
@@ -665,19 +707,21 @@ function oneInAGroupPossibleCheck(intPuzzle, possible) {
             }
         }
         changes += tempChanges;
-    } while (tempChanges !== 0 && !solved);
+    }
     
     return changes;
 }
 
 function oneInACellPossibleCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempChanges = 0;
+    let tempChanges;
 
-    do {
+    while (tempChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempChanges = 0;
         const oneOptionCells = possible.filter(cell => cell.options.length === 1);
-        oneOptionCells.forEach((cell) => {
+        if (oneOptionCells.length > 0) {
+            // Get the first cell and make the change
+            const cell = oneOptionCells[0];
             const cellValue = cell.options[0];
             intPuzzle[cell.row * 9 + cell.column] = cellValue;
             possible.splice(possible.findIndex(p => p.row === cell.row && p.column === cell.column), 1);
@@ -697,13 +741,22 @@ function oneInACellPossibleCheck(intPuzzle, possible) {
                     method: "One in a Cell"
                 });
                 updateSolved(intPuzzle);
+            } else if (isGuessAndCheck) {
+                guessAndCheckTotalChanges.push({
+                    method: "One in a Cell",
+                    description: "The number " + cellValue + " is the only possible option for cell " + 
+                        (cell.row + 1) + ", column " + (cell.column + 1),
+                    options: [String(cellValue)],
+                    rows: [cell.row],
+                    columns: [cell.column]
+                });
             }
 
             updateShadowPossible(cellValue, cell, possible);
             tempChanges++;
-        });
+        }
         changes += tempChanges;
-    } while (tempChanges !== 0 && !solved);
+    }
     
     return changes;
 }
@@ -711,34 +764,34 @@ function oneInACellPossibleCheck(intPuzzle, possible) {
 function levelOneMethods(intPuzzle, possible) {
     let changes;
     let tempLevelOneChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += phantomChecks(intPuzzle, possible);
         changes += nakedPairChecks(intPuzzle, possible);
         changes += hiddenPairChecks(intPuzzle, possible);
         tempLevelOneChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempLevelOneChanges;
 }
 
 function phantomChecks(intPuzzle, possible) {
     let changes;
     let tempPhantomChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += rowPhantomCheck(intPuzzle, possible);
         changes += columnPhantomCheck(intPuzzle, possible);
         changes += groupPhantomCheck(intPuzzle, possible);
         tempPhantomChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempPhantomChanges;
 }
 
 function rowPhantomCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempRowPhantomChanges = 0;
+    let tempRowPhantomChanges;
 
-    do {
+    while (tempRowPhantomChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempRowPhantomChanges = 0;
         
         // For each group
@@ -793,6 +846,14 @@ function rowPhantomCheck(intPuzzle, possible) {
                                     type: "possible",
                                     method: "Phantom - Row"
                                 });
+                            } else if (isGuessAndCheck) {
+                                guessAndCheckTotalChanges.push({
+                                    method: "Phantom - Row",
+                                    description: description,
+                                    options: removedNumbers,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
                             }
                             tempRowPhantomChanges++;
 
@@ -804,16 +865,16 @@ function rowPhantomCheck(intPuzzle, possible) {
             }
         }
         changes += tempRowPhantomChanges;
-    } while (tempRowPhantomChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function columnPhantomCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempColumnPhantomChanges = 0;
+    let tempColumnPhantomChanges;
 
-    do {
+    while (tempColumnPhantomChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempColumnPhantomChanges = 0;
         
         // For each group
@@ -869,6 +930,14 @@ function columnPhantomCheck(intPuzzle, possible) {
                                     type: "possible",
                                     method: "Phantom - Column"
                                 });
+                            } else if (isGuessAndCheck) {
+                                guessAndCheckTotalChanges.push({
+                                    method: "Phantom - Column",
+                                    description: description,
+                                    options: removedNumbers,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
                             }
                             tempColumnPhantomChanges++;
 
@@ -880,16 +949,16 @@ function columnPhantomCheck(intPuzzle, possible) {
             }
         }
         changes += tempColumnPhantomChanges;
-    } while (tempColumnPhantomChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function groupPhantomCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempGroupPhantomChanges = 0;
+    let tempGroupPhantomChanges;
 
-    do {
+    while (tempGroupPhantomChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempGroupPhantomChanges = 0;
         
         // For each row and column
@@ -998,6 +1067,14 @@ function groupPhantomCheck(intPuzzle, possible) {
                                     type: "possible",
                                     method: "Phantom - Group"
                                 });
+                            } else if (isGuessAndCheck) {
+                                guessAndCheckTotalChanges.push({
+                                    method: "Phantom - Group",
+                                    description: description,
+                                    options: removedNumbers,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
                             }
                             tempGroupPhantomChanges++;
 
@@ -1009,30 +1086,30 @@ function groupPhantomCheck(intPuzzle, possible) {
             }
         }
         changes += tempGroupPhantomChanges;
-    } while (tempGroupPhantomChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function nakedPairChecks(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempNakedPairChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += nakedPairCheck(intPuzzle, possible, "row");
         changes += nakedPairCheck(intPuzzle, possible, "column");
         changes += nakedPairCheck(intPuzzle, possible, "group");
         tempNakedPairChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
 
     return tempNakedPairChanges;
 }
 
 function nakedPairCheck(intPuzzle, possible, checkType) {
     let changes = 0;
-    let tempNakedPairChanges = 0;
+    let tempNakedPairChanges;
 
-    do {
+    while (tempNakedPairChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempNakedPairChanges = 0;
         
         // For each row, column, or group
@@ -1096,6 +1173,14 @@ function nakedPairCheck(intPuzzle, possible, checkType) {
                                     type: "possible",
                                     method: "Naked Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
                                 });
+                            } else if (isGuessAndCheck) {
+                                guessAndCheckTotalChanges.push({
+                                    method: "Naked Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                    description: description,
+                                    options: removedOptions,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
                             }
                             tempNakedPairChanges++;
                             
@@ -1108,29 +1193,29 @@ function nakedPairCheck(intPuzzle, possible, checkType) {
         }
         
         changes += tempNakedPairChanges;
-    } while (tempNakedPairChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function hiddenPairChecks(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempHiddenPairChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += hiddenPairCheck(intPuzzle, possible, "row");
         changes += hiddenPairCheck(intPuzzle, possible, "column");
         changes += hiddenPairCheck(intPuzzle, possible, "group");
         tempHiddenPairChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempHiddenPairChanges;
 }
 
 function hiddenPairCheck(intPuzzle, possible, checkType) {
     let changes = 0;
-    let tempHiddenPairChanges = 0;
+    let tempHiddenPairChanges;
 
-    do {
+    while (tempHiddenPairChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempHiddenPairChanges = 0;
 
         // For each row, column, or group
@@ -1203,6 +1288,14 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
                                     type: "possible",
                                     method: "Hidden Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
                                 });
+                            } else if (isGuessAndCheck) {
+                                guessAndCheckTotalChanges.push({
+                                    method: "Hidden Pair - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                    description: description,
+                                    options: removedOptions,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
                             }
                             tempHiddenPairChanges++;
 
@@ -1214,15 +1307,15 @@ function hiddenPairCheck(intPuzzle, possible, checkType) {
             }
         }
         changes += tempHiddenPairChanges;
-    } while (tempHiddenPairChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function levelTwoMethods(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempLevelTwoChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += nakedTripleChecks(intPuzzle, possible);
         changes += hiddenTripleChecks(intPuzzle, possible);
@@ -1230,28 +1323,28 @@ function levelTwoMethods(intPuzzle, possible) {
         changes += xWingChecks(intPuzzle, possible);
         changes += yWingChecks(intPuzzle, possible);
         tempLevelTwoChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempLevelTwoChanges;
 }
 
 function nakedTripleChecks(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempNakedTripleChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += nakedTripleCheck(intPuzzle, possible, "row");
         changes += nakedTripleCheck(intPuzzle, possible, "column");
         changes += nakedTripleCheck(intPuzzle, possible, "group");
         tempNakedTripleChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempNakedTripleChanges;
 }
 
 function nakedTripleCheck(intPuzzle, possible, checkType) {
     let changes = 0;
-    let tempNakedTripleChanges = 0;
+    let tempNakedTripleChanges;
 
-    do {
+    while (tempNakedTripleChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempNakedTripleChanges = 0;
         
         // For each row, column, or group
@@ -1319,12 +1412,20 @@ function nakedTripleCheck(intPuzzle, possible, checkType) {
                                         type: "possible",
                                         method: "Naked Triple - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
                                     });
+                                } else if (isGuessAndCheck) {
+                                    guessAndCheckTotalChanges.push({
+                                        method: "Naked Triple - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                        description: description,
+                                        options: removedOptions,
+                                        rows: removedRows,
+                                        columns: removedColumns
+                                    });
                                 }
                                 tempNakedTripleChanges++;
                                 
                                 // Run previous methods to see if the puzzle can be solved
                                 tempNakedTripleChanges += levelZeroMethods(intPuzzle, possible);
-                                if (!solved) {
+                                if (!isSolved(intPuzzle) && isValid(possible)) {
                                     tempNakedTripleChanges += levelOneMethods(intPuzzle, possible);
                                 }
                             }
@@ -1334,29 +1435,29 @@ function nakedTripleCheck(intPuzzle, possible, checkType) {
             }
         }
         changes += tempNakedTripleChanges;
-    } while (tempNakedTripleChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function hiddenTripleChecks(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempHiddenTripleChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += hiddenTripleCheck(intPuzzle, possible, "row");
         changes += hiddenTripleCheck(intPuzzle, possible, "column");
         changes += hiddenTripleCheck(intPuzzle, possible, "group");
         tempHiddenTripleChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempHiddenTripleChanges;
 }
 
 function hiddenTripleCheck(intPuzzle, possible, checkType) {
     let changes = 0;
-    let tempHiddenTripleChanges = 0;
+    let tempHiddenTripleChanges;
 
-    do {
+    while (tempHiddenTripleChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempHiddenTripleChanges = 0;
 
         // For each row, column, or group
@@ -1427,12 +1528,20 @@ function hiddenTripleCheck(intPuzzle, possible, checkType) {
                                         type: "possible",
                                         method: "Hidden Triple - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
                                     });
+                                } else if (isGuessAndCheck) {
+                                    guessAndCheckTotalChanges.push({
+                                        method: "Hidden Triple - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                        description: description,
+                                        options: removedOptions,
+                                        rows: removedRows,
+                                        columns: removedColumns
+                                    });
                                 }
                                 tempHiddenTripleChanges++;
 
                                 // Run previous methods to see if the puzzle can be solved
                                 tempHiddenTripleChanges += levelZeroMethods(intPuzzle, possible);
-                                if (!solved) {
+                                if (!isSolved(intPuzzle) && isValid(possible)) {
                                     tempHiddenTripleChanges += levelOneMethods(intPuzzle, possible);
                                 }
                             }
@@ -1442,29 +1551,29 @@ function hiddenTripleCheck(intPuzzle, possible, checkType) {
             }
         }
         changes += tempHiddenTripleChanges;
-    } while (tempHiddenTripleChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function nakedQuadChecks(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempNakedQuadChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += nakedQuadCheck(intPuzzle, possible, "row");
         changes += nakedQuadCheck(intPuzzle, possible, "column");
         changes += nakedQuadCheck(intPuzzle, possible, "group");
         tempNakedQuadChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempNakedQuadChanges;
 }
 
 function nakedQuadCheck(intPuzzle, possible, checkType) {
     let changes = 0;
-    let tempNakedQuadChanges = 0;
+    let tempNakedQuadChanges;
 
-    do {
+    while (tempNakedQuadChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempNakedQuadChanges = 0;
         
         // For each row, column, or group
@@ -1534,12 +1643,20 @@ function nakedQuadCheck(intPuzzle, possible, checkType) {
                                             type: "possible",
                                             method: "Naked Quad - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
                                         });
+                                    } else if (isGuessAndCheck) {
+                                        guessAndCheckTotalChanges.push({
+                                            method: "Naked Quad - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                            description: description,
+                                            options: removedOptions,
+                                            rows: removedRows,
+                                            columns: removedColumns
+                                        });
                                     }
                                     tempNakedQuadChanges++;
                                     
                                     // Run previous methods to see if the puzzle can be solved
                                     tempNakedQuadChanges += levelZeroMethods(intPuzzle, possible);
-                                    if (!solved) {
+                                    if (!isSolved(intPuzzle) && isValid(possible)) {
                                         tempNakedQuadChanges += levelOneMethods(intPuzzle, possible);
                                     }
                                 }
@@ -1550,28 +1667,28 @@ function nakedQuadCheck(intPuzzle, possible, checkType) {
             }
         }
         changes += tempNakedQuadChanges;
-    } while (tempNakedQuadChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function xWingChecks(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempXWingChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += xWingCheck(intPuzzle, possible, "row");
         changes += xWingCheck(intPuzzle, possible, "column");
         tempXWingChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempXWingChanges;
 }
 
 function xWingCheck(intPuzzle, possible, checkType) {
     let changes = 0;
-    let tempXWingChanges = 0;
+    let tempXWingChanges;
 
-    do {
+    while (tempXWingChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempXWingChanges = 0;
         const otherCheckType = checkType === 'row' ? 'column' : 'row';
 
@@ -1654,12 +1771,20 @@ function xWingCheck(intPuzzle, possible, checkType) {
                                     type: "possible",
                                     method: "X Wing - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
                                 });
+                            } else if (isGuessAndCheck) {
+                                guessAndCheckTotalChanges.push({
+                                    method: "X Wing - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                    description: description,
+                                    options: removedOptions,
+                                    rows: removedRows,
+                                    columns: removedColumns
+                                });
                             }
                             tempXWingChanges++;
                             
                             // Run previous methods to see if the puzzle can be solved
                             tempXWingChanges += levelZeroMethods(intPuzzle, possible);
-                            if (!solved) {
+                            if (!isSolved(intPuzzle) && isValid(possible)) {
                                 tempXWingChanges += levelOneMethods(intPuzzle, possible);
                             }
                         }
@@ -1668,29 +1793,29 @@ function xWingCheck(intPuzzle, possible, checkType) {
             }
         }
         changes += tempXWingChanges;
-    } while (tempXWingChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function yWingChecks(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempYWingChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += yWingCheck(intPuzzle, possible, "row", "column");
         changes += yWingCheck(intPuzzle, possible, "row", "group");
         changes += yWingCheck(intPuzzle, possible, "column", "group");
         tempYWingChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempYWingChanges;
 }
 
 function yWingCheck(intPuzzle, possible, wing1, wing2) {
     let changes = 0;
-    let tempYWingChanges = 0;
+    let tempYWingChanges;
 
-    do {
+    while (tempYWingChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempYWingChanges = 0;
         
         // Find all cells with exactly two options
@@ -1785,12 +1910,20 @@ function yWingCheck(intPuzzle, possible, wing1, wing2) {
                                 type: "possible",
                                 method: "Y Wing - " + wing1.charAt(0).toUpperCase() + wing1.slice(1) + " + " + wing2.charAt(0).toUpperCase() + wing2.slice(1)
                             });
+                        } else if (isGuessAndCheck) {
+                            guessAndCheckTotalChanges.push({
+                                method: "Y Wing - " + wing1.charAt(0).toUpperCase() + wing1.slice(1) + " + " + wing2.charAt(0).toUpperCase() + wing2.slice(1),
+                                description: description,
+                                options: removedOptions,
+                                rows: removedRows,
+                                columns: removedColumns
+                            });
                         }
                         tempYWingChanges++;
                         
                         // Run previous methods to see if the puzzle can be solved
                         tempYWingChanges += levelZeroMethods(intPuzzle, possible);
-                        if (!solved) {
+                        if (!isSolved(intPuzzle) && isValid(possible)) {
                             tempYWingChanges += levelOneMethods(intPuzzle, possible);
                         }
                     }
@@ -1798,30 +1931,30 @@ function yWingCheck(intPuzzle, possible, wing1, wing2) {
             }
         }
         changes += tempYWingChanges;
-    } while (tempYWingChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function levelThreeMethods(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempLevelThreeChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += xyChainCheck(intPuzzle, possible);
         changes += rectangleCheck(intPuzzle, possible);
         changes += swordfishChecks(intPuzzle, possible);
         changes += jellyfishChecks(intPuzzle, possible);
         tempLevelThreeChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempLevelThreeChanges;
 }
 
 function xyChainCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempXYChainChanges = 0;
+    let tempXYChainChanges;
     
-    do {
+    while (tempXYChainChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempXYChainChanges = 0;
 
         // Find all cells with exactly two options
@@ -1877,14 +2010,22 @@ function xyChainCheck(intPuzzle, possible) {
                             type: "possible",
                             method: "XY Chain"
                         });
+                    } else if (isGuessAndCheck) {
+                        guessAndCheckTotalChanges.push({
+                            method: "XY Chain",
+                            description: description,
+                            options: removedOptions,
+                            rows: removedRows,
+                            columns: removedColumns
+                        });
                     }
                     tempXYChainChanges++;
                     
                     // Run previous methods to see if the puzzle can be solved
                     tempXYChainChanges += levelZeroMethods(intPuzzle, possible);
-                    if (!solved) {
+                    if (!isSolved(intPuzzle) && isValid(possible)) {
                         tempXYChainChanges += levelOneMethods(intPuzzle, possible);
-                        if (!solved) {
+                        if (!isSolved(intPuzzle) && isValid(possible)) {
                             tempXYChainChanges += levelTwoMethods(intPuzzle, possible);
                         }
                     }
@@ -1892,7 +2033,7 @@ function xyChainCheck(intPuzzle, possible) {
             }
         }
         
-    } while (tempXYChainChanges !== 0 && !solved);
+    }
 
     return changes;
 }
@@ -1950,9 +2091,9 @@ function xyChain(possible, twoOptionCells, currentCell, chain, targetNumber, oth
 
 function rectangleCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempRectangleChanges = 0;
+    let tempRectangleChanges;
 
-    do {
+    while (tempRectangleChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempRectangleChanges = 0;
 
         const groupCombinations = [
@@ -2052,14 +2193,22 @@ function rectangleCheck(intPuzzle, possible) {
                             type: "possible",
                             method: "Rectangle"
                         });
+                    } else if (isGuessAndCheck) {
+                        guessAndCheckTotalChanges.push({
+                            method: "Rectangle",
+                            description: description,
+                            options: removedOptions,
+                            rows: removedRows,
+                            columns: removedColumns
+                        });
                     }
                     tempRectangleChanges++;
 
                     // Run previous methods to see if the puzzle can be solved
                     tempRectangleChanges += levelZeroMethods(intPuzzle, possible);
-                    if (!solved) {
+                    if (!isSolved(intPuzzle) && isValid(possible)) {
                         tempRectangleChanges += levelOneMethods(intPuzzle, possible);
-                        if (!solved) {
+                        if (!isSolved(intPuzzle) && isValid(possible)) {
                             tempRectangleChanges += levelTwoMethods(intPuzzle, possible);
                         }
                     }
@@ -2067,7 +2216,7 @@ function rectangleCheck(intPuzzle, possible) {
             }
         }
         changes += tempRectangleChanges;
-    } while (tempRectangleChanges !== 0 && !solved);
+    }
 
     return changes;
 }
@@ -2223,22 +2372,22 @@ function checkForPseudoRectangle(tCells) {
 }
 
 function swordfishChecks(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempSwordfishChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += swordfishCheck(intPuzzle, possible, "row");
         changes += swordfishCheck(intPuzzle, possible, "column");
         tempSwordfishChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempSwordfishChanges;
 }
 
 function swordfishCheck(intPuzzle, possible, checkType) {
     let changes = 0;
-    let tempSwordfishChanges = 0;
+    let tempSwordfishChanges;
 
-    do {
+    while (tempSwordfishChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempSwordfishChanges = 0;
         const otherCheckType = checkType === 'row' ? 'column' : 'row';
 
@@ -2323,6 +2472,7 @@ function swordfishCheck(intPuzzle, possible, checkType) {
                                     });
 
                                     if (!isGuessAndCheck && !isBruteForce) {
+                                        console.log("** Swordfish Found **");
                                         possibleChanges.push({
                                             method: "Swordfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
                                             order: possibleChanges.length,
@@ -2335,13 +2485,24 @@ function swordfishCheck(intPuzzle, possible, checkType) {
                                             type: "possible",
                                             method: "Swordfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
                                         });
+                                    } else if (isGuessAndCheck) {
+                                        guessAndCheckTotalChanges.push({
+                                            method: "Swordfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                            description: description,
+                                            options: removedOptions,
+                                            rows: removedRows,
+                                            columns: removedColumns
+                                        });
                                     }
                                     tempSwordfishChanges++;
                                     
                                     // Run previous methods to see if the puzzle can be solved
                                     tempSwordfishChanges += levelZeroMethods(intPuzzle, possible);
-                                    if (!solved) {
+                                    if (!isSolved(intPuzzle) && isValid(possible)) {
                                         tempSwordfishChanges += levelOneMethods(intPuzzle, possible);
+                                        if (!isSolved(intPuzzle) && isValid(possible)) {
+                                            tempSwordfishChanges += levelTwoMethods(intPuzzle, possible);
+                                        }
                                     }
                                 }
                             }
@@ -2351,28 +2512,28 @@ function swordfishCheck(intPuzzle, possible, checkType) {
             }
         }
         changes += tempSwordfishChanges;
-    } while (tempSwordfishChanges !== 0 && !solved);
+    }
 
     return changes;
 }
 
 function jellyfishChecks(intPuzzle, possible) {
-    let changes = 0;
+    let changes;
     let tempJellyfishChanges = 0;
-    do {
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         changes = 0;
         changes += jellyfishCheck(intPuzzle, possible, "row");
         changes += jellyfishCheck(intPuzzle, possible, "column");
         tempJellyfishChanges += changes;
-    } while (changes !== 0 && !solved);
+    }
     return tempJellyfishChanges;
 }
 
 function jellyfishCheck(intPuzzle, possible, checkType) {
     let changes = 0;
-    let tempJellyfishChanges = 0;
+    let tempJellyfishChanges;
 
-    do {
+    while (tempJellyfishChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempJellyfishChanges = 0;
         const otherCheckType = checkType === 'row' ? 'column' : 'row';
 
@@ -2473,13 +2634,24 @@ function jellyfishCheck(intPuzzle, possible, checkType) {
                                                 type: "possible",
                                                 method: "Jellyfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1)
                                             });
+                                        } else if (isGuessAndCheck) {
+                                            guessAndCheckTotalChanges.push({
+                                                method: "Jellyfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
+                                                description: description,
+                                                options: removedOptions,
+                                                rows: removedRows,
+                                                columns: removedColumns
+                                            });
                                         }
                                         tempJellyfishChanges++;
                                         
                                         // Run previous methods to see if the puzzle can be solved
                                         tempJellyfishChanges += levelZeroMethods(intPuzzle, possible);
-                                        if (!solved) {
+                                        if (!isSolved(intPuzzle) && isValid(possible)) {
                                             tempJellyfishChanges += levelOneMethods(intPuzzle, possible);
+                                            if (!isSolved(intPuzzle) && isValid(possible)) {
+                                                tempJellyfishChanges += levelTwoMethods(intPuzzle, possible);
+                                            }
                                         }
                                     }
                                 }
@@ -2490,7 +2662,244 @@ function jellyfishCheck(intPuzzle, possible, checkType) {
             }
         }
         changes += tempJellyfishChanges;
-    } while (tempJellyfishChanges !== 0 && !solved);
+    }
+
+    return changes;
+}
+
+function levelFourMethods(intPuzzle, possible) {
+    let changes;
+    let tempLevelFourChanges = 0;
+    while (changes !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
+        changes = 0;
+        changes += guessAndCheck(intPuzzle, possible);
+        tempLevelFourChanges += changes;
+    }
+    return tempLevelFourChanges;
+}
+
+function guessAndCheck(intPuzzle, possible) {
+    let changes = 0;
+    let tempGuessAndCheckChanges = 0;
+    let tempSolved;
+    let contradictionFound;
+    let sameNumberFound;
+    
+
+    do {
+        tempGuessAndCheckChanges = 0;
+        tempSolved = false;
+        contradictionFound = false;
+        sameNumberFound = false;
+
+        // Set isGuessAndCheck to true
+        isGuessAndCheck = true;
+
+        for (let optionCount = 2; optionCount < 10 && !tempSolved && !contradictionFound && !sameNumberFound; optionCount++) {
+            // Get all of the unsolved cells that have the correct number of options
+            const cellsToCheck = possible.filter(cell => cell.options.length === optionCount);
+
+            if (cellsToCheck.length === 0) continue;
+
+            // For each unsolved cell, try each of its options
+            for (const cell of cellsToCheck) {
+                if (tempSolved || contradictionFound || sameNumberFound) break;
+
+                // Intialize an array to store the results of each guess
+                const clonePuzzleResults = [];
+
+                // Try each of the options
+                for (const option of [...cell.options]) {
+                    if (tempSolved || contradictionFound) break;
+
+                    // Delete after testing
+                    if (cell.row === 3 && cell.column === 6 && option === 9) {
+                        debugger;
+                    };
+
+                    // Reset guess and check total changes
+                    resetGuessAndCheckMetrics();
+
+                    // Clone the current puzzle
+                    const clonePuzzle = [...intPuzzle];
+                    const clonePossible = possible.map(c => ({
+                        row: c.row,
+                        column: c.column,
+                        group: c.group,
+                        options: [...c.options]
+                    }));    
+
+                    // Set the current option as the answer
+                    clonePuzzle[cell.row*9 + cell.column] = option;
+                    clonePossible.splice(clonePossible.findIndex(p => p.row === cell.row && p.column === cell.column), 1);
+                    updateShadowPossible(option, cell, clonePossible);
+
+                    // Solve the clone as much as possible using all previous methods
+                    levelZeroMethods(clonePuzzle, clonePossible);
+                    if (!isSolved(clonePuzzle) && isValid(clonePossible)) {
+                        levelOneMethods(clonePuzzle, clonePossible);
+                        if (!isSolved(clonePuzzle) && isValid(clonePossible)) {
+                            levelTwoMethods(clonePuzzle, clonePossible);
+                            if (!isSolved(clonePuzzle) && isValid(clonePossible)) {
+                                levelThreeMethods(clonePuzzle, clonePossible);
+                            }
+                        }
+                    }
+
+                    // Store the clone puzzle results
+                    clonePuzzleResults.push(clonePuzzle);
+
+                    // Check to see if this guess solved the puzzle
+                    if (isSolved(clonePuzzle)) {
+                        // Remove all other options from the cell so previous methods can solve the puzzle
+                        const optionsToRemove = cell.options.filter(opt => opt !== option);
+                        
+                        let description = "Making row " + (cell.row+1) + ", column " + (cell.column+1) + " the number " + option + " solved the puzzle." + 
+                            "\nTherefore, the following options were removed from the cell:";
+                        let removedOptions = [];
+                        let removedRows = [];
+                        let removedColumns = [];
+
+                        optionsToRemove.forEach(opt => {
+                            const index = cell.options.indexOf(opt);
+                            cell.options.splice(index, 1);
+
+                            removedOptions.push(opt);
+                            removedRows.push(cell.row);
+                            removedColumns.push(cell.column);
+                            description += "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + opt;
+                            
+                        });
+
+                        if (!isBruteForce) {
+                            possibleChanges.push({
+                                method: "Guess and Check - Solved",
+                                order: possibleChanges.length,
+                                description: description,
+                                options: removedOptions,
+                                rows: removedRows,
+                                columns: removedColumns
+                            });
+                            totalChanges.push({
+                                type: "possible",
+                                method: "Guess and Check - Solved"
+                            });
+                        }
+                        tempGuessAndCheckChanges++;
+                        tempSolved = true;
+                        break;
+                    } else if (!isValid(clonePossible)) {
+                        // Remove the current option from the cell
+                        const index = cell.options.indexOf(option);
+                        cell.options.splice(index, 1);
+
+                        contradictionFound = true;
+                        let description = "Making row " + (cell.row+1) + ", column " + (cell.column+1) + " the number " + option + " leads to a contradiction. " + 
+                            "\nTherefore, the following options were removed from the cell:" + 
+                            "\nRow " + (cell.row + 1) + ", Column " + (cell.column + 1) + ": " + option;
+                        
+                        if (!isBruteForce) {
+                            possibleChanges.push({
+                                method: "Guess and Check - Contradiction",
+                                order: possibleChanges.length,
+                                description: description,
+                                options: [option],
+                                rows: [cell.row],
+                                columns: [cell.column]
+                            });
+                            totalChanges.push({
+                                type: "possible",
+                                method: "Guess and Check - Contradiction"
+                            });
+                        }
+                        tempGuessAndCheckChanges++;
+                        break;
+                    }
+                }
+                    
+                // Check to see if any cells resulted in the same number with all guesses
+                if (!tempSolved && !contradictionFound && clonePuzzleResults.length > 1) {
+                    // Get all indices where value is 0
+                    const zeroIndices = intPuzzle.reduce((indices, value, index) => {
+                        if (value === 0) indices.push(index);
+                        return indices;
+                    }, []);
+
+                    for (const index of zeroIndices) {
+                        // Check if all clone puzzles have the same non-zero value at this index
+                        const firstValue = clonePuzzleResults[0][index];
+                        const sameNumber = firstValue !== 0 && clonePuzzleResults.every(puzzle => puzzle[index] === firstValue);
+
+                        if (sameNumber) {
+                            // Find the cell in possible array that corresponds to this index
+                            const row = Math.floor(index / 9);
+                            const column = index % 9;
+                            const cellToChange = possible.find(c => c.row === row && c.column === column);
+                            
+                            if (cellToChange) {
+                                // Remove all other options from this cell
+                                const optionsToRemove = cellToChange.options.filter(opt => opt !== firstValue);
+                                if (optionsToRemove.length === 0) continue;
+
+                                sameNumberFound = true;
+                                
+                                let description = "Making row " + (cell.row+1) + ", column " + (cell.column+1) + " all possible options leads to row " + (row+1) + 
+                                    ", column " + (column+1) + " being number " + firstValue + " for each option." + 
+                                    "\nTherefore, the following options were removed from the cell:";
+                                let removedOptions = [];
+                                let removedRows = [];
+                                let removedColumns = [];
+                                
+                                optionsToRemove.forEach(opt => {
+                                    const optIndex = cellToChange.options.indexOf(opt);
+                                    cellToChange.options.splice(optIndex, 1);
+                                    
+                                    removedOptions.push(opt);
+                                    removedRows.push(row);
+                                    removedColumns.push(column);
+                                    description += "\nRow " + (row + 1) + ", Column " + (column + 1) + ": " + opt;
+                                });
+                                
+                                if (!isBruteForce) {
+                                    possibleChanges.push({
+                                        method: "Guess and Check - Same Number",
+                                        order: possibleChanges.length,
+                                        description: description,
+                                        options: removedOptions,
+                                        rows: removedRows,
+                                        columns: removedColumns
+                                    });
+                                    totalChanges.push({
+                                        type: "possible",
+                                        method: "Guess and Check - Same Number"
+                                    });
+                                }
+                                tempGuessAndCheckChanges++;
+                                break;
+                            }
+                        }
+                    }
+                }       
+            }
+        }
+        
+        // Set isGuessAndCheck to false when updating the actual puzzle
+        isGuessAndCheck = false;
+
+        // Run previous methods to see if the puzzle can be solved
+        tempGuessAndCheckChanges += levelZeroMethods(intPuzzle, possible);
+        if (!solved) {
+            tempGuessAndCheckChanges += levelOneMethods(intPuzzle, possible);
+            if (!solved) {
+                tempGuessAndCheckChanges += levelTwoMethods(intPuzzle, possible);
+                if (!solved) {
+                    tempGuessAndCheckChanges += levelThreeMethods(intPuzzle, possible);
+                }
+            }
+        }
+
+        changes += tempGuessAndCheckChanges;
+    } while (tempGuessAndCheckChanges !== 0 && !solved);
 
     return changes;
 }
