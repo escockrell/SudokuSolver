@@ -2472,7 +2472,6 @@ function swordfishCheck(intPuzzle, possible, checkType) {
                                     });
 
                                     if (!isGuessAndCheck && !isBruteForce) {
-                                        console.log("** Swordfish Found **");
                                         possibleChanges.push({
                                             method: "Swordfish - " + checkType.charAt(0).toUpperCase() + checkType.slice(1),
                                             order: possibleChanges.length,
@@ -2675,18 +2674,165 @@ function levelFourMethods(intPuzzle, possible) {
         changes += guessAndCheck(intPuzzle, possible);
         tempLevelFourChanges += changes;
     }
+
+    // If we make it here, we have to use brute force
+    if (!isSolved(intPuzzle) && isValid(possible)) {
+        // Clone the current puzzle state
+        const clonePuzzle = [...intPuzzle];
+        const clonePossible = possible.map(c => ({
+            row: c.row,
+            column: c.column,
+            group: c.group,
+            options: [...c.options]
+        }));
+
+        isBruteForce = true;
+
+        // Use brute force to find a solution
+        const solution = bruteForce(clonePuzzle, clonePossible);
+
+        isBruteForce = false;
+
+        if (solution) {
+            let description = "Eliminating the highlighted possible options makes the puzzle solvable using previous methods.";
+            let removedOptions = [];
+            let removedRows = [];
+            let removedColumns = [];
+
+            // Update possible options based on the solution
+            for (let i = 0; i < 81; i++) {
+                if (solution[i] !== 0 && solution[i] !== intPuzzle[i]) {
+                    const row = Math.floor(i / 9);
+                    const column = i % 9;
+                    const cell = possible.find(p => p.row === row && p.column === column);
+                    
+                    if (cell) {
+                        const optionsToRemove = cell.options.filter(opt => opt !== solution[i]);
+                        if (optionsToRemove.length > 0) {
+                            optionsToRemove.forEach(opt => {
+                                const index = cell.options.indexOf(opt);
+                                cell.options.splice(index, 1);
+                                removedOptions.push(opt);
+                                removedRows.push(row);
+                                removedColumns.push(column);
+                            });
+                        }
+                    }
+                }
+            }
+
+            possibleChanges.push({
+                method: "Brute Force",
+                order: possibleChanges.length,
+                description: description,
+                options: removedOptions,
+                rows: removedRows,
+                columns: removedColumns
+            });
+            totalChanges.push({
+                type: "possible",
+                method: "Brute Force"
+            });
+            tempLevelFourChanges++;
+
+            // Call previous methods again to solve the puzzle
+            tempLevelFourChanges += levelZeroMethods(intPuzzle, possible);
+            if (!isSolved(intPuzzle) && isValid(possible)) {
+                tempLevelFourChanges += levelOneMethods(intPuzzle, possible);
+                if (!isSolved(intPuzzle) && isValid(possible)) {
+                    tempLevelFourChanges += levelTwoMethods(intPuzzle, possible);
+                    if (!isSolved(intPuzzle) && isValid(possible)) {
+                        tempLevelFourChanges += levelThreeMethods(intPuzzle, possible);
+                        if (!isSolved(intPuzzle) && isValid(possible)) {
+                            guessAndCheck(intPuzzle, possible);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     return tempLevelFourChanges;
+}
+
+function bruteForce(intPuzzle, possible) {
+    // Find the cell with the fewest options
+    let minOptions = 10;
+    let minCell = null;
+    
+    for (const cell of possible) {
+        if (cell.options.length < minOptions) {
+            minOptions = cell.options.length;
+            minCell = cell;
+        }
+    }
+    
+    // If no cell found or puzzle is solved, return
+    if (!minCell || isSolved(intPuzzle)) {
+        return isSolved(intPuzzle) ? [...intPuzzle] : null;
+    }
+    
+    // Try each option for the cell with fewest options
+    for (const option of minCell.options) {
+        // Clone the current state
+        const clonePuzzle = [...intPuzzle];
+        const clonePossible = possible.map(c => ({
+            row: c.row,
+            column: c.column,
+            group: c.group,
+            options: [...c.options]
+        }));
+        
+        // Set the option
+        clonePuzzle[minCell.row * 9 + minCell.column] = option;
+        clonePossible.splice(clonePossible.findIndex(p => p.row === minCell.row && p.column === minCell.column), 1);
+        
+        // Update shadow possible
+        updateShadowPossible(option, minCell, clonePossible);
+        
+        // Try to solve with this option
+        levelZeroMethods(clonePuzzle, clonePossible);
+        if (!isSolved(clonePuzzle) && isValid(clonePossible)) {
+            levelOneMethods(clonePuzzle, clonePossible);
+            if (!isSolved(clonePuzzle) && isValid(clonePossible)) {
+                levelTwoMethods(clonePuzzle, clonePossible);
+                if (!isSolved(clonePuzzle) && isValid(clonePossible)) {
+                    levelThreeMethods(clonePuzzle, clonePossible);
+                    if (!isSolved(clonePuzzle) && isValid(clonePossible)) {
+                        guessAndCheck(clonePuzzle, clonePossible);
+                    }
+                }
+            }
+        }
+        
+        // If solved, return the solution
+        if (isSolved(clonePuzzle)) {
+            // Reset the game to only have the digits needed to solve the puzzle with previous methods, and return
+            const clonePuzzle = [...intPuzzle];
+            clonePuzzle[minCell.row * 9 + minCell.column] = option;
+            return clonePuzzle;
+        }
+        // If not solved but still valid, try recursive brute force
+        else if (isValid(clonePossible)) {
+            const recursiveSolution = bruteForce(clonePuzzle, clonePossible);
+            if (recursiveSolution) {
+                return recursiveSolution;
+            }
+        }
+    }
+    
+    return null;
 }
 
 function guessAndCheck(intPuzzle, possible) {
     let changes = 0;
-    let tempGuessAndCheckChanges = 0;
+    let tempGuessAndCheckChanges;
     let tempSolved;
     let contradictionFound;
     let sameNumberFound;
     
 
-    do {
+    while (tempGuessAndCheckChanges !== 0 && !isSolved(intPuzzle) && isValid(possible)) {
         tempGuessAndCheckChanges = 0;
         tempSolved = false;
         contradictionFound = false;
@@ -2711,11 +2857,6 @@ function guessAndCheck(intPuzzle, possible) {
                 // Try each of the options
                 for (const option of [...cell.options]) {
                     if (tempSolved || contradictionFound) break;
-
-                    // Delete after testing
-                    if (cell.row === 3 && cell.column === 6 && option === 9) {
-                        debugger;
-                    };
 
                     // Reset guess and check total changes
                     resetGuessAndCheckMetrics();
@@ -2888,18 +3029,18 @@ function guessAndCheck(intPuzzle, possible) {
 
         // Run previous methods to see if the puzzle can be solved
         tempGuessAndCheckChanges += levelZeroMethods(intPuzzle, possible);
-        if (!solved) {
+        if (!isSolved(intPuzzle) && isValid(possible)) {
             tempGuessAndCheckChanges += levelOneMethods(intPuzzle, possible);
-            if (!solved) {
+            if (!isSolved(intPuzzle) && isValid(possible)) {
                 tempGuessAndCheckChanges += levelTwoMethods(intPuzzle, possible);
-                if (!solved) {
+                if (!isSolved(intPuzzle) && isValid(possible)) {
                     tempGuessAndCheckChanges += levelThreeMethods(intPuzzle, possible);
                 }
             }
         }
 
         changes += tempGuessAndCheckChanges;
-    } while (tempGuessAndCheckChanges !== 0 && !solved);
+    }
 
     return changes;
 }

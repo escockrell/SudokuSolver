@@ -344,12 +344,12 @@ const InputPage = () => {
       const startPuzzle196 = "730050406001604000040020000050008007203000008180069030920006000000140009000800500";
       const startPuzzle197 = "001400020604020700250007900400039008009100002002008410000000000070902063006700090";
       const startPuzzle198 = "800000000003600000070090200050007000000045700000100030001000068008500010090000400"; // brute force
-      const startPuzzle149 = "004300000030000900000020000300900000001000500000008006000060000008000090000002100"; // brute force
       const startPuzzle150 = "167400000450600000000015000000007400070000050006800000000560000000004076000001235"; // brute force
+      const startPuzzle199 = "123456789456789123789123456000000000000000000000000000000000000000000000000000000"; // brute force
 
       const startPuzzles = [
+        startPuzzle199,
         // startPuzzle198,
-        startPuzzle149,
         // startPuzzle150,
         /*startPuzzle197,
         startPuzzle194,
@@ -506,7 +506,6 @@ const InputPage = () => {
         startPuzzle146,
         startPuzzle147,
         startPuzzle148,
-        startPuzzle149,
         startPuzzle150,
         startPuzzle151,
         startPuzzle152,
@@ -554,9 +553,11 @@ const InputPage = () => {
 
       let response;
       let response_v2;
+      let solver_wins = 0;
+      let solver_v2_wins = 0;
 
       startPuzzles.forEach(puzzle => {
-        console.log("Solving puzzle: ", puzzle); // TODO: Remove after testing
+        // console.log("Solving puzzle: ", puzzle); // TODO: Remove after testing
         response = solvePuzzle(puzzle);
         response_v2 = solvePuzzle_v2(puzzle);
         
@@ -575,7 +576,15 @@ const InputPage = () => {
         const timeDiff = Math.abs(response_v2.metrics.solveTime - response.metrics.solveTime);
         const winner = response_v2.metrics.solveTime < response.metrics.solveTime ? "Solver_v2" : "Solver";
         console.log(`${winner} wins by ${timeDiff.toFixed(2)} milliseconds`);
+        if (winner === "Solver_v2") {
+          solver_v2_wins++;
+        } else {
+          solver_wins++;
+        }
       });
+
+      console.log("Solver wins: ", solver_wins);
+      console.log("Solver_v2 wins: ", solver_v2_wins);
 
       // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];
