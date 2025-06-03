@@ -45,6 +45,7 @@ export function solvePuzzle(startPuzzleString) {
     const metrics = {
         solved,
         solveTime,
+        difficulty: calculateDifficulty(convertedChanges),
 
         ...convertedChanges
     };
@@ -367,6 +368,25 @@ function convertChangesToMetricsFormat(mainChanges, possibleChanges, mainPossibl
         guessAndCheckChanges,
         bruteForceChanges
     };
+}
+
+function calculateDifficulty(metrics) {
+    if (metrics.levelFourChanges > 0) {
+        return "Impossible";
+    }
+    if (metrics.levelThreeChanges > 0) {
+        return "Expert";
+    }
+    if (metrics.levelTwoChanges > 0) {
+        return "Hard";
+    }
+    if (metrics.levelOneChanges > 0) {
+        return "Intermediate";
+    }
+    if (metrics.levelZeroChanges > 0) {
+        return "Easy";
+    }
+    return null;
 }
 
 function convertPuzzleToIntArray(startPuzzleString) {

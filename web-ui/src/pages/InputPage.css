@@ -62,4 +62,31 @@ h1 {
   border-radius: 4px;
   margin-bottom: 20px;
   text-align: center;
+}
+
+.metrics-display {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metric-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.metric-value {
+  color: #212529;
+  font-size: 1.1em;
 } 

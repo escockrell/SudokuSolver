@@ -15,6 +15,19 @@ const LoadingOverlay = () => (
   </div>
 );
 
+const MetricsDisplay = ({ difficulty, solveTime }) => (
+  <div className="metrics-display">
+    <div className="metric">
+      <span className="metric-label">Difficulty:</span>
+      <span className="metric-value">{difficulty}</span>
+    </div>
+    <div className="metric">
+      <span className="metric-label">Solve Time:</span>
+      <span className="metric-value">{solveTime ? `${solveTime.toFixed(2)} ms` : '-'}</span>
+    </div>
+  </div>
+);
+
 const InputPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -36,6 +49,15 @@ const InputPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [solutionData, setSolutionData] = useState(() => {
     return location.state?.solutionData || null;
+  });
+  const [metrics, setMetrics] = useState(() => {
+    return location.state?.solutionData ? {
+      difficulty: location.state.solutionData.metrics.difficulty,
+      solveTime: location.state.solutionData.metrics.solveTime
+    } : {
+      difficulty: null,
+      solveTime: null
+    };
   });
 
   // Helper function to check if array has duplicates (ignoring empty cells)
@@ -145,14 +167,18 @@ const InputPage = () => {
         row.map(cell => cell === '' ? '0' : cell).join('')
       ).join('');
 
+      // Add a small delay to allow the loading state to render
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       // const response = await solvePuzzle(puzzleInput); // API call
-      // const response = solvePuzzle(puzzleInput); // local call
-      const response_v2 = solvePuzzle_v2(puzzleInput);
+      // const response = solvePuzzle(puzzleInput); // original solver logic
+      const response_v2 = solvePuzzle_v2(puzzleInput); // improved solver logic
         
       console.log("Solving puzzle: ", puzzleInput);
-      console.log("solved: ", response_v2.metrics.solved);
-      console.log(`Solver_v2: Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
-      console.log("response_v2: ", response_v2);
+      console.log("Solved: ", response_v2.metrics.solved);
+      console.log("Difficulty: ", response_v2.metrics.difficulty);
+      console.log(`Solver: Puzzle solved in ${response_v2.metrics.solveTime.toFixed(2)} milliseconds`);
+      console.log("response: ", response_v2);
       
       // Convert solution string to grid by splitting into chunks of 9
       const solutionGrid = [];
@@ -166,6 +192,12 @@ const InputPage = () => {
       
       setGrid(solutionGrid);
       setIsSolved(true);
+      
+      // Update metrics
+      setMetrics({
+        difficulty: response_v2.metrics.difficulty,
+        solveTime: response_v2.metrics.solveTime
+      });
       
       // Store solution data for later use
       setSolutionData({
@@ -201,6 +233,12 @@ const InputPage = () => {
       <h1>Sudoku Solver</h1>
       {error && <div className="error-message">{error}</div>}
       <div className={`content ${isLoading ? 'disabled' : ''}`}>
+        {isSolved && (
+          <MetricsDisplay 
+            difficulty={metrics.difficulty}
+            solveTime={metrics.solveTime}
+          />
+        )}
         <SudokuGrid 
           grid={grid}
           onCellChange={handleCellChange}
