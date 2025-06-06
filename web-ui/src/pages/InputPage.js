@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SudokuGrid from '../components/SudokuGrid';
 import ControlPanel from '../components/ControlPanel';
@@ -37,6 +37,12 @@ const InputPage = () => {
     return location.state?.grid || Array(9).fill().map(() => Array(9).fill(''));
   });
   
+  const [puzzleString, setPuzzleString] = useState(() => {
+    return location.state?.grid ? 
+      grid.map(row => row.map(cell => cell === '' ? '0' : cell).join('')).join('') :
+      '0'.repeat(81);
+  });
+  
   const [startingNumbers, setStartingNumbers] = useState(() => {
     return location.state?.startingNumbers || Array(9).fill().map(() => Array(9).fill(false));
   });
@@ -58,6 +64,21 @@ const InputPage = () => {
       difficulty: null,
       solveTime: null
     };
+  });
+
+  const [solutionString, setSolutionString] = useState('');
+  const [puzzleStringError, setPuzzleStringError] = useState('');
+
+  // Store the original puzzle string
+  const [originalPuzzleString, setOriginalPuzzleString] = useState(() => {
+    if (location.state?.solutionData?.originalGrid) {
+      return location.state.solutionData.originalGrid.map(row => 
+        row.map(cell => cell === '' ? '0' : cell).join('')
+      ).join('');
+    }
+    return location.state?.grid ? 
+      grid.map(row => row.map(cell => cell === '' ? '0' : cell).join('')).join('') :
+      '0'.repeat(81);
   });
 
   // Helper function to check if array has duplicates (ignoring empty cells)
@@ -148,10 +169,23 @@ const InputPage = () => {
   };
 
   const handleReset = () => {
-    setGrid(Array(9).fill().map(() => Array(9).fill('')));
-    setStartingNumbers(Array(9).fill().map(() => Array(9).fill(false)));
+    // Reset all states at once to prevent circular updates
+    const emptyGrid = Array(9).fill().map(() => Array(9).fill(''));
+    const emptyStartingNumbers = Array(9).fill().map(() => Array(9).fill(false));
+    const emptyString = '0'.repeat(81);
+    
+    setGrid(emptyGrid);
+    setStartingNumbers(emptyStartingNumbers);
+    setPuzzleString(emptyString);
+    setOriginalPuzzleString(emptyString);
+    setSolutionString('');
     setIsSolved(false);
     setError(null);
+    setSolutionData(null);
+    setMetrics({
+      difficulty: null,
+      solveTime: null
+    });
   };
 
   const handleSolve = async () => {
@@ -170,9 +204,7 @@ const InputPage = () => {
       // Add a small delay to allow the loading state to render
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      // const response = await solvePuzzle(puzzleInput); // API call
-      // const response = solvePuzzle(puzzleInput); // original solver logic
-      const response_v2 = solvePuzzle_v2(puzzleInput); // improved solver logic
+      const response_v2 = solvePuzzle_v2(puzzleInput);
         
       console.log("Solving puzzle: ", puzzleInput);
       console.log("Solved: ", response_v2.metrics.solved);
@@ -187,8 +219,9 @@ const InputPage = () => {
         solutionGrid.push(row);
       }
       
-      // Create deep copy of original grid before setting solution
+      // Create deep copy of original grid and starting numbers before setting solution
       const originalGridCopy = grid.map(row => [...row]);
+      const originalStartingNumbers = startingNumbers.map(row => [...row]);
       
       setGrid(solutionGrid);
       setIsSolved(true);
@@ -202,7 +235,7 @@ const InputPage = () => {
       // Store solution data for later use
       setSolutionData({
         originalGrid: originalGridCopy,
-        startingNumbers: startingNumbers.map(row => [...row]),
+        startingNumbers: originalStartingNumbers, // Use the preserved starting numbers
         solution: solutionGrid,
         metrics: response_v2.metrics,
         changes: response_v2.changes
@@ -227,6 +260,95 @@ const InputPage = () => {
     }
   };
 
+  // Convert grid to string
+  const gridToString = (grid) => {
+    return grid.map(row => row.map(cell => cell === '' ? '0' : cell).join('')).join('');
+  };
+
+  // Convert string to grid
+  const stringToGrid = (str) => {
+    const newGrid = Array(9).fill().map(() => Array(9).fill(''));
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        const value = str[i * 9 + j];
+        newGrid[i][j] = value === '0' ? '' : value;
+      }
+    }
+    return newGrid;
+  };
+
+  // Update grid when string changes
+  useEffect(() => {
+    if (puzzleString.length === 81 && !isSolved) {  // Only update if not solved
+      const newGrid = stringToGrid(puzzleString);
+      setGrid(newGrid);
+      
+      // Update starting numbers
+      const newStartingNumbers = newGrid.map(row => 
+        row.map(cell => cell !== '')
+      );
+      setStartingNumbers(newStartingNumbers);
+    }
+  }, [puzzleString, isSolved]);  // Add isSolved to dependencies
+
+  // Update string when grid changes
+  useEffect(() => {
+    if (!isSolved) {  // Only update if not solved
+      const newString = gridToString(grid);
+      if (newString !== puzzleString) {
+        setPuzzleString(newString);
+      }
+    }
+  }, [grid, isSolved]);  // Add isSolved to dependencies
+
+  // Update original puzzle string when grid changes before solving
+  useEffect(() => {
+    if (!isSolved) {
+      const newString = gridToString(grid);
+      if (newString !== originalPuzzleString) {
+        setOriginalPuzzleString(newString);
+      }
+    }
+  }, [grid, isSolved]);
+
+  const handleStringChange = (e) => {
+    const value = e.target.value;
+    setPuzzleStringError('');
+    
+    // Only allow digits 0-9
+    if (!/^[0-9]*$/.test(value)) {
+      setPuzzleStringError('Only numbers 0-9 are allowed');
+      return;
+    }
+
+    // Check length
+    if (value.length > 81) {
+      setPuzzleStringError('Maximum length is 81 characters');
+      return;
+    }
+
+    // Pad with zeros if less than 81 characters
+    const paddedValue = value.padEnd(81, '0');
+    setPuzzleString(paddedValue);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      // You could add a toast notification here if desired
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+    });
+  };
+
+  // Update solution string when puzzle is solved
+  useEffect(() => {
+    if (isSolved && solutionData) {
+      // Convert the solution grid to a string
+      const solutionString = solutionData.solution.map(row => row.join('')).join('');
+      setSolutionString(solutionString);
+    }
+  }, [isSolved, solutionData]);
+
   return (
     <div className="input-page">
       <PortfolioButton />
@@ -245,6 +367,56 @@ const InputPage = () => {
           startingNumbers={startingNumbers}
           isReadOnly={isSolved || isLoading}
         />
+        <div className="string-inputs-container">
+          <div className="string-input-group">
+            <div className="string-input-label">Starting Puzzle String</div>
+            <div className="string-input-wrapper">
+              <input
+                type="text"
+                value={originalPuzzleString}
+                onChange={handleStringChange}
+                className="puzzle-string-input"
+                placeholder="Enter 81 digits (0-9)"
+                title="Use this value to enter puzzles faster"
+                maxLength={81}
+                readOnly={isSolved}
+                disabled={isLoading}
+              />
+              <button
+                className="copy-button"
+                onClick={() => copyToClipboard(originalPuzzleString)}
+                title="Copy to clipboard"
+              >
+                Copy
+              </button>
+            </div>
+            {puzzleStringError && (
+              <div className="string-input-error">{puzzleStringError}</div>
+            )}
+          </div>
+          
+          {isSolved && (
+            <div className="string-input-group">
+              <div className="string-input-label">Solved Puzzle String</div>
+              <div className="string-input-wrapper">
+                <input
+                  type="text"
+                  value={solutionString}
+                  className="puzzle-string-input"
+                  readOnly
+                  title="Use this value to capture the solution of this puzzle"
+                />
+                <button
+                  className="copy-button"
+                  onClick={() => copyToClipboard(solutionString)}
+                  title="Copy to clipboard"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         <ControlPanel 
           onReset={handleReset}
           onSolve={handleSolve}

@@ -73,6 +73,9 @@ h1 {
   background-color: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 450px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .metric {
@@ -89,4 +92,93 @@ h1 {
 .metric-value {
   color: #212529;
   font-size: 1.1em;
+}
+
+.string-inputs-container {
+  margin: 20px 0;
+  width: calc(100ch);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.string-input-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.string-input-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.puzzle-string-input {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  font-family: monospace;
+  text-align: center;
+  letter-spacing: 0.5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: rgba(248, 249, 250, 0.1);
+  color: white;
+  border: 1px solid rgba(222, 226, 230, 0.2);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  min-width: 0;
+  width: 100%;
+}
+
+.puzzle-string-input:focus {
+  outline: none;
+  border-color: rgba(52, 152, 219, 0.5);
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+.puzzle-string-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.copy-button {
+  padding: 10px 15px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: rgba(52, 152, 219, 0.2);
+  color: white;
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  background-color: rgba(52, 152, 219, 0.3);
+  border-color: rgba(52, 152, 219, 0.4);
+}
+
+.copy-button:active {
+  transform: scale(0.95);
+}
+
+.string-input-error {
+  color: #e74c3c;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 5px;
+}
+
+.string-input-label {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin-bottom: 5px;
+  text-align: center;
 } 
