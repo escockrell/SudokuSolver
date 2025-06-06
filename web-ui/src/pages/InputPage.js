@@ -15,16 +15,24 @@ const LoadingOverlay = () => (
   </div>
 );
 
-const MetricsDisplay = ({ difficulty, solveTime }) => (
+const MetricsDisplay = ({ difficulty, solveTime, solved }) => (
   <div className="metrics-display">
-    <div className="metric">
-      <span className="metric-label">Difficulty:</span>
-      <span className="metric-value">{difficulty}</span>
-    </div>
-    <div className="metric">
-      <span className="metric-label">Solve Time:</span>
-      <span className="metric-value">{solveTime ? `${solveTime.toFixed(2)} ms` : '-'}</span>
-    </div>
+    {solved ? (
+      <>
+        <div className="metric">
+          <span className="metric-label">Difficulty:</span>
+          <span className="metric-value">{difficulty}</span>
+        </div>
+        <div className="metric">
+          <span className="metric-label">Solve Time:</span>
+          <span className="metric-value">{solveTime ? `${solveTime.toFixed(2)} ms` : '-'}</span>
+        </div>
+      </>
+    ) : (
+      <div className="metric unsolvable">
+        <span className="metric-value">This puzzle is not solvable</span>
+      </div>
+    )}
   </div>
 );
 
@@ -59,10 +67,12 @@ const InputPage = () => {
   const [metrics, setMetrics] = useState(() => {
     return location.state?.solutionData ? {
       difficulty: location.state.solutionData.metrics.difficulty,
-      solveTime: location.state.solutionData.metrics.solveTime
+      solveTime: location.state.solutionData.metrics.solveTime,
+      solved: location.state.solutionData.metrics.solved
     } : {
       difficulty: null,
-      solveTime: null
+      solveTime: null,
+      solved: false
     };
   });
 
@@ -184,7 +194,8 @@ const InputPage = () => {
     setSolutionData(null);
     setMetrics({
       difficulty: null,
-      solveTime: null
+      solveTime: null,
+      solved: false
     });
   };
 
@@ -229,7 +240,8 @@ const InputPage = () => {
       // Update metrics
       setMetrics({
         difficulty: response_v2.metrics.difficulty,
-        solveTime: response_v2.metrics.solveTime
+        solveTime: response_v2.metrics.solveTime,
+        solved: response_v2.metrics.solved
       });
       
       // Store solution data for later use
@@ -295,21 +307,17 @@ const InputPage = () => {
   useEffect(() => {
     if (!isSolved) {  // Only update if not solved
       const newString = gridToString(grid);
-      if (newString !== puzzleString) {
-        setPuzzleString(newString);
-      }
+      setPuzzleString(newString);
     }
-  }, [grid, isSolved]);  // Add isSolved to dependencies
+  }, [grid, isSolved]);  // Remove puzzleString from dependencies
 
   // Update original puzzle string when grid changes before solving
   useEffect(() => {
     if (!isSolved) {
       const newString = gridToString(grid);
-      if (newString !== originalPuzzleString) {
-        setOriginalPuzzleString(newString);
-      }
+      setOriginalPuzzleString(newString);
     }
-  }, [grid, isSolved]);
+  }, [grid, isSolved]);  // Remove originalPuzzleString from dependencies
 
   const handleStringChange = (e) => {
     const value = e.target.value;
@@ -359,6 +367,7 @@ const InputPage = () => {
           <MetricsDisplay 
             difficulty={metrics.difficulty}
             solveTime={metrics.solveTime}
+            solved={metrics.solved}
           />
         )}
         <SudokuGrid 

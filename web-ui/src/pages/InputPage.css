@@ -181,4 +181,21 @@ h1 {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin-bottom: 5px;
   text-align: center;
+}
+
+.metric.unsolvable {
+  color: #e74c3c;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.metric.unsolvable .metric-value {
+  color: #e74c3c;
+  width: 100%;
+  text-align: center;
 } 
